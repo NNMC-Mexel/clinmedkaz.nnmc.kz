@@ -523,7 +523,12 @@ function nav(lang, path, query) {
   return `
     <nav class="top-nav" aria-label="Primary">
       <a class="brand" href="${langHref("/", {}, lang)}"><span class="brand-mark">CM</span><span>ClinMedKaz Pay</span></a>
-      <div class="nav-links">
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-menu" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <div class="nav-links" id="primary-menu">
         ${links.map(([href, label]) => `<a href="${langHref(href, {}, lang)}">${escapeHtml(label)}</a>`).join("")}
       </div>
       <div class="lang-switch" aria-label="Language">
@@ -573,6 +578,7 @@ export function layout({ title, body, lang = "ru", path = "/", query = {}, scrip
     ${nav(lang, path, query)}
     <main>${body}</main>
     ${footer(lang)}
+    <script src="/nav.js"></script>
     ${scripts}
   </body>
 </html>`;
