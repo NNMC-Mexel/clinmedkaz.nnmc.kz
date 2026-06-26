@@ -13,7 +13,7 @@ export const config = {
   port: Number(process.env.PORT || 3000),
   baseUrl: process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`,
   adminToken: process.env.ADMIN_TOKEN || "change-me-long-random-token",
-  adminEmail: process.env.ADMIN_EMAIL || "admin@clinmedkaz.org",
+  adminEmail: process.env.ADMIN_EMAIL || "Nnmc.marketing@gmail.com",
   publicationFeeDisplay: process.env.PUBLICATION_FEE_DISPLAY || "300 USD",
   pricing: {
     publicationFeeUsd,
@@ -56,8 +56,8 @@ export const config = {
     bin: process.env.BUSINESS_BIN || "000640000596",
     kbe: process.env.BUSINESS_KBE || "16",
     workHours: process.env.BUSINESS_WORK_HOURS || "Mon-Fri 09:00-18:00",
-    supportPhone: process.env.SUPPORT_PHONE || "+7 000 000 00 00",
-    supportEmail: process.env.SUPPORT_EMAIL || "support@clinmedkaz.org",
+    supportPhone: process.env.SUPPORT_PHONE || "+7 (7172) 57-74-40",
+    supportEmail: process.env.SUPPORT_EMAIL || "Nnmc.marketing@gmail.com",
     chairmanName: process.env.CHAIRMAN_NAME || "Байгенжин Абай Кабатаевич"
   },
   bank: {

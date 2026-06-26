@@ -117,7 +117,8 @@ const dictionary = {
           <p>${escapeHtml(b.name)} принимает оплату за публикацию принятых научных и медицинских статей на платформе ClinMedKaz.</p>
           <p>Услуга включает административную обработку принятой статьи и онлайн-публикацию после подтверждения оплаты.</p>
           <h2>Стоимость</h2>
-          <p>Плата за публикацию: ${escapeHtml(config.publicationFeeDisplay)}. Резиденты Казахстана оплачивают эквивалент в тенге: ${escapeHtml(formatMoney(config.pricing.residentKztAmount, "KZT"))} по курсу ${escapeHtml(config.pricing.usdToKztRate)} KZT за 1 USD. Нерезиденты оплачивают ${escapeHtml(formatMoney(config.pricing.nonResidentAmount, "USD"))}, если валютный терминал Halyk подключен.</p>
+          <p>Плата за публикацию: ${escapeHtml(config.publicationFeeDisplay)}. Для резидентов Казахстана сумма указывается и принимается в тенге: ${escapeHtml(formatMoney(config.pricing.residentKztAmount, "KZT"))} по курсу ${escapeHtml(config.pricing.usdToKztRate)} KZT за 1 USD. Нерезиденты оплачивают ${escapeHtml(formatMoney(config.pricing.nonResidentAmount, "USD"))}, если валютный терминал Halyk подключен.</p>
+          <p>Стоимость доставки не взимается, так как услуга оказывается онлайн. Дополнительные комиссии со стороны ${escapeHtml(b.name)} не взимаются; возможные комиссии банка-эмитента определяются условиями банка держателя карты. Если применимы налоги, они включены в указанную стоимость.</p>
           <h2>Порядок оформления</h2>
           <ol class="steps">
             <li>Автор отправляет статью в редакционный процесс.</li>
@@ -125,7 +126,11 @@ const dictionary = {
             <li>Для принятых статей администратор отправляет автору ссылку на оплату.</li>
             <li>Автор заполняет данные и оплачивает картой через Halyk ePay.</li>
             <li>Администратор получает подтверждение оплаты и публикует статью.</li>
-          </ol>`
+          </ol>
+          <h2>Оказание услуги</h2>
+          <p>Публикация выполняется онлайн после успешной оплаты и финальной административной проверки. Физическая доставка и пункты выдачи товаров не применяются.</p>
+          <p>Экспортные ограничения, лицензионные ограничения доставки, комплектация и гарантийные условия товаров не применяются к услуге публикации статьи.</p>
+          <p>Если для конкретной публикации потребуются дополнительные разрешения, лицензии или подтверждения правообладателя, администратор запрашивает их до публикации.</p>`
       },
       terms: {
         title: "Публичная оферта",
@@ -133,7 +138,8 @@ const dictionary = {
           <h1>Публичная оферта</h1>
           <p>Настоящая публичная оферта регулирует онлайн-оплату публикации статьи авторами, чьи статьи были приняты администратором.</p>
           <p>Плательщик подтверждает корректность названия статьи и персональных данных, введенных до оплаты. Оплата принимается только за услуги публикации статьи, описанные на этом сайте.</p>
-          <p>Оказание услуги начинается после успешного подтверждения оплаты от Halyk ePay. Администратор публикует статью после сопоставления оплаты с принятой статьей.</p>`
+          <p>Оказание услуги начинается после успешного подтверждения оплаты от Halyk ePay. Администратор публикует статью после сопоставления оплаты с принятой статьей.</p>
+          <p>До завершения карточного платежа заказ может быть аннулирован без обращения в поддержку. После оплаты вопросы отмены, корректировки или возврата рассматриваются по правилам возврата.</p>`
       },
       privacy: {
         title: "Политика конфиденциальности",
@@ -141,7 +147,8 @@ const dictionary = {
           <h1>Политика конфиденциальности и защита персональных данных</h1>
           <p>Мы собираем ФИО автора, email, номер телефона и название статьи для идентификации платежа и уведомления администратора.</p>
           <p>Данные карты вводятся только на платежной странице Halyk ePay. ${escapeHtml(b.name)} не хранит полные номера карт, CVV/CVC или данные 3D Secure.</p>
-          <p>Персональные данные используются для обработки платежа, администрирования публикации, бухгалтерского учета и урегулирования спорных ситуаций.</p>`
+          <p>Персональные данные используются для обработки платежа, администрирования публикации, бухгалтерского учета и урегулирования спорных ситуаций.</p>
+          <p>Безопасность карточных платежей обеспечивается платежной страницей Halyk ePay, защищенным соединением и технологией 3D Secure. Доступ к данным заказов ограничен администратором платформы.</p>`
       },
       refunds: {
         title: "Правила возврата",
@@ -149,7 +156,9 @@ const dictionary = {
           <h1>Правила возврата и отмены</h1>
           <p>До оплаты автор может отменить заказ, не завершая карточный платеж.</p>
           <p>Запросы на возврат рассматриваются администратором. Если услуга публикации статьи не была оказана, возврат может быть инициирован через банк-эквайер согласно правилам платежных систем.</p>
-          <p>Для споров или chargeback-запросов обратитесь в поддержку и укажите дату платежа, номер инвойса, имя плательщика и название статьи.</p>`
+          <p>Для споров или chargeback-запросов обратитесь в поддержку и укажите дату платежа, номер инвойса, имя плательщика и название статьи.</p>
+          <p>Замена некачественного или некомплектного товара не применяется, так как товар не передается. Если публикация содержит техническую ошибку, возникшую при размещении, администратор рассматривает запрос на исправление опубликованного материала.</p>
+          <p>Деньги возвращаются на карту, с которой была проведена оплата, через банк-эквайер и платежную систему. Срок зачисления зависит от банка держателя карты.</p>`
       },
       contacts: {
         title: "Контакты",
@@ -281,7 +290,8 @@ const dictionary = {
           <p>${escapeHtml(b.name)} ClinMedKaz платформасында қабылданған ғылыми және медициналық мақалаларды жариялау үшін төлем қабылдайды.</p>
           <p>Қызмет қабылданған мақаланы әкімшілік өңдеуді және төлем расталғаннан кейін онлайн жариялауды қамтиды.</p>
           <h2>Бағасы</h2>
-          <p>Жариялау ақысы: ${escapeHtml(config.publicationFeeDisplay)}. Қазақстан резиденттері теңгедегі баламасын төлейді: ${escapeHtml(formatMoney(config.pricing.residentKztAmount, "KZT"))}, курс ${escapeHtml(config.pricing.usdToKztRate)} KZT үшін 1 USD. Резидент еместер Halyk валюталық терминалы қосылған болса, ${escapeHtml(formatMoney(config.pricing.nonResidentAmount, "USD"))} төлейді.</p>
+          <p>Жариялау ақысы: ${escapeHtml(config.publicationFeeDisplay)}. Қазақстан резиденттері үшін сома теңгемен көрсетіледі және қабылданады: ${escapeHtml(formatMoney(config.pricing.residentKztAmount, "KZT"))}, курс ${escapeHtml(config.pricing.usdToKztRate)} KZT үшін 1 USD. Резидент еместер Halyk валюталық терминалы қосылған болса, ${escapeHtml(formatMoney(config.pricing.nonResidentAmount, "USD"))} төлейді.</p>
+          <p>Жеткізу құны алынбайды, себебі қызмет онлайн көрсетіледі. ${escapeHtml(b.name)} тарапынан қосымша комиссия алынбайды; карта ұстаушы банктің ықтимал комиссиялары сол банктің талаптарына сәйкес айқындалады. Қолданылатын салықтар көрсетілген құнға кіреді.</p>
           <h2>Тапсырыс рәсімі</h2>
           <ol class="steps">
             <li>Автор мақаланы редакциялық процеске жібереді.</li>
@@ -289,7 +299,11 @@ const dictionary = {
             <li>Қабылданған мақалалар үшін әкімші авторға төлем сілтемесін жібереді.</li>
             <li>Автор деректерін толтырып, Halyk ePay арқылы картамен төлейді.</li>
             <li>Әкімші төлем растауын алып, мақаланы жариялайды.</li>
-          </ol>`
+          </ol>
+          <h2>Қызмет көрсету</h2>
+          <p>Жариялау сәтті төлемнен және соңғы әкімшілік тексеруден кейін онлайн орындалады. Физикалық жеткізу және тауар беру пункттері қолданылмайды.</p>
+          <p>Экспорттық шектеулер, жеткізу бойынша лицензиялық шектеулер, тауар жиынтықталуы және кепілдік шарттары мақала жариялау қызметіне қолданылмайды.</p>
+          <p>Егер нақты жарияланым үшін қосымша рұқсаттар, лицензиялар немесе құқық иесінің растауы қажет болса, әкімші оларды жариялауға дейін сұратады.</p>`
       },
       terms: {
         title: "Жария оферта",
@@ -297,7 +311,8 @@ const dictionary = {
           <h1>Жария оферта</h1>
           <p>Осы жария оферта әкімші қабылдаған мақалаларды жариялау үшін онлайн төлемді реттейді.</p>
           <p>Төлеуші төлемге дейін енгізілген мақала атауы мен жеке деректердің дұрыстығын растайды. Төлем тек осы сайтта сипатталған мақала жариялау қызметі үшін қабылданады.</p>
-          <p>Қызмет Halyk ePay төлемді сәтті растағаннан кейін басталады. Әкімші төлемді қабылданған мақаламен сәйкестендіргеннен кейін мақаланы жариялайды.</p>`
+          <p>Қызмет Halyk ePay төлемді сәтті растағаннан кейін басталады. Әкімші төлемді қабылданған мақаламен сәйкестендіргеннен кейін мақаланы жариялайды.</p>
+          <p>Карта төлемі аяқталғанға дейін тапсырысты қолдау қызметіне жүгінбей-ақ жоюға болады. Төлемнен кейін жою, түзету немесе қайтару мәселелері қайтару ережелері бойынша қаралады.</p>`
       },
       privacy: {
         title: "Құпиялылық саясаты",
@@ -305,7 +320,8 @@ const dictionary = {
           <h1>Құпиялылық саясаты және дербес деректерді қорғау</h1>
           <p>Біз төлемді сәйкестендіру және әкімшіге хабарлау үшін автордың Т.А.Ә., email, телефон нөмірі және мақала атауын жинаймыз.</p>
           <p>Карта деректері тек Halyk ePay төлем бетінде енгізіледі. ${escapeHtml(b.name)} толық карта нөмірлерін, CVV/CVC немесе 3D Secure деректерін сақтамайды.</p>
-          <p>Дербес деректер төлемді өңдеу, жариялауды әкімшілендіру, бухгалтерлік есеп және даулы жағдайларды шешу үшін қолданылады.</p>`
+          <p>Дербес деректер төлемді өңдеу, жариялауды әкімшілендіру, бухгалтерлік есеп және даулы жағдайларды шешу үшін қолданылады.</p>
+          <p>Карта төлемдерінің қауіпсіздігі Halyk ePay төлем беті, қорғалған қосылыс және 3D Secure технологиясы арқылы қамтамасыз етіледі. Тапсырыс деректеріне қол жеткізу платформа әкімшісімен шектеледі.</p>`
       },
       refunds: {
         title: "Қайтару ережелері",
@@ -313,7 +329,9 @@ const dictionary = {
           <h1>Қайтару және бас тарту ережелері</h1>
           <p>Төлемге дейін автор карта төлемін аяқтамай, тапсырыстан бас тарта алады.</p>
           <p>Қайтару сұрауларын әкімші қарайды. Егер мақала жариялау қызметі көрсетілмесе, қайтару төлем жүйелері ережелеріне сәйкес эквайер банк арқылы басталуы мүмкін.</p>
-          <p>Дау немесе chargeback сұрауы үшін қолдау қызметіне хабарласып, төлем күнін, инвойс нөмірін, төлеуші атын және мақала атауын көрсетіңіз.</p>`
+          <p>Дау немесе chargeback сұрауы үшін қолдау қызметіне хабарласып, төлем күнін, инвойс нөмірін, төлеуші атын және мақала атауын көрсетіңіз.</p>
+          <p>Сапасыз немесе толық емес тауарды ауыстыру қолданылмайды, себебі тауар берілмейді. Егер жариялау кезінде техникалық қате жіберілсе, әкімші жарияланған материалды түзету туралы сұрауды қарайды.</p>
+          <p>Ақша төлем жасалған картаға эквайер банк және төлем жүйесі арқылы қайтарылады. Қаражаттың түсу мерзімі карта ұстаушы банкіне байланысты.</p>`
       },
       contacts: {
         title: "Байланыс",
@@ -445,7 +463,8 @@ const dictionary = {
           <p>${escapeHtml(b.name)} accepts payment for publishing accepted scientific and medical articles on the ClinMedKaz publication platform.</p>
           <p>The service includes administrative processing of the accepted article and online publication after payment confirmation.</p>
           <h2>Price</h2>
-          <p>Publication fee: ${escapeHtml(config.publicationFeeDisplay)}. Kazakhstan residents pay the KZT equivalent: ${escapeHtml(formatMoney(config.pricing.residentKztAmount, "KZT"))} at ${escapeHtml(config.pricing.usdToKztRate)} KZT per 1 USD. Non-residents pay ${escapeHtml(formatMoney(config.pricing.nonResidentAmount, "USD"))} if the Halyk foreign-currency terminal is enabled.</p>
+          <p>Publication fee: ${escapeHtml(config.publicationFeeDisplay)}. For Kazakhstan residents, the amount is displayed and accepted in tenge: ${escapeHtml(formatMoney(config.pricing.residentKztAmount, "KZT"))} at ${escapeHtml(config.pricing.usdToKztRate)} KZT per 1 USD. Non-residents pay ${escapeHtml(formatMoney(config.pricing.nonResidentAmount, "USD"))} if the Halyk foreign-currency terminal is enabled.</p>
+          <p>No delivery fee is charged because the service is provided online. ${escapeHtml(b.name)} does not charge additional commissions; possible issuer-bank fees are governed by the cardholder bank's terms. Applicable taxes, if any, are included in the stated price.</p>
           <h2>Order process</h2>
           <ol class="steps">
             <li>The author submits an article to the editorial workflow.</li>
@@ -453,7 +472,11 @@ const dictionary = {
             <li>For accepted articles, the administrator sends a payment link to the author.</li>
             <li>The author fills in author details and pays by card through Halyk ePay.</li>
             <li>The administrator receives payment confirmation and publishes the article.</li>
-          </ol>`
+          </ol>
+          <h2>Service delivery</h2>
+          <p>Publication is performed online after successful payment and final administrative review. Physical delivery and pickup points do not apply.</p>
+          <p>Export restrictions, delivery licensing restrictions, product configuration and warranty terms do not apply to the article publication service.</p>
+          <p>If a specific publication requires additional permits, licenses or rights-holder confirmations, the administrator requests them before publication.</p>`
       },
       terms: {
         title: "Public offer",
@@ -461,7 +484,8 @@ const dictionary = {
           <h1>Public offer</h1>
           <p>This public offer regulates online payment for article publication by authors whose articles were accepted by the administrator.</p>
           <p>The payer confirms that the article title and personal details entered before payment are correct. Payment is accepted only for article publication services described on this website.</p>
-          <p>Service delivery starts after successful payment confirmation from Halyk ePay. The administrator publishes the article after matching the payment with the accepted article.</p>`
+          <p>Service delivery starts after successful payment confirmation from Halyk ePay. The administrator publishes the article after matching the payment with the accepted article.</p>
+          <p>Before the card payment is completed, the order can be cancelled without contacting support. After payment, cancellation, correction or refund issues are handled under the refund policy.</p>`
       },
       privacy: {
         title: "Privacy policy",
@@ -469,7 +493,8 @@ const dictionary = {
           <h1>Privacy policy and personal data protection</h1>
           <p>We collect the author's full name, email, phone number and article title to identify the payment and notify the administrator.</p>
           <p>Card data is entered only on the Halyk ePay payment page. ${escapeHtml(b.name)} does not store full card numbers, CVV/CVC or 3D Secure credentials.</p>
-          <p>Personal data is used for payment processing, publication administration, accounting and dispute handling.</p>`
+          <p>Personal data is used for payment processing, publication administration, accounting and dispute handling.</p>
+          <p>Card payment security is provided by the Halyk ePay payment page, protected connection and 3D Secure technology. Access to order data is restricted to the platform administrator.</p>`
       },
       refunds: {
         title: "Refund and cancellation policy",
@@ -477,7 +502,9 @@ const dictionary = {
           <h1>Refund and cancellation policy</h1>
           <p>Before payment, the author may cancel the order by not completing the card payment.</p>
           <p>Refund requests are reviewed by the administrator. If the article publication service has not been delivered, a refund may be initiated through the acquiring bank according to card network rules.</p>
-          <p>For disputes or chargeback requests, contact support and provide payment date, invoice number, payer name and article title.</p>`
+          <p>For disputes or chargeback requests, contact support and provide payment date, invoice number, payer name and article title.</p>
+          <p>Replacement of defective or incomplete goods does not apply because no goods are transferred. If the publication contains a technical placement error, the administrator reviews a correction request for the published material.</p>
+          <p>Funds are returned to the card used for payment through the acquiring bank and payment system. The crediting period depends on the cardholder bank.</p>`
       },
       contacts: {
         title: "Contacts",
