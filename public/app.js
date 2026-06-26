@@ -15,6 +15,7 @@
   const form = document.getElementById("payment-form");
   const status = document.getElementById("form-status");
   const charge = document.getElementById("payment-charge");
+  const submit = form?.querySelector(".form-submit");
   if (!form) return;
 
   function updateCharge() {
@@ -22,9 +23,11 @@
     if (!charge) return;
     if (selected === "non_resident") {
       charge.textContent = `${pricing.nonResidentLabel || "Payment for non-resident"}: ${pricing.nonResident || "300 USD"}`;
+      if (submit) submit.textContent = `${pricing.nonResidentSubmit || "Pay by card"} ${pricing.nonResident || "300 USD"}`;
       return;
     }
     charge.textContent = `${pricing.residentLabel || "Payment for Kazakhstan resident"}: ${pricing.resident || ""}`;
+    if (submit) submit.textContent = `${pricing.residentSubmit || "Proceed to payment"} ${pricing.resident || ""}`;
   }
 
   form.querySelectorAll('input[name="residency"]').forEach((input) => {
