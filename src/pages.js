@@ -12,6 +12,7 @@ const dictionary = {
   ru: {
     metaDescription: "Страница оплаты публикации статьи ClinMedKaz.",
     nav: {
+      home: "Главная",
       service: "Услуга",
       terms: "Оферта",
       privacy: "Конфиденциальность",
@@ -166,6 +167,7 @@ const dictionary = {
   kk: {
     metaDescription: "ClinMedKaz мақаласын жариялау ақысын төлеу беті.",
     nav: {
+      home: "Басты бет",
       service: "Қызмет",
       terms: "Оферта",
       privacy: "Құпиялылық",
@@ -320,6 +322,7 @@ const dictionary = {
   en: {
     metaDescription: "Payment page for ClinMedKaz article publication fee.",
     nav: {
+      home: "Home",
       service: "Service",
       terms: "Offer",
       privacy: "Privacy",
@@ -514,6 +517,7 @@ function langHref(path, query, lang) {
 function nav(lang, path, query) {
   const t = getTranslations(lang);
   const links = [
+    ["/", t.nav.home],
     ["/service", t.nav.service],
     ["/terms", t.nav.terms],
     ["/privacy", t.nav.privacy],
