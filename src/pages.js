@@ -522,7 +522,7 @@ function nav(lang, path, query) {
   ];
   return `
     <nav class="top-nav" aria-label="Primary">
-      <a class="brand" href="${langHref("/", {}, lang)}">ClinMedKaz Pay</a>
+      <a class="brand" href="${langHref("/", {}, lang)}"><span class="brand-mark">CM</span><span>ClinMedKaz Pay</span></a>
       <div class="nav-links">
         ${links.map(([href, label]) => `<a href="${langHref(href, {}, lang)}">${escapeHtml(label)}</a>`).join("")}
       </div>
@@ -611,15 +611,15 @@ export function paymentFormPage(invitation, options = {}) {
           <h1>${escapeHtml(t.h1)}</h1>
           <p class="lead">${escapeHtml(t.lead)}</p>
         </div>
-        <div class="price-panel">
-          <span>${escapeHtml(t.amount)}</span>
+        <div class="price-panel" aria-label="${escapeHtml(t.amount)}">
+          <span class="price-label">${escapeHtml(t.amount)}</span>
           <strong>${escapeHtml(config.publicationFeeDisplay)}</strong>
           <small id="payment-charge">${escapeHtml(t.residentCharge)}: ${escapeHtml(residentCharge)}</small>
           <small>${escapeHtml(t.exchangeRate)}: 1 USD = ${escapeHtml(config.pricing.usdToKztRate)} KZT</small>
         </div>
       </section>
       <section class="content-grid">
-        <form id="payment-form" class="panel">
+        <form id="payment-form" class="panel form-panel">
           <h2>${escapeHtml(t.authorDetails)}</h2>
           <input type="hidden" name="invitationId" id="invitationId">
           <input type="hidden" name="lang" id="lang" value="${escapeHtml(lang)}">
@@ -650,10 +650,10 @@ export function paymentFormPage(invitation, options = {}) {
             <input type="checkbox" required>
             <span>${escapeHtml(t.agreement)}</span>
           </label>
-          <button class="primary-btn" type="submit">${escapeHtml(t.submit)}</button>
+          <button class="primary-btn form-submit" type="submit">${escapeHtml(t.submit)}</button>
           <p id="form-status" class="status-text" role="status"></p>
         </form>
-        <aside class="panel quiet">
+        <aside class="panel quiet process-panel">
           <h2>${escapeHtml(t.processTitle)}</h2>
           <ol class="steps">
             ${t.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join("")}
