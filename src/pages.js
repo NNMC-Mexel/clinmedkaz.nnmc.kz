@@ -582,6 +582,7 @@ export function layout({ title, body, lang = "ru", path = "/", query = {}, scrip
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${escapeHtml(title)} | ClinMedKaz Pay</title>
     <meta name="description" content="${escapeHtml(t.metaDescription)}">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
