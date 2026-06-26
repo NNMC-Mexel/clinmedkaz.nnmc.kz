@@ -48,14 +48,22 @@ export const config = {
     from: process.env.MAIL_FROM || "ClinMedKaz payments <no-reply@clinmedkaz.org>"
   },
   business: {
-    name: process.env.BUSINESS_NAME || "ClinMedKaz",
+    name: process.env.BUSINESS_NAME || "АО «Национальный научный медицинский центр»",
     country: process.env.BUSINESS_COUNTRY || "Kazakhstan",
-    city: process.env.BUSINESS_CITY || "Almaty",
-    legalAddress: process.env.BUSINESS_LEGAL_ADDRESS || "Set legal address",
-    actualAddress: process.env.BUSINESS_ACTUAL_ADDRESS || "Set actual address",
-    bin: process.env.BUSINESS_BIN || "Set BIN/IIN",
+    city: process.env.BUSINESS_CITY || "Astana",
+    legalAddress: process.env.BUSINESS_LEGAL_ADDRESS || "пр. Абылай хана, 42",
+    actualAddress: process.env.BUSINESS_ACTUAL_ADDRESS || "пр. Абылай хана, 42",
+    bin: process.env.BUSINESS_BIN || "000640000596",
+    kbe: process.env.BUSINESS_KBE || "16",
     workHours: process.env.BUSINESS_WORK_HOURS || "Mon-Fri 09:00-18:00",
     supportPhone: process.env.SUPPORT_PHONE || "+7 000 000 00 00",
-    supportEmail: process.env.SUPPORT_EMAIL || "support@clinmedkaz.org"
+    supportEmail: process.env.SUPPORT_EMAIL || "support@clinmedkaz.org",
+    chairmanName: process.env.CHAIRMAN_NAME || "Байгенжин Абай Кабатаевич"
+  },
+  bank: {
+    name: process.env.BANK_NAME || "АО «Народный банк»",
+    bik: process.env.BANK_BIK || "HSBKKZKX",
+    kbe: process.env.BANK_KBE || "14",
+    iban: process.env.BANK_IBAN || "KZ806017111000000485"
   }
 };

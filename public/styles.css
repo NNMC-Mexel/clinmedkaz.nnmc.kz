@@ -511,6 +511,27 @@ th {
 
 .details dd {
   margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.bank-details {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.bank-details code {
+  background: #ffffff;
+  border: 1px solid #e3eaf3;
+  border-radius: 8px;
+  color: var(--ink);
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 14px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  padding: 5px 8px;
 }
 
 .site-footer {
@@ -714,6 +735,21 @@ th {
 
   .details {
     grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .details dt {
+    font-size: 13px;
+  }
+
+  .details dd {
+    border-bottom: 1px solid #edf1f6;
+    padding-bottom: 9px;
+  }
+
+  .bank-details {
+    gap: 8px;
+    padding: 14px;
   }
 
   .site-footer {

@@ -159,9 +159,16 @@ const dictionary = {
           legalAddress: "Юридический адрес",
           actualAddress: "Фактический адрес",
           bin: "БИН/ИИН",
+          businessKbe: "КБЕ предприятия",
           workHours: "График работы",
           supportPhone: "Телефон поддержки",
-          supportEmail: "Email поддержки"
+          supportEmail: "Email поддержки",
+          chairman: "Председатель Правления",
+          bankDetails: "Банковские реквизиты",
+          bank: "Банк",
+          bik: "БИК",
+          bankKbe: "Кбе банка",
+          iban: "ИИК / IBAN"
         }
       }
     }
@@ -316,9 +323,16 @@ const dictionary = {
           legalAddress: "Заңды мекенжай",
           actualAddress: "Нақты мекенжай",
           bin: "БСН/ЖСН",
+          businessKbe: "Кәсіпорын КБЕ",
           workHours: "Жұмыс уақыты",
           supportPhone: "Қолдау телефоны",
-          supportEmail: "Қолдау email"
+          supportEmail: "Қолдау email",
+          chairman: "Басқарма төрағасы",
+          bankDetails: "Банк деректемелері",
+          bank: "Банк",
+          bik: "БСК",
+          bankKbe: "Банк Кбе",
+          iban: "ИИК / IBAN"
         }
       }
     }
@@ -473,9 +487,16 @@ const dictionary = {
           legalAddress: "Legal address",
           actualAddress: "Actual address",
           bin: "BIN/IIN",
+          businessKbe: "Enterprise KBE",
           workHours: "Working hours",
           supportPhone: "Support phone",
-          supportEmail: "Support email"
+          supportEmail: "Support email",
+          chairman: "Chairman of the Management Board",
+          bankDetails: "Bank details",
+          bank: "Bank",
+          bik: "BIK",
+          bankKbe: "Bank KBE",
+          iban: "Account / IBAN"
         }
       }
     }
@@ -804,9 +825,18 @@ export function legalPage(kind, options = {}) {
         <dt>${escapeHtml(labels.legalAddress)}</dt><dd>${escapeHtml(b.legalAddress)}</dd>
         <dt>${escapeHtml(labels.actualAddress)}</dt><dd>${escapeHtml(b.actualAddress)}</dd>
         <dt>${escapeHtml(labels.bin)}</dt><dd>${escapeHtml(b.bin)}</dd>
+        <dt>${escapeHtml(labels.businessKbe)}</dt><dd>${escapeHtml(b.kbe)}</dd>
         <dt>${escapeHtml(labels.workHours)}</dt><dd>${escapeHtml(b.workHours)}</dd>
         <dt>${escapeHtml(labels.supportPhone)}</dt><dd>${escapeHtml(b.supportPhone)}</dd>
         <dt>${escapeHtml(labels.supportEmail)}</dt><dd><a href="mailto:${escapeHtml(b.supportEmail)}">${escapeHtml(b.supportEmail)}</a></dd>
+        <dt>${escapeHtml(labels.chairman)}</dt><dd>${escapeHtml(b.chairmanName)}</dd>
+      </dl>
+      <h2>${escapeHtml(labels.bankDetails)}</h2>
+      <dl class="details bank-details">
+        <dt>${escapeHtml(labels.bank)}</dt><dd>${escapeHtml(config.bank.name)}</dd>
+        <dt>${escapeHtml(labels.bik)}</dt><dd><code>${escapeHtml(config.bank.bik)}</code></dd>
+        <dt>${escapeHtml(labels.bankKbe)}</dt><dd><code>${escapeHtml(config.bank.kbe)}</code></dd>
+        <dt>${escapeHtml(labels.iban)}</dt><dd><code>${escapeHtml(config.bank.iban)}</code></dd>
       </dl>
     `;
   } else {
