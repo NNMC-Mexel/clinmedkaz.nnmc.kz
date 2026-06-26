@@ -8,6 +8,9 @@
   const status = document.getElementById("payment-status");
   const button = document.getElementById("open-payment");
   const orderId = window.__ORDER_ID__;
+  const payMode = window.__PAY_MODE__ || "default";
+  const successUrl = window.__SUCCESS_URL__ || "/";
+  const failureUrl = window.__FAILURE_URL__ || "/";
 
   async function openPayment() {
     status.textContent = i18n.token;
@@ -20,6 +23,12 @@
         throw new Error(i18n.scriptError);
       }
       status.textContent = i18n.open;
+      if (payMode === "card_widget" && typeof window.halyk.showPaymentWidget === "function") {
+        window.halyk.showPaymentWidget(payload.paymentObject, (result) => {
+          window.location.href = result ? successUrl : failureUrl;
+        });
+        return;
+      }
       window.halyk.pay(payload.paymentObject);
     } catch (error) {
       status.textContent = error.message;

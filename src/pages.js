@@ -703,7 +703,7 @@ export function payPage(order, options = {}) {
         </div>
       </section>
     `,
-    scripts: `<script src="${escapeHtml(config.halyk.paymentJsUrl)}"></script><script>window.__ORDER_ID__=${JSON.stringify(order.id)}; window.__PAY_I18N__=${JSON.stringify(getTranslations(lang).payJs)};</script><script src="/pay.js"></script>`
+    scripts: `<script src="${escapeHtml(config.halyk.paymentJsUrl)}"></script><script>window.__ORDER_ID__=${JSON.stringify(order.id)}; window.__PAY_MODE__=${JSON.stringify(order.residency === "non_resident" ? "card_widget" : "default")}; window.__SUCCESS_URL__=${JSON.stringify(`/payment/success/${order.id}?lang=${lang}`)}; window.__FAILURE_URL__=${JSON.stringify(`/payment/failure/${order.id}?lang=${lang}`)}; window.__PAY_I18N__=${JSON.stringify(getTranslations(lang).payJs)};</script><script src="/pay.js"></script>`
   });
 }
 
