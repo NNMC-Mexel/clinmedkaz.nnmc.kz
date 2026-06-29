@@ -1,0 +1,170 @@
+{
+  "kind": "collectionType",
+  "collectionName": "payment_orders",
+  "info": {
+    "singularName": "order",
+    "pluralName": "orders",
+    "displayName": "Payment order",
+    "description": "Halyk ePay article publication payment"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "externalId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "invoiceId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "secretHash": {
+      "type": "string",
+      "required": true,
+      "private": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "created",
+        "payment_started",
+        "token_issued",
+        "paid",
+        "failed",
+        "postlink_rejected",
+        "cancelled",
+        "refunded"
+      ],
+      "required": true,
+      "default": "created"
+    },
+    "amount": {
+      "type": "decimal",
+      "required": true
+    },
+    "currency": {
+      "type": "string",
+      "required": true
+    },
+    "publicationFeeUsd": {
+      "type": "decimal"
+    },
+    "exchangeRate": {
+      "type": "decimal"
+    },
+    "residency": {
+      "type": "enumeration",
+      "enum": [
+        "resident_kz",
+        "non_resident"
+      ],
+      "required": true,
+      "default": "resident_kz"
+    },
+    "fullName": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "phone": {
+      "type": "string"
+    },
+    "articleTitle": {
+      "type": "text",
+      "required": true
+    },
+    "lang": {
+      "type": "enumeration",
+      "enum": [
+        "ru",
+        "kk",
+        "en"
+      ],
+      "required": true,
+      "default": "ru"
+    },
+    "invitationId": {
+      "type": "string"
+    },
+    "halykReference": {
+      "type": "string"
+    },
+    "cardMask": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "text"
+    },
+    "paymentReceivedAt": {
+      "type": "datetime"
+    },
+    "publicationStatus": {
+      "type": "enumeration",
+      "enum": [
+        "pending_payment",
+        "ready_to_publish",
+        "published",
+        "on_hold",
+        "cancelled"
+      ],
+      "required": true,
+      "default": "pending_payment"
+    },
+    "publishedAt": {
+      "type": "datetime"
+    },
+    "articleUrl": {
+      "type": "string"
+    },
+    "doi": {
+      "type": "string"
+    },
+    "refundStatus": {
+      "type": "enumeration",
+      "enum": [
+        "none",
+        "requested",
+        "approved",
+        "rejected",
+        "processed"
+      ],
+      "required": true,
+      "default": "none"
+    },
+    "refundReason": {
+      "type": "text"
+    },
+    "accountingStatus": {
+      "type": "enumeration",
+      "enum": [
+        "new",
+        "reconciled",
+        "exported",
+        "disputed"
+      ],
+      "required": true,
+      "default": "new"
+    },
+    "adminComment": {
+      "type": "text"
+    },
+    "postbacks": {
+      "type": "json"
+    },
+    "paymentCreatedAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "paymentUpdatedAt": {
+      "type": "datetime",
+      "required": true
+    }
+  }
+}

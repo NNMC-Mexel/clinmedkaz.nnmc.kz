@@ -1,0 +1,83 @@
+{
+  "kind": "collectionType",
+  "collectionName": "payment_invitations",
+  "info": {
+    "singularName": "invitation",
+    "pluralName": "invitations",
+    "displayName": "Payment invitation",
+    "description": "Article publication payment invitation"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "externalId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "created",
+        "payment_started",
+        "paid",
+        "failed",
+        "cancelled"
+      ],
+      "required": true,
+      "default": "created"
+    },
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "fullName": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "articleTitle": {
+      "type": "text",
+      "required": true
+    },
+    "lang": {
+      "type": "enumeration",
+      "enum": [
+        "ru",
+        "kk",
+        "en"
+      ],
+      "required": true,
+      "default": "ru"
+    },
+    "publicationFeeUsd": {
+      "type": "decimal"
+    },
+    "usdToKztRate": {
+      "type": "decimal"
+    },
+    "residentAmount": {
+      "type": "decimal"
+    },
+    "residentCurrency": {
+      "type": "string"
+    },
+    "nonResidentAmount": {
+      "type": "decimal"
+    },
+    "nonResidentCurrency": {
+      "type": "string"
+    },
+    "invitationCreatedAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "invitationUpdatedAt": {
+      "type": "datetime",
+      "required": true
+    }
+  }
+}

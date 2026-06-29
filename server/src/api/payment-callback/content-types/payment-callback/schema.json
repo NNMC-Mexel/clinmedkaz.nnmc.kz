@@ -1,0 +1,60 @@
+{
+  "kind": "collectionType",
+  "collectionName": "payment_callbacks",
+  "info": {
+    "singularName": "payment-callback",
+    "pluralName": "payment-callbacks",
+    "displayName": "Payment callback",
+    "description": "Raw Halyk ePay callback audit record"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "externalId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "invoiceId": {
+      "type": "string"
+    },
+    "matchedOrderId": {
+      "type": "string"
+    },
+    "matched": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
+    "secretMatches": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
+    "amountChecked": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
+    "amountOk": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
+    "code": {
+      "type": "string"
+    },
+    "reference": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "json"
+    },
+    "receivedAt": {
+      "type": "datetime",
+      "required": true
+    }
+  }
+}

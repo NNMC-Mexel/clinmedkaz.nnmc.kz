@@ -1,17 +1,20 @@
 {
-  "name": "clinmedkaz-payments",
+  "name": "clinmedkaz",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --watch src/server.js",
-    "start": "node src/server.js"
-  },
-  "dependencies": {
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "helmet": "^7.2.0",
-    "nodemailer": "^9.0.1"
+    "dev": "sh -c 'npm run dev:server & npm run dev:client; wait'",
+    "dev:server": "npm run develop --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build": "npm run build:server && npm run build:client",
+    "build:client": "npm run build --prefix client",
+    "build:server": "npm run build --prefix server",
+    "start:server": "npm run start --prefix server",
+    "start": "npm run start:server",
+    "dev:cms": "npm run develop --prefix server",
+    "start:cms": "npm run start --prefix server",
+    "build:cms": "npm run build --prefix server"
   },
   "engines": {
     "node": ">=20"
