@@ -52,6 +52,11 @@ REST API, который использует клиент:
 Vite + React. В dev клиент работает на `http://localhost:5173` и проксирует `/api/*`
 в Strapi на `http://localhost:1337`.
 
+В production клиент работает на `https://clinmedkaz.nnmc.kz`, а API Strapi —
+на `https://clinmedkazserver.nnmc.kz/api/*`. Для прямого обращения фронта к
+бэку клиент использует `VITE_API_BASE_URL`, а Strapi разрешает origin фронта
+через `CORS_ORIGINS`.
+
 | Путь | Ответственность |
 |------|-----------------|
 | [client/src/main.jsx](client/src/main.jsx) | React приложение, routing по `window.location.pathname`, формы оплаты и админки |

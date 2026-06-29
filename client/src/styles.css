@@ -614,19 +614,36 @@ th {
 
 .payment-logo img {
   display: block;
+  height: auto;
   max-height: 28px;
-  max-width: 96px;
+  max-width: 100%;
   object-fit: contain;
   width: auto;
 }
 
-.payment-logo-square {
-  padding: 5px 8px;
+.payment-logo-epay {
+  inline-size: 104px;
 }
 
-.payment-logo-square img {
+.payment-logo-bank {
+  inline-size: 102px;
+}
+
+.payment-logo-card {
+  inline-size: 62px;
+}
+
+.payment-logo-3ds {
+  inline-size: 78px;
+}
+
+.payment-logo-visa-secure {
+  inline-size: 42px;
+  padding: 6px;
+}
+
+.payment-logo-visa-secure img {
   max-height: 30px;
-  max-width: 30px;
 }
 
 @media (max-width: 820px) {

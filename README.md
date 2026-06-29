@@ -35,6 +35,8 @@ npm run dev                   # Strapi на http://localhost:1337, React client 
 - Публичная форма в dev: `http://localhost:5173/?invite=<id>` — открывается только по валидному приглашению.
 - Админка в dev: `http://localhost:5173/admin` (логин `/admin/login`).
 - Backend API: `http://localhost:1337/api/*`.
+- Production frontend: `https://clinmedkaz.nnmc.kz`.
+- Production backend/API: `https://clinmedkazserver.nnmc.kz/api/*`.
 - Колбэки Halyk: `POST /api/halyk/postlink`.
 
 > Все суммы и реквизиты — боевые юридические данные НИИ. Halyk-ключи нужно держать

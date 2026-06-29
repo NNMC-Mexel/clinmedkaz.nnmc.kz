@@ -68,7 +68,7 @@ export async function authenticateAdmin(usernameInput: unknown, passwordInput: u
   }
 
   try {
-    const response = await fetch(`${config.baseUrl.replace(/\/$/, '')}/api/auth/local`, {
+    const response = await fetch(`${config.backendUrl.replace(/\/$/, '')}/api/auth/local`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ identifier: username, password }),

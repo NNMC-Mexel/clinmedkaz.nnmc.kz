@@ -9,6 +9,8 @@ const halykEnv = process.env.HALYK_ENV === 'prod' ? 'prod' : 'test';
 const publicationFeeUsd = Number(process.env.PUBLICATION_FEE_USD || 300);
 const usdToKztRate = Number(process.env.USD_TO_KZT_RATE || 485.4);
 const residentKztAmount = Math.round(publicationFeeUsd * usdToKztRate);
+const productionFrontendUrl = 'https://clinmedkaz.nnmc.kz';
+const productionBackendUrl = 'https://clinmedkazserver.nnmc.kz';
 
 function env(name: string, fallback = '') {
   const value = process.env[name];
@@ -41,7 +43,8 @@ function buildAdminAccounts() {
 
 export const config = {
   isProduction,
-  baseUrl: env('BASE_URL', `http://localhost:${process.env.PORT || 1337}`),
+  baseUrl: env('BASE_URL', env('FRONTEND_URL', isProduction ? productionFrontendUrl : 'http://localhost:5173')),
+  backendUrl: env('BACKEND_URL', env('STRAPI_URL', isProduction ? productionBackendUrl : `http://localhost:${process.env.PORT || 1337}`)),
   adminToken: env('ADMIN_TOKEN'),
   adminAccounts: buildAdminAccounts(),
   adminSessionSecret: env('ADMIN_SESSION_SECRET') || env('ADMIN_TOKEN') || env('APP_KEYS'),

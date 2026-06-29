@@ -3,6 +3,21 @@ import { createRoot } from "react-dom/client";
 import "./styles.css";
 
 const supportedLanguages = ["ru", "kk", "en"];
+const defaultApiBaseUrl = import.meta.env.PROD ? "https://clinmedkazserver.nnmc.kz/api" : "/api";
+const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || defaultApiBaseUrl).replace(/\/$/, "");
+
+function apiFetch(path, options = {}) {
+  return fetch(`${apiBaseUrl}${path}`, { credentials: "include", ...options });
+}
+
+const paymentLogos = [
+  { name: "epay-halyk.png", label: "Halyk ePay", className: "payment-logo-epay payment-logo-dark" },
+  { name: "halyk-bank.png", label: "Halyk Bank", className: "payment-logo-bank" },
+  { name: "visa.svg", label: "Visa", className: "payment-logo-card" },
+  { name: "mastercard.svg", label: "Mastercard", className: "payment-logo-card" },
+  { name: "three-d-secure.svg", label: "3D Secure", className: "payment-logo-3ds" },
+  { name: "visa-secure.png", label: "Visa Secure", className: "payment-logo-visa-secure" },
+];
 
 const i18n = {
   ru: {
@@ -113,8 +128,10 @@ function Footer({ ctx, lang }) {
     <footer className="site-footer">
       <div><strong>{b.name}</strong><br />{b.country}, {b.city}<br />Support: <a href={`mailto:${b.supportEmail}`}>{b.supportEmail}</a>, {b.supportPhone}</div>
       <div className="payment-mark">
-        {["epay-halyk.png", "halyk-bank.png", "visa.svg", "mastercard.svg", "three-d-secure.svg", "visa-secure.png"].map((name) => (
-          <span className="payment-logo" key={name}><img src={`/assets/payments/${name}`} alt="" /></span>
+        {paymentLogos.map((logo) => (
+          <span className={`payment-logo ${logo.className}`} key={logo.name}>
+            <img src={`/assets/payments/${logo.name}`} alt={logo.label} />
+          </span>
         ))}
       </div>
     </footer>
@@ -134,7 +151,7 @@ function PaymentForm({ ctx, lang }) {
     event.preventDefault();
     setStatus("");
     const body = Object.fromEntries(new FormData(event.currentTarget).entries());
-    const response = await fetch("/api/payments", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    const response = await apiFetch("/payments", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
       setStatus(payload.error || "Payment could not be created.");
@@ -179,7 +196,7 @@ function PayPage({ ctx, lang }) {
   const [status, setStatus] = useState("");
   async function openPayment() {
     setStatus(t.token);
-    const response = await fetch(`/api/payments/${encodeURIComponent(ctx.order.id)}/payment-object`);
+    const response = await apiFetch(`/payments/${encodeURIComponent(ctx.order.id)}/payment-object`);
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
       setStatus(payload.error || t.error);
@@ -211,7 +228,7 @@ function AdminLogin({ lang }) {
   async function submit(event) {
     event.preventDefault();
     const body = Object.fromEntries(new FormData(event.currentTarget).entries());
-    const response = await fetch("/api/admin/login", { method: "POST", headers: { "content-type": "application/json" }, credentials: "same-origin", body: JSON.stringify(body) });
+    const response = await apiFetch("/admin/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     if (response.ok) window.location.href = "/admin";
     else setStatus(t.login);
   }
@@ -223,7 +240,7 @@ function AdminPage({ lang }) {
   const [data, setData] = useState({ orders: [], invitations: [] });
   const [status, setStatus] = useState("");
   async function load() {
-    const response = await fetch("/api/admin/orders", { credentials: "same-origin" });
+    const response = await apiFetch("/admin/orders");
     if (response.status === 401) { window.location.href = "/admin/login"; return; }
     setData(await response.json());
   }
@@ -231,14 +248,14 @@ function AdminPage({ lang }) {
   async function create(event) {
     event.preventDefault();
     const raw = Object.fromEntries(new FormData(event.currentTarget).entries());
-    const response = await fetch("/api/invitations", { method: "POST", headers: { "content-type": "application/json" }, credentials: "same-origin", body: JSON.stringify({ ...raw, sendEmail: raw.sendEmail === "on" }) });
+    const response = await apiFetch("/invitations", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...raw, sendEmail: raw.sendEmail === "on" }) });
     const payload = await response.json().catch(() => ({}));
     setStatus(response.ok ? payload.link : payload.error);
     if (response.ok) load();
   }
   return (
     <section className="admin-shell">
-      <div className="panel"><h1>{t.title}</h1><button className="secondary-btn" onClick={async () => { await fetch("/api/admin/logout", { method: "POST" }); window.location.href = "/admin/login"; }}>{t.logout}</button></div>
+      <div className="panel"><h1>{t.title}</h1><button className="secondary-btn" onClick={async () => { await apiFetch("/admin/logout", { method: "POST" }); window.location.href = "/admin/login"; }}>{t.logout}</button></div>
       <form className="panel" onSubmit={create}><h2>{t.create}</h2><label>Email<input name="email" type="email" required /></label><label>Full name<input name="fullName" /></label><label>Phone<input name="phone" /></label><label>Article<textarea name="articleTitle" required /></label><label>Lang<select name="lang" defaultValue={lang}><option value="ru">Русский</option><option value="kk">Қазақша</option><option value="en">English</option></select></label><label className="checkline"><input name="sendEmail" type="checkbox" defaultChecked /><span>Email</span></label><button className="primary-btn">{t.create}</button><p className="status-text">{status}</p></form>
       <div className="panel wide"><div className="table-header"><h2>{t.orders}</h2><button className="secondary-btn" onClick={load}>{t.refresh}</button></div><div className="table-wrap"><table><thead><tr><th>Status</th><th>Invoice</th><th>Author</th><th>Article</th><th>Amount</th></tr></thead><tbody>{(data.orders || []).map((order) => <tr key={order.id}><td><span className={`badge badge-${order.status}`}>{order.status}</span></td><td>{order.invoiceId}</td><td>{order.fullName}<br /><small>{order.email}</small></td><td>{order.articleTitle}</td><td>{order.amount} {order.currency}</td></tr>)}</tbody></table></div></div>
     </section>
@@ -257,7 +274,7 @@ function App() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     params.set("path", window.location.pathname);
-    fetch(`/api/public/context?${params.toString()}`, { credentials: "same-origin" })
+    apiFetch(`/public/context?${params.toString()}`)
       .then((response) => response.ok ? response.json() : Promise.reject(new Error("Could not load page")))
       .then(setCtx)
       .catch((err) => setError(err.message));

@@ -15,7 +15,7 @@ export function makeInvoiceId() {
 }
 
 export function postLinkUrl() {
-  const url = new URL(POSTLINK_PATH, config.baseUrl);
+  const url = new URL(POSTLINK_PATH, config.backendUrl);
   if (config.halyk.postLinkSecret) url.searchParams.set('key', config.halyk.postLinkSecret);
   return url.toString();
 }
