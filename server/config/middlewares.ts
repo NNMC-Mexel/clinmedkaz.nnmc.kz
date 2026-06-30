@@ -14,11 +14,11 @@ function corsOrigins(env: Core.Config.Shared.ConfigParams['env']) {
     .filter(Boolean);
 }
 
-const config: Core.Config.Middlewares = [
+const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Middlewares => [
   'strapi::logger',
   'strapi::errors',
   'strapi::security',
-  ({ env }) => ({
+  {
     name: 'strapi::cors',
     config: {
       origin: corsOrigins(env),
@@ -26,7 +26,7 @@ const config: Core.Config.Middlewares = [
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
       headers: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Admin-Token', 'X-Payment-Service-Token'],
     },
-  }),
+  },
   'strapi::poweredBy',
   'strapi::query',
   'strapi::body',
