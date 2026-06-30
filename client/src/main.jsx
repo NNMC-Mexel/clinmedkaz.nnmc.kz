@@ -5,9 +5,29 @@ import "./styles.css";
 const supportedLanguages = ["ru", "kk", "en"];
 const defaultApiBaseUrl = import.meta.env.PROD ? "https://clinmedkazserver.nnmc.kz/api" : "/api";
 const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || defaultApiBaseUrl).replace(/\/$/, "");
+const adminJwtStorageKey = "clinmed_admin_jwt";
+
+function adminJwt() {
+  return sessionStorage.getItem(adminJwtStorageKey) || "";
+}
+
+function setAdminJwt(jwt) {
+  sessionStorage.setItem(adminJwtStorageKey, jwt);
+}
+
+function clearAdminJwt() {
+  sessionStorage.removeItem(adminJwtStorageKey);
+}
+
+function shouldAttachAdminJwt(path) {
+  return path.startsWith("/admin") || path.startsWith("/invitations");
+}
 
 function apiFetch(path, options = {}) {
-  return fetch(`${apiBaseUrl}${path}`, { credentials: "include", ...options });
+  const headers = new Headers(options.headers || {});
+  const token = adminJwt();
+  if (token && shouldAttachAdminJwt(path) && !headers.has("authorization")) headers.set("authorization", `Bearer ${token}`);
+  return fetch(`${apiBaseUrl}${path}`, { credentials: "include", ...options, headers });
 }
 
 const paymentLogos = [
@@ -43,7 +63,7 @@ const i18n = {
     },
     pay: { title: "Открываем Halyk ePay", button: "Открыть форму оплаты", token: "Запрашиваем платежный токен...", error: "Не удалось начать оплату." },
     result: { ok: "Оплата получена", fail: "Оплата не прошла", back: "Вернуться к форме оплаты" },
-    admin: { title: "Администрирование оплат", login: "Вход в админку", username: "Логин", password: "Пароль", signIn: "Войти", logout: "Выйти", create: "Создать ссылку", orders: "Транзакции", refresh: "Обновить" },
+    admin: { title: "Администрирование оплат", login: "Вход в панель управления", loginTitle: "Панель управления оплатами", loginLead: "Авторизуйтесь, чтобы создавать платежные ссылки и просматривать транзакции.", username: "Логин", password: "Пароль", signIn: "Войти", logout: "Выйти", create: "Создать ссылку", createLead: "Заполните данные автора, выберите язык письма и отправьте персональную ссылку на оплату.", orders: "История транзакций", ordersLead: "Отслеживайте статусы оплат, автора и сумму без отвлечения на форму создания ссылки.", refresh: "Обновить", noAccess: "У этой учетной записи нет доступа к управлению оплатами.", sessionExpired: "Сессия истекла. Войдите снова.", invalidCredentials: "Неверный логин или пароль.", loginRequired: "Введите логин и пароль.", authError: "Не удалось выполнить вход. Проверьте данные и повторите попытку.", loadError: "Не удалось загрузить панель управления.", email: "Email", fullName: "ФИО", phone: "Телефон", article: "Статья", lang: "Язык", sendEmail: "Отправить ссылку на Email", createdLink: "Ссылка создана", status: "Статус", invoice: "Инвойс", author: "Автор", amount: "Сумма", createdAt: "Создано", search: "Поиск по автору, email, статье или инвойсу", allStatuses: "Все статусы", emptyOrders: "Транзакций пока нет.", open: "Открыть", transactions: "Транзакции" },
     legal: { service: "Описание услуги", terms: "Публичная оферта", privacy: "Политика конфиденциальности", refunds: "Правила возврата", contacts: "Контакты" },
   },
   kk: {
@@ -69,7 +89,7 @@ const i18n = {
     },
     pay: { title: "Halyk ePay ашылуда", button: "Төлем формасын ашу", token: "Төлем токені сұралуда...", error: "Төлемді бастау мүмкін болмады." },
     result: { ok: "Төлем қабылданды", fail: "Төлем өтпеді", back: "Төлем формасына оралу" },
-    admin: { title: "Төлемдерді басқару", login: "Әкімшіге кіру", username: "Логин", password: "Құпиясөз", signIn: "Кіру", logout: "Шығу", create: "Сілтеме жасау", orders: "Транзакциялар", refresh: "Жаңарту" },
+    admin: { title: "Төлемдерді басқару", login: "Басқару панеліне кіру", loginTitle: "Төлемдерді басқару панелі", loginLead: "Төлем сілтемелерін жасау және транзакцияларды қарау үшін авторизациядан өтіңіз.", username: "Логин", password: "Құпиясөз", signIn: "Кіру", logout: "Шығу", create: "Сілтеме жасау", createLead: "Автор деректерін енгізіп, хат тілін таңдаңыз және жеке төлем сілтемесін жіберіңіз.", orders: "Транзакциялар тарихы", ordersLead: "Төлем мәртебесін, авторды және соманы сілтеме жасау формасынан бөлек бақылаңыз.", refresh: "Жаңарту", noAccess: "Бұл есептік жазбада төлемдерді басқаруға рұқсат жоқ.", sessionExpired: "Сессия мерзімі аяқталды. Қайта кіріңіз.", invalidCredentials: "Логин немесе құпиясөз дұрыс емес.", loginRequired: "Логин мен құпиясөзді енгізіңіз.", authError: "Кіру мүмкін болмады. Деректерді тексеріп, қайталап көріңіз.", loadError: "Басқару панелін жүктеу мүмкін болмады.", email: "Email", fullName: "Т.А.Ә.", phone: "Телефон", article: "Мақала", lang: "Тіл", sendEmail: "Сілтемені Email арқылы жіберу", createdLink: "Сілтеме жасалды", status: "Мәртебе", invoice: "Инвойс", author: "Автор", amount: "Сома", createdAt: "Жасалды", search: "Автор, email, мақала немесе инвойс бойынша іздеу", allStatuses: "Барлық мәртебелер", emptyOrders: "Транзакциялар әлі жоқ.", open: "Ашу", transactions: "Транзакциялар" },
     legal: { service: "Қызмет сипаттамасы", terms: "Жария оферта", privacy: "Құпиялылық саясаты", refunds: "Қайтару ережелері", contacts: "Байланыс" },
   },
   en: {
@@ -95,7 +115,7 @@ const i18n = {
     },
     pay: { title: "Opening Halyk ePay", button: "Open payment form", token: "Requesting payment token...", error: "Could not start payment." },
     result: { ok: "Payment received", fail: "Payment failed", back: "Back to payment form" },
-    admin: { title: "Admin payments", login: "Admin sign in", username: "Username", password: "Password", signIn: "Sign in", logout: "Logout", create: "Create link", orders: "Transactions", refresh: "Refresh" },
+    admin: { title: "Payment administration", login: "Management portal sign in", loginTitle: "Payment management portal", loginLead: "Sign in to create payment links and review transaction history.", username: "Username", password: "Password", signIn: "Sign in", logout: "Logout", create: "Create link", createLead: "Enter author details, choose the email language and send a personal payment link.", orders: "Transaction history", ordersLead: "Track payment status, author and amount separately from the link creation workflow.", refresh: "Refresh", noAccess: "This account does not have access to payment administration.", sessionExpired: "Session expired. Sign in again.", invalidCredentials: "Invalid username or password.", loginRequired: "Enter username and password.", authError: "Could not sign in. Check the details and try again.", loadError: "Could not load the management portal.", email: "Email", fullName: "Full name", phone: "Phone", article: "Article", lang: "Language", sendEmail: "Send link by email", createdLink: "Link created", status: "Status", invoice: "Invoice", author: "Author", amount: "Amount", createdAt: "Created", search: "Search author, email, article or invoice", allStatuses: "All statuses", emptyOrders: "No transactions yet.", open: "Open", transactions: "Transactions" },
     legal: { service: "Service description", terms: "Public offer", privacy: "Privacy policy", refunds: "Refund policy", contacts: "Contacts" },
   },
 };
@@ -104,20 +124,37 @@ function money(amount, currency) {
   return `${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: currency === "KZT" ? 0 : 2 }).format(Number(amount || 0))} ${currency}`;
 }
 
-function langHref(path, lang) {
-  const params = new URLSearchParams(window.location.search);
+function localizedPath(path, lang, search = "") {
+  const params = new URLSearchParams(search);
   params.set("lang", lang);
-  return `${path}?${params.toString()}`;
+  const query = params.toString();
+  return `${path}${query ? `?${query}` : ""}`;
 }
 
-function Nav({ lang }) {
+function formatDate(value) {
+  if (!value) return "-";
+  return new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+}
+
+function Nav({ lang, path, search, onNavigate, onChangeLang }) {
   const t = i18n[lang];
+  const [menuOpen, setMenuOpen] = useState(false);
   const links = ["/", "/service", "/terms", "/privacy", "/refunds", "/contacts"];
+  function go(event, href) {
+    event.preventDefault();
+    setMenuOpen(false);
+    onNavigate(href);
+  }
+  function switchLang(event, nextLang) {
+    event.preventDefault();
+    onChangeLang(nextLang);
+  }
   return (
-    <nav className="top-nav">
-      <a className="brand" href={langHref("/", lang)}><span className="brand-mark">CM</span><span>ClinMedKaz Pay</span></a>
-      <div className="nav-links" id="primary-menu">{links.map((href, index) => <a key={href} href={langHref(href, lang)}>{t.nav[index]}</a>)}</div>
-      <div className="lang-switch">{supportedLanguages.map((item) => <a key={item} className={item === lang ? "active" : ""} href={langHref(window.location.pathname, item)}>{item.toUpperCase()}</a>)}</div>
+    <nav className={`top-nav${menuOpen ? " menu-open" : ""}`}>
+      <a className="brand" href={localizedPath("/", lang)} onClick={(event) => go(event, "/")}><span className="brand-mark">CM</span><span>ClinMedKaz Pay</span></a>
+      <button className="menu-toggle" type="button" aria-controls="primary-menu" aria-expanded={menuOpen} aria-label="Menu" onClick={() => setMenuOpen((value) => !value)}><span /><span /><span /></button>
+      <div className="nav-links" id="primary-menu">{links.map((href, index) => <a key={href} href={localizedPath(href, lang)} onClick={(event) => go(event, href)}>{t.nav[index]}</a>)}</div>
+      <div className="lang-switch">{supportedLanguages.map((item) => <a key={item} className={item === lang ? "active" : ""} href={localizedPath(path, item, search)} onClick={(event) => switchLang(event, item)}>{item.toUpperCase()}</a>)}</div>
     </nav>
   );
 }
@@ -222,42 +259,187 @@ function ResultPage({ ctx, lang, ok }) {
   return <section className="center-panel"><div className={`panel ${ok ? "success" : "danger"}`}><h1>{ok ? t.ok : t.fail}</h1>{ctx.order && <p className="muted">{ctx.order.invoiceId}<br />{ctx.order.articleTitle}</p>}<a className="secondary-btn" href={href}>{t.back}</a></div></section>;
 }
 
-function AdminLogin({ lang }) {
+function AdminLogin({ lang, onNavigate }) {
   const t = i18n[lang].admin;
   const [status, setStatus] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   async function submit(event) {
     event.preventDefault();
     const body = Object.fromEntries(new FormData(event.currentTarget).entries());
-    const response = await apiFetch("/admin/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
-    if (response.ok) window.location.href = "/admin";
-    else setStatus(t.login);
+    if (!String(body.username || "").trim() || !String(body.password || "").trim()) {
+      setStatus(t.loginRequired);
+      return;
+    }
+    setStatus("");
+    setSubmitting(true);
+    try {
+      const response = await apiFetch("/auth/local", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ identifier: body.username, password: body.password }),
+      });
+      if (response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        if (!payload.jwt) {
+          setStatus(t.authError);
+          return;
+        }
+        setAdminJwt(payload.jwt);
+        const session = await apiFetch("/admin/session");
+        if (session.ok) {
+          onNavigate("/admin/create");
+        } else if (session.status === 403) {
+          clearAdminJwt();
+          setStatus(t.noAccess);
+        } else {
+          clearAdminJwt();
+          setStatus(t.sessionExpired);
+        }
+      } else if (response.status === 400 || response.status === 401) {
+        setStatus(t.invalidCredentials);
+      } else {
+        setStatus(t.authError);
+      }
+    } catch {
+      setStatus(t.authError);
+    } finally {
+      setSubmitting(false);
+    }
   }
-  return <section className="center-panel"><form className="panel login-panel" onSubmit={submit}><h1>{t.login}</h1><label>{t.username}<input name="username" required /></label><label>{t.password}<input name="password" type="password" required /></label><button className="primary-btn">{t.signIn}</button><p className="status-text">{status}</p></form></section>;
+  return (
+    <section className="center-panel">
+      <form className="panel login-panel" onSubmit={submit} noValidate>
+        <h1>{t.loginTitle}</h1>
+        <p className="login-lead">{t.loginLead}</p>
+        <label>{t.username}<input name="username" autoComplete="username" disabled={submitting} /></label>
+        <label>{t.password}<input name="password" type="password" autoComplete="current-password" disabled={submitting} /></label>
+        <button className="primary-btn" disabled={submitting}>{t.signIn}</button>
+        {status && <p className="status-text danger-text login-alert" role="alert">{status}</p>}
+      </form>
+    </section>
+  );
 }
 
-function AdminPage({ lang }) {
+function AdminCreatePage({ lang, onCreated }) {
   const t = i18n[lang].admin;
-  const [data, setData] = useState({ orders: [], invitations: [] });
   const [status, setStatus] = useState("");
-  async function load() {
-    const response = await apiFetch("/admin/orders");
-    if (response.status === 401) { window.location.href = "/admin/login"; return; }
-    setData(await response.json());
-  }
-  useEffect(() => { load(); }, []);
+  const [createdLink, setCreatedLink] = useState("");
   async function create(event) {
     event.preventDefault();
+    setStatus("");
+    setCreatedLink("");
     const raw = Object.fromEntries(new FormData(event.currentTarget).entries());
     const response = await apiFetch("/invitations", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...raw, sendEmail: raw.sendEmail === "on" }) });
     const payload = await response.json().catch(() => ({}));
-    setStatus(response.ok ? payload.link : payload.error);
-    if (response.ok) load();
+    if (response.status === 401) { clearAdminJwt(); onCreated("auth"); return; }
+    if (response.ok) {
+      setCreatedLink(payload.link);
+      setStatus(payload.duplicateWarning ? payload.duplicateWarning : t.createdLink);
+      event.currentTarget.reset();
+      onCreated();
+      return;
+    }
+    setStatus(response.status === 403 ? t.noAccess : payload.error || t.loadError);
   }
   return (
+    <form className="panel admin-form" onSubmit={create}>
+      <div className="section-heading"><h2>{t.create}</h2><p>{t.createLead}</p></div>
+      <div className="admin-form-grid">
+        <label>{t.email}<input name="email" type="email" autoComplete="email" required /></label>
+        <label>{t.fullName}<input name="fullName" autoComplete="name" /></label>
+        <label>{t.phone}<input name="phone" autoComplete="tel" /></label>
+        <label>{t.lang}<select name="lang" defaultValue={lang}><option value="ru">Русский</option><option value="kk">Қазақша</option><option value="en">English</option></select></label>
+        <label className="admin-form-wide">{t.article}<textarea name="articleTitle" required /></label>
+      </div>
+      <label className="checkline"><input name="sendEmail" type="checkbox" defaultChecked /><span>{t.sendEmail}</span></label>
+      <div className="form-actions"><button className="primary-btn">{t.create}</button>{createdLink && <a className="secondary-btn" href={createdLink} target="_blank" rel="noreferrer">{t.open}</a>}</div>
+      {createdLink && <p className="created-link"><span>{t.createdLink}</span><a href={createdLink} target="_blank" rel="noreferrer">{createdLink}</a></p>}
+      <p className="status-text">{status}</p>
+    </form>
+  );
+}
+
+function AdminTransactionsPage({ data, status, lang, onRefresh }) {
+  const t = i18n[lang].admin;
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const orders = data.orders || [];
+  const statuses = useMemo(() => Array.from(new Set(orders.map((order) => order.status).filter(Boolean))).sort(), [orders]);
+  const filteredOrders = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return orders.filter((order) => {
+      const matchesStatus = statusFilter === "all" || order.status === statusFilter;
+      const haystack = [order.invoiceId, order.fullName, order.email, order.articleTitle, order.amount, order.currency].join(" ").toLowerCase();
+      return matchesStatus && (!needle || haystack.includes(needle));
+    });
+  }, [orders, query, statusFilter]);
+
+  return (
+    <section className="panel transactions-panel">
+      <div className="table-header">
+        <div className="section-heading"><h2>{t.orders}</h2><p>{t.ordersLead}</p></div>
+        <button className="secondary-btn" type="button" onClick={onRefresh}>{t.refresh}</button>
+      </div>
+      <div className="admin-toolbar">
+        <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.search} />
+        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+          <option value="all">{t.allStatuses}</option>
+          {statuses.map((item) => <option key={item} value={item}>{item}</option>)}
+        </select>
+      </div>
+      {status && <p className="status-text danger-text">{status}</p>}
+      {filteredOrders.length === 0 ? <p className="empty-state">{t.emptyOrders}</p> : (
+        <div className="transaction-list">
+          {filteredOrders.map((order) => (
+            <article className="transaction-card" key={order.id}>
+              <div className="transaction-main">
+                <span className={`badge badge-${order.status}`}>{order.status}</span>
+                <strong>{order.invoiceId || order.id}</strong>
+                <small>{formatDate(order.createdAt)}</small>
+              </div>
+              <div className="transaction-detail"><span>{t.author}</span><strong>{order.fullName || "-"}</strong><small>{order.email}</small></div>
+              <div className="transaction-detail transaction-article"><span>{t.article}</span><strong>{order.articleTitle || "-"}</strong></div>
+              <div className="transaction-detail transaction-amount"><span>{t.amount}</span><strong>{order.amount} {order.currency}</strong></div>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function AdminPage({ lang, path, onNavigate }) {
+  const t = i18n[lang].admin;
+  const [data, setData] = useState({ orders: [], invitations: [] });
+  const [status, setStatus] = useState("");
+  const view = path === "/admin/transactions" ? "transactions" : "create";
+  async function load() {
+    try {
+      const response = await apiFetch("/admin/orders");
+      if (response.status === 401) { clearAdminJwt(); onNavigate("/admin/login"); return; }
+      if (response.status === 403) { setStatus(t.noAccess); return; }
+      if (!response.ok) { setStatus(t.loadError); return; }
+      setStatus("");
+      setData(await response.json());
+    } catch {
+      setStatus(t.loadError);
+    }
+  }
+  useEffect(() => { load(); }, []);
+
+  return (
     <section className="admin-shell">
-      <div className="panel"><h1>{t.title}</h1><button className="secondary-btn" onClick={async () => { await apiFetch("/admin/logout", { method: "POST" }); window.location.href = "/admin/login"; }}>{t.logout}</button></div>
-      <form className="panel" onSubmit={create}><h2>{t.create}</h2><label>Email<input name="email" type="email" required /></label><label>Full name<input name="fullName" /></label><label>Phone<input name="phone" /></label><label>Article<textarea name="articleTitle" required /></label><label>Lang<select name="lang" defaultValue={lang}><option value="ru">Русский</option><option value="kk">Қазақша</option><option value="en">English</option></select></label><label className="checkline"><input name="sendEmail" type="checkbox" defaultChecked /><span>Email</span></label><button className="primary-btn">{t.create}</button><p className="status-text">{status}</p></form>
-      <div className="panel wide"><div className="table-header"><h2>{t.orders}</h2><button className="secondary-btn" onClick={load}>{t.refresh}</button></div><div className="table-wrap"><table><thead><tr><th>Status</th><th>Invoice</th><th>Author</th><th>Article</th><th>Amount</th></tr></thead><tbody>{(data.orders || []).map((order) => <tr key={order.id}><td><span className={`badge badge-${order.status}`}>{order.status}</span></td><td>{order.invoiceId}</td><td>{order.fullName}<br /><small>{order.email}</small></td><td>{order.articleTitle}</td><td>{order.amount} {order.currency}</td></tr>)}</tbody></table></div></div>
+      <header className="admin-header panel">
+        <div><p className="eyebrow">ClinMedKaz Pay</p><h1>{t.title}</h1></div>
+        <button className="secondary-btn" type="button" onClick={() => { clearAdminJwt(); onNavigate("/admin/login"); }}>{t.logout}</button>
+      </header>
+      <nav className="admin-tabs" aria-label="Admin sections">
+        <a className={view === "create" ? "active" : ""} href={localizedPath("/admin/create", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/create"); }}>{t.create}</a>
+        <a className={view === "transactions" ? "active" : ""} href={localizedPath("/admin/transactions", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/transactions"); }}>{t.transactions}</a>
+      </nav>
+      {view === "create"
+        ? <AdminCreatePage lang={lang} onCreated={(reason) => reason === "auth" ? onNavigate("/admin/login") : load()} />
+        : <AdminTransactionsPage data={data} status={status} lang={lang} onRefresh={load} />}
     </section>
   );
 }
@@ -269,20 +451,53 @@ function LegalPage({ ctx, lang, kind }) {
 }
 
 function App() {
+  const [location, setLocation] = useState(() => ({ path: window.location.pathname, search: window.location.search }));
   const [ctx, setCtx] = useState(null);
   const [error, setError] = useState("");
+  const requestedLang = useMemo(() => {
+    const value = new URLSearchParams(location.search).get("lang");
+    return supportedLanguages.includes(value) ? value : "ru";
+  }, [location.search]);
+
+  function navigate(path, options = {}) {
+    const nextLang = options.lang || (supportedLanguages.includes(ctx?.lang) ? ctx.lang : requestedLang);
+    const params = new URLSearchParams(options.preserveSearch ? location.search : "");
+    params.set("lang", nextLang);
+    const search = `?${params.toString()}`;
+    const url = `${path}${search}`;
+    window.history.pushState({}, "", url);
+    setLocation({ path, search });
+  }
+
+  function changeLang(nextLang) {
+    const params = new URLSearchParams(location.search);
+    params.set("lang", nextLang);
+    const search = `?${params.toString()}`;
+    window.history.pushState({}, "", `${location.path}${search}`);
+    setLocation({ path: location.path, search });
+  }
+
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    params.set("path", window.location.pathname);
+    function syncLocation() {
+      setLocation({ path: window.location.pathname, search: window.location.search });
+    }
+    window.addEventListener("popstate", syncLocation);
+    return () => window.removeEventListener("popstate", syncLocation);
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    params.set("path", location.path);
+    setError("");
     apiFetch(`/public/context?${params.toString()}`)
       .then((response) => response.ok ? response.json() : Promise.reject(new Error("Could not load page")))
       .then(setCtx)
       .catch((err) => setError(err.message));
-  }, []);
-  const lang = useMemo(() => supportedLanguages.includes(ctx?.lang) ? ctx.lang : "ru", [ctx]);
+  }, [location]);
+  const lang = useMemo(() => supportedLanguages.includes(ctx?.lang) ? ctx.lang : requestedLang, [ctx, requestedLang]);
   if (error) return <main className="center-panel"><div className="panel danger"><h1>{error}</h1></div></main>;
   if (!ctx) return <main className="center-panel"><div className="panel">Loading...</div></main>;
-  const path = window.location.pathname;
+  const path = location.path;
   let page;
   if (path === "/") page = <PaymentForm ctx={ctx} lang={lang} />;
   else if (path.startsWith("/pay/")) {
@@ -293,10 +508,10 @@ function App() {
   }
   else if (path.startsWith("/payment/success/")) page = <ResultPage ctx={ctx} lang={lang} ok />;
   else if (path.startsWith("/payment/failure/")) page = <ResultPage ctx={ctx} lang={lang} ok={false} />;
-  else if (path === "/admin/login") page = <AdminLogin lang={lang} />;
-  else if (path === "/admin") page = ctx.adminAuthenticated ? <AdminPage lang={lang} /> : <AdminLogin lang={lang} />;
+  else if (path === "/admin/login") page = <AdminLogin lang={lang} onNavigate={navigate} />;
+  else if (path === "/admin" || path === "/admin/create" || path === "/admin/transactions") page = adminJwt() ? <AdminPage lang={lang} path={path} onNavigate={navigate} /> : <AdminLogin lang={lang} onNavigate={navigate} />;
   else page = <LegalPage ctx={ctx} lang={lang} kind={path.slice(1)} />;
-  return <><Nav lang={lang} /><main>{page}</main><Footer ctx={ctx} lang={lang} /></>;
+  return <><Nav lang={lang} path={path} search={location.search} onNavigate={navigate} onChangeLang={changeLang} /><main>{page}</main><Footer ctx={ctx} lang={lang} /></>;
 }
 
 createRoot(document.getElementById("app")).render(<App />);

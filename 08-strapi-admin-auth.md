@@ -1,21 +1,57 @@
 # 08 · Admin Auth
 
-Админская авторизация теперь реализована как custom REST endpoints внутри Strapi:
+Админская авторизация ClinMedKaz Pay использует встроенный Strapi
+Users & Permissions JWT.
 
-- `POST /api/admin/login`
+## Flow
+
+1. Клиентская админка отправляет логин и пароль в стандартный endpoint:
+
+```http
+POST /api/auth/local
+```
+
+2. Strapi возвращает JWT:
+
+```json
+{ "jwt": "...", "user": { "id": 1, "username": "admin" } }
+```
+
+3. React хранит JWT в `sessionStorage` и отправляет его в админские запросы:
+
+```http
+Authorization: Bearer <jwt>
+```
+
+4. Strapi проверяет токен, кладет пользователя в `ctx.state.user`, затем
+проверяет permissions scope маршрута.
+
+## Protected API
+
+Админские маршруты защищены не cookie, а Strapi permissions:
+
 - `GET /api/admin/session`
-- `POST /api/admin/logout`
+- `GET /api/admin/orders`
+- `PATCH /api/admin/orders/:id`
+- `GET /api/admin/orders/export.csv`
+- `POST /api/invitations`
+- `POST /api/invitations/:id/resend`
+- `POST /api/invitations/:id/cancel`
 
-Клиентская админка живет в React-приложении `client/` и ходит в эти REST endpoints.
+В Strapi нужно создать пользователя в Users & Permissions и включить для его
+роли нужные действия:
 
-Сессия хранится в httpOnly cookie `clinmed_admin_session`, подписанной через
-`ADMIN_SESSION_SECRET`.
+- `Admin-api`: `session`, `orders`, `updateOrder`, `exportCsv`
+- `Invitation`: `createPaymentInvitation`, `resend`, `cancel`
+- `Users-permissions`: `auth.callback` должен быть доступен Public role, чтобы
+  работал `POST /api/auth/local`
 
-Fallback-аккаунт задается через `.env`:
+## Production
+
+Для Users & Permissions JWT на production обязателен стабильный `JWT_SECRET`.
+Если Strapi работает за nginx/reverse proxy с HTTPS-терминацией, оставьте:
 
 ```env
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=...
-ADMIN_SESSION_SECRET=...
-ADMIN_TOKEN=...
+STRAPI_PROXY=true
+JWT_SECRET=...
 ```

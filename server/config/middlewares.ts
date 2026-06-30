@@ -8,8 +8,8 @@ const defaultCorsOrigins = [
 ];
 
 function corsOrigins(env: Core.Config.Shared.ConfigParams['env']) {
-  return env
-    .array('CORS_ORIGINS', defaultCorsOrigins)
+  return env('CORS_ORIGINS', defaultCorsOrigins.join(','))
+    .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
 }
@@ -21,7 +21,13 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Middlewar
   {
     name: 'strapi::cors',
     config: {
-      origin: corsOrigins(env),
+      origin: (ctx: any) => {
+        const requestOrigin = ctx.get('Origin');
+        const allowedOrigins = corsOrigins(env);
+        if (!requestOrigin) return allowedOrigins[0] || '*';
+        if (allowedOrigins.includes('*')) return requestOrigin;
+        return allowedOrigins.includes(requestOrigin) ? requestOrigin : '';
+      },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
       headers: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Admin-Token', 'X-Payment-Service-Token'],

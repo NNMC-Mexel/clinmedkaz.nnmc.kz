@@ -40,9 +40,8 @@ REST API, который использует клиент:
 - `POST /api/invitations`
 - `POST /api/invitations/:id/resend`
 - `POST /api/invitations/:id/cancel`
+- `POST /api/auth/local`
 - `GET /api/admin/session`
-- `POST /api/admin/login`
-- `POST /api/admin/logout`
 - `GET /api/admin/orders`
 - `PATCH /api/admin/orders/:id`
 - `GET /api/admin/orders/export.csv`

@@ -1,4 +1,4 @@
-import { adminSession, authenticateAdmin, clearAdminSessionCookie, requireAdmin, setAdminSessionCookie } from '../../../lib/auth';
+import { requireAdmin } from '../../../lib/auth';
 import { refundOutcome, sanitizeOrderPatch } from '../../../lib/domain';
 import { logger } from '../../../lib/logger';
 import { readStore, updateStore } from '../../../lib/store';
@@ -48,30 +48,8 @@ function csvCell(value: unknown) {
 
 export default {
   async session(ctx: any) {
-    const session = adminSession(ctx);
-    if (!session) {
-      ctx.status = 401;
-      ctx.body = { authenticated: false };
-      return;
-    }
-    ctx.body = { authenticated: true, username: session.username, source: session.source || 'env', role: session.role || null };
-  },
-
-  async login(ctx: any) {
-    const matched = await authenticateAdmin(ctx.request.body?.username, ctx.request.body?.password);
-    if (!matched) {
-      ctx.status = 401;
-      ctx.body = { error: 'Invalid username or password' };
-      return;
-    }
-    setAdminSessionCookie(ctx, { username: matched.username, source: matched.source, role: matched.role || null });
-    logger.info('Admin signed in', { username: matched.username, source: matched.source });
-    ctx.body = { authenticated: true, username: matched.username, source: matched.source };
-  },
-
-  async logout(ctx: any) {
-    clearAdminSessionCookie(ctx);
-    ctx.body = { authenticated: false };
+    const user = ctx.state?.user;
+    ctx.body = { authenticated: true, username: user?.username || user?.email || null, id: user?.id || null };
   },
 
   async orders(ctx: any) {

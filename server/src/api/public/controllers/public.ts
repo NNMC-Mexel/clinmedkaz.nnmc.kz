@@ -1,6 +1,5 @@
 import { publicConfig } from '../../../lib/config';
 import { cleanText, normalizeLanguage, SUPPORTED_LANGUAGES } from '../../../lib/domain';
-import { adminSession } from '../../../lib/auth';
 import { readStore } from '../../../lib/store';
 
 function invitationSummary(invitation: Record<string, any> | null) {
@@ -54,7 +53,6 @@ export default {
       config: publicConfig(),
       invitation: invitationSummary(invitation || null),
       order: publicOrderSummary(order || null),
-      adminAuthenticated: Boolean(adminSession(ctx)),
     };
   },
 };

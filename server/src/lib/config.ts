@@ -17,38 +17,10 @@ function env(name: string, fallback = '') {
   return value === undefined || value === '' ? fallback : value;
 }
 
-function parseAdminUsers(raw: string | undefined) {
-  return String(raw || '')
-    .split(',')
-    .map((pair) => pair.trim())
-    .filter(Boolean)
-    .map((pair) => {
-      const i = pair.indexOf(':');
-      if (i === -1) return null;
-      return { username: pair.slice(0, i).trim(), password: pair.slice(i + 1) };
-    })
-    .filter((account) => account?.username && account?.password) as { username: string; password: string }[];
-}
-
-function buildAdminAccounts() {
-  const accounts: { username: string; password: string }[] = [];
-  const primaryUser = env('ADMIN_USERNAME', 'admin');
-  const primaryPass = env('ADMIN_PASSWORD');
-  if (primaryUser && primaryPass) accounts.push({ username: primaryUser, password: primaryPass });
-  for (const extra of parseAdminUsers(process.env.ADMIN_USERS)) {
-    if (!accounts.some((account) => account.username === extra.username)) accounts.push(extra);
-  }
-  return accounts;
-}
-
 export const config = {
   isProduction,
   baseUrl: env('BASE_URL', env('FRONTEND_URL', isProduction ? productionFrontendUrl : 'http://localhost:5173')),
   backendUrl: env('BACKEND_URL', env('STRAPI_URL', isProduction ? productionBackendUrl : `http://localhost:${process.env.PORT || 1337}`)),
-  adminToken: env('ADMIN_TOKEN'),
-  adminAccounts: buildAdminAccounts(),
-  adminSessionSecret: env('ADMIN_SESSION_SECRET') || env('ADMIN_TOKEN') || env('APP_KEYS'),
-  adminSessionTtlMs: Number(process.env.ADMIN_SESSION_TTL_HOURS || 12) * 60 * 60 * 1000,
   adminEmail: env('ADMIN_EMAIL', 'Nnmc.marketing@gmail.com'),
   publicationFeeDisplay: env('PUBLICATION_FEE_DISPLAY', '300 USD'),
   pricing: {
