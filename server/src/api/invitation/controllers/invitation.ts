@@ -15,7 +15,7 @@ function nowIso() {
 }
 
 function invitationLink(invitation: Record<string, any>) {
-  const url = new URL('/', config.baseUrl);
+  const url = new URL('/payment', config.baseUrl);
   url.searchParams.set('invite', invitation.id);
   url.searchParams.set('lang', invitation.lang || 'ru');
   return url.toString();

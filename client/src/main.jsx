@@ -44,6 +44,7 @@ const paymentLogos = [
 const i18n = {
   ru: {
     nav: ["Главная", "О журнале", "Публикация", "Стоимость", "Контакты"],
+    navPayment: "Оплатить статью",
     payment: {
       title: "Оплата публикации статьи",
       eyebrow: "Научная публикация ClinMedKaz",
@@ -70,6 +71,7 @@ const i18n = {
   },
   kk: {
     nav: ["Басты бет", "Журнал туралы", "Жариялау", "Құны", "Байланыс"],
+    navPayment: "Мақаланы төлеу",
     payment: {
       title: "Мақаланы жариялау ақысын төлеу",
       eyebrow: "ClinMedKaz ғылыми жарияланымы",
@@ -96,6 +98,7 @@ const i18n = {
   },
   en: {
     nav: ["Home", "About", "Publish", "Pricing", "Contacts"],
+    navPayment: "Pay for article",
     payment: {
       title: "Article publication payment",
       eyebrow: "ClinMedKaz scientific publication",
@@ -158,10 +161,15 @@ function Nav({ lang, path, search, onNavigate, onChangeLang }) {
   }
   return (
     <nav className={`top-nav${menuOpen ? " menu-open" : ""}`}>
-      <a className="brand" href={localizedPath("/", lang)} onClick={(event) => go(event, "/", "")}><span className="brand-mark">CM</span><span>ClinMedKaz</span></a>
-      <button className="menu-toggle" type="button" aria-controls="primary-menu" aria-expanded={menuOpen} aria-label="Menu" onClick={() => setMenuOpen((value) => !value)}><span /><span /><span /></button>
-      <div className="nav-links" id="primary-menu">{links.map(([base, hash], index) => <a key={index} href={localizedPath(base, lang)} onClick={(event) => go(event, base, hash)}>{t.nav[index]}</a>)}</div>
-      <div className="lang-switch">{supportedLanguages.map((item) => <a key={item} className={item === lang ? "active" : ""} href={localizedPath(path, item, search)} onClick={(event) => switchLang(event, item)}>{item.toUpperCase()}</a>)}</div>
+      <div className="top-nav-inner">
+        <a className="brand" href={localizedPath("/", lang)} onClick={(event) => go(event, "/", "")}><span className="brand-mark">CM</span><span>ClinMedKaz</span></a>
+        <button className="menu-toggle" type="button" aria-controls="primary-menu" aria-expanded={menuOpen} aria-label="Menu" onClick={() => setMenuOpen((value) => !value)}><span /><span /><span /></button>
+        <div className="nav-links" id="primary-menu">
+          {links.map(([base, hash], index) => <a key={index} href={localizedPath(base, lang)} onClick={(event) => go(event, base, hash)}>{t.nav[index]}</a>)}
+          <a className="nav-pay-link" href={localizedPath("/payment", lang)} onClick={(event) => go(event, "/payment", "")}>{t.navPayment}</a>
+        </div>
+        <div className="lang-switch">{supportedLanguages.map((item) => <a key={item} className={item === lang ? "active" : ""} href={localizedPath(path, item, search)} onClick={(event) => switchLang(event, item)}>{item.toUpperCase()}</a>)}</div>
+      </div>
     </nav>
   );
 }
@@ -200,6 +208,7 @@ function Footer({ ctx, lang, onNavigate }) {
 function Landing({ ctx, lang, onNavigate }) {
   const c = getLandingContent(lang, ctx.config);
   const mailto = c.cta.email ? `mailto:${c.cta.email}?subject=${encodeURIComponent(c.cta.subject)}` : "#contact";
+  const paymentHref = localizedPath("/payment", lang);
   return (
     <div className="landing">
       <section className="landing-hero">
@@ -209,7 +218,7 @@ function Landing({ ctx, lang, onNavigate }) {
             <h1>{c.hero.title} <span className="accent">{c.hero.titleAccent}</span></h1>
             <p className="hero-lead">{c.hero.lead}</p>
             <div className="hero-actions">
-              <a className="primary-btn" href={mailto}>{c.hero.primaryCta} <span aria-hidden="true">→</span></a>
+              <a className="primary-btn" href={paymentHref} onClick={(event) => { event.preventDefault(); onNavigate("/payment"); }}>{c.hero.primaryCta} <span aria-hidden="true">→</span></a>
               <a className="ghost-btn" href={"#about"} onClick={(event) => { event.preventDefault(); document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }); }}>{c.hero.secondaryCta}</a>
             </div>
             <div className="hero-stats">
@@ -230,7 +239,7 @@ function Landing({ ctx, lang, onNavigate }) {
                 <li key={f.title}><span className="feat-check">✓</span><div><strong>{f.title}</strong><p>{f.text}</p></div></li>
               ))}
             </ul>
-            <a className="primary-btn hero-card-btn" href={mailto}>{c.hero.card.cta}</a>
+            <a className="primary-btn hero-card-btn" href={paymentHref} onClick={(event) => { event.preventDefault(); onNavigate("/payment"); }}>{c.hero.card.cta}</a>
           </aside>
         </div>
         <a className="hero-scroll" href={"#about"} onClick={(event) => { event.preventDefault(); document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }); }}>
@@ -244,6 +253,10 @@ function Landing({ ctx, lang, onNavigate }) {
           <div>
             <h2>{c.about.title}</h2>
             {c.about.paragraphs.map((p, i) => <p key={i} className="landing-text">{p}</p>)}
+            <div className="official-links">
+              <a href="https://www.clinmedkaz.org/" target="_blank" rel="noreferrer">{c.officialLinks.journal}</a>
+              <a href="https://www.editorialpark.com/jcmk" target="_blank" rel="noreferrer">{c.officialLinks.submission}</a>
+            </div>
           </div>
           <div className="landing-scope">
             <h3>{c.about.scopeTitle}</h3>
@@ -637,6 +650,7 @@ function App() {
   const path = location.path;
   let page;
   if (path === "/") page = ctx.invitation ? <PaymentForm ctx={ctx} lang={lang} /> : <Landing ctx={ctx} lang={lang} onNavigate={navigate} />;
+  else if (path === "/payment") page = <PaymentForm ctx={ctx} lang={lang} />;
   else if (path.startsWith("/pay/")) {
     const closedStatuses = ["failed", "postlink_rejected", "cancelled", "refunded"];
     if (!ctx.order || closedStatuses.includes(ctx.order.status)) page = <ResultPage ctx={ctx} lang={lang} ok={false} />;

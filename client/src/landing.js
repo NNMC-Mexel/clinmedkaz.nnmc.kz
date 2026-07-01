@@ -1,5 +1,5 @@
-// Marketing landing content for the ClinMedKaz online scientific medical journal
-// (published by NNMC, indexed in Scopus Q3). Trilingual RU / KK / EN.
+// Payment landing content for the ClinMedKaz online scientific medical journal
+// (published by NNMC, indexed in Scopus Q3). UI copy is trilingual RU / KK / EN.
 // Requisites and the publication fee come from the public config (single source of truth).
 
 export function getLandingContent(lang, config) {
@@ -11,37 +11,41 @@ export function getLandingContent(lang, config) {
   const ru = {
     hero: {
       pill: "Рецензируемый научный медицинский журнал",
-      title: "Публикуйте исследования в журнале",
+      title: "Оплата публикации в журнале",
       titleAccent: "ClinMedKaz",
-      lead: "Международный рецензируемый журнал Национального научного медицинского центра (ННМЦ). Оригинальные исследования, клинические наблюдения и обзоры по медицине. Индексация в Scopus — квартиль Q3.",
-      primaryCta: "Подать статью",
+      lead: "Платформа безопасной оплаты для авторов Journal of Clinical Medicine of Kazakhstan. Оплата доступна только по персональной ссылке после решения редакции.",
+      primaryCta: "Оплатить статью",
       secondaryCta: "О журнале",
       scroll: "Узнать больше",
       card: {
-        title: "Публикация статьи",
-        subtitle: "Международный научный журнал",
+        title: "Journal of Clinical Medicine of Kazakhstan",
+        subtitle: "Online ISSN 2313-1519 · Print ISSN 1812-2892",
         features: [
-          { title: "Индексация в Scopus", text: "Квартиль Q3, международная база цитирования" },
-          { title: "Рецензирование и DOI", text: "Двойное слепое рецензирование, DOI каждой статье" },
-          { title: "Открытый доступ", text: "Полные тексты доступны читателям бесплатно" },
+          { title: "Индексация", text: "Scopus, DOAJ, CrossRef, Google Scholar, Index Copernicus" },
+          { title: "Периодичность", text: "6 выпусков в год: февраль, апрель, июнь, август, октябрь, декабрь" },
+          { title: "Подача рукописей", text: "Основная подача выполняется через официальный EditorialPark" },
         ],
-        cta: "Подать статью",
+        cta: "Оплатить статью",
       },
     },
     stats: [
-      { value: "Q3", label: "Квартиль в Scopus" },
+      { value: "ISSN", label: "Online 2313-1519 · Print 1812-2892" },
       { value: "Scopus", label: "Международная индексация" },
-      { value: "3", label: "Языка публикации: KZ · RU · EN" },
+      { value: "6", label: "Выпусков в год, публикации на английском" },
       { value: fee, label: "Стоимость публикации статьи" },
     ],
     about: {
       title: "О журнале",
       paragraphs: [
-        `${b.name} издаёт научный журнал ClinMedKaz — площадку для публикации результатов клинических и экспериментальных исследований в области медицины и здравоохранения.`,
-        "Журнал придерживается принципов научной этики (COPE), двойного слепого рецензирования и открытого доступа: полные тексты статей доступны читателям по всему миру бесплатно.",
+        `${b.name} является владельцем и издателем Journal of Clinical Medicine of Kazakhstan — международного рецензируемого медицинского журнала в области трансляционной и клинической медицины.`,
+        "Основной сайт журнала: clinmedkaz.org. Подача рукописей выполняется через EditorialPark; эта платформа предназначена для оплаты по персональной ссылке администратора.",
       ],
-      scopeTitle: "Тематика",
-      scope: ["Клиническая медицина", "Хирургия и трансплантология", "Кардиология и онкология", "Общественное здоровье", "Экспериментальная и трансляционная медицина"],
+      scopeTitle: "Официальные данные",
+      scope: ["Online ISSN: 2313-1519", "Print ISSN: 1812-2892", "Индексация: Scopus, DOAJ, CrossRef, Google Scholar", "Периодичность: 6 выпусков в год", "Основной язык публикации: английский"],
+    },
+    officialLinks: {
+      journal: "Основной сайт журнала",
+      submission: "Подача через EditorialPark",
     },
     benefits: {
       title: "Почему авторы выбирают ClinMedKaz",
@@ -49,7 +53,7 @@ export function getLandingContent(lang, config) {
         { title: "Индексация в Scopus (Q3)", text: "Ваша статья попадает в международную базу цитирования и учитывается в наукометрических показателях." },
         { title: "Честное рецензирование", text: "Двойное слепое рецензирование профильными экспертами и объективная оценка научной новизны." },
         { title: "DOI и открытый доступ", text: "Каждой статье присваивается DOI, публикация доступна читателям без платного барьера." },
-        { title: "Три языка", text: "Принимаем рукописи на казахском, русском и английском языках." },
+        { title: "Английский формат", text: "С 2020 года регулярные выпуски журнала публикуются на английском языке." },
         { title: "Прозрачные сроки", text: "Понятный процесс от подачи до публикации с обратной связью на каждом этапе." },
         { title: "Поддержка авторов", text: "Редакция сопровождает автора по вопросам оформления, оплаты и публикации." },
       ],
@@ -82,37 +86,41 @@ export function getLandingContent(lang, config) {
   const kk = {
     hero: {
       pill: "Рецензияланатын ғылыми медициналық журнал",
-      title: "Ғылыми зерттеулерді жариялаңыз —",
+      title: "Мақаланы жариялау ақысын төлеу —",
       titleAccent: "ClinMedKaz",
-      lead: "Ұлттық ғылыми медициналық орталықтың (ҰҒМО) халықаралық рецензияланатын журналы. Медицина бойынша түпнұсқа зерттеулер, клиникалық бақылаулар мен шолулар. Scopus-та индекстеу — Q3 квартилі.",
-      primaryCta: "Мақала жіберу",
+      lead: "Journal of Clinical Medicine of Kazakhstan авторларына арналған қауіпсіз төлем платформасы. Төлем редакция шешімінен кейін жеке сілтеме арқылы ғана қолжетімді.",
+      primaryCta: "Мақаланы төлеу",
       secondaryCta: "Журнал туралы",
       scroll: "Толығырақ",
       card: {
-        title: "Мақаланы жариялау",
-        subtitle: "Халықаралық ғылыми журнал",
+        title: "Journal of Clinical Medicine of Kazakhstan",
+        subtitle: "Online ISSN 2313-1519 · Print ISSN 1812-2892",
         features: [
-          { title: "Scopus-та индекстеу", text: "Q3 квартилі, халықаралық дәйексөз базасы" },
-          { title: "Рецензиялау және DOI", text: "Қос жасырын рецензиялау, әр мақалаға DOI" },
-          { title: "Ашық қолжетімділік", text: "Толық мәтіндер оқырмандарға тегін қолжетімді" },
+          { title: "Индекстеу", text: "Scopus, DOAJ, CrossRef, Google Scholar, Index Copernicus" },
+          { title: "Жиілігі", text: "Жылына 6 шығарылым: ақпан, сәуір, маусым, тамыз, қазан, желтоқсан" },
+          { title: "Қолжазба жіберу", text: "Негізгі жіберу ресми EditorialPark арқылы орындалады" },
         ],
-        cta: "Мақала жіберу",
+        cta: "Мақаланы төлеу",
       },
     },
     stats: [
-      { value: "Q3", label: "Scopus квартилі" },
+      { value: "ISSN", label: "Online 2313-1519 · Print 1812-2892" },
       { value: "Scopus", label: "Халықаралық индекстеу" },
-      { value: "3", label: "Жариялау тілі: KZ · RU · EN" },
+      { value: "6", label: "Жылына шығарылым, жарияланым тілі ағылшын" },
       { value: fee, label: "Мақаланы жариялау құны" },
     ],
     about: {
       title: "Журнал туралы",
       paragraphs: [
-        `${b.name} ClinMedKaz ғылыми журналын шығарады — медицина және денсаулық сақтау саласындағы клиникалық және эксперименттік зерттеу нәтижелерін жариялау алаңы.`,
-        "Журнал ғылыми этика (COPE) қағидаттарын, қос жасырын рецензиялауды және ашық қолжетімділікті ұстанады: мақалалардың толық мәтіні әлем оқырмандарына тегін қолжетімді.",
+        `${b.name} Journal of Clinical Medicine of Kazakhstan журналының иесі және баспагері болып табылады. Бұл трансляциялық және клиникалық медицина саласындағы халықаралық рецензияланатын медициналық журнал.`,
+        "Журналдың негізгі сайты: clinmedkaz.org. Қолжазбалар EditorialPark арқылы жіберіледі; бұл платформа әкімші жіберген жеке сілтеме бойынша төлем жасауға арналған.",
       ],
-      scopeTitle: "Тақырыптама",
-      scope: ["Клиникалық медицина", "Хирургия және трансплантология", "Кардиология және онкология", "Қоғамдық денсаулық", "Эксперименттік және трансляциялық медицина"],
+      scopeTitle: "Ресми деректер",
+      scope: ["Online ISSN: 2313-1519", "Print ISSN: 1812-2892", "Индекстеу: Scopus, DOAJ, CrossRef, Google Scholar", "Жиілігі: жылына 6 шығарылым", "Негізгі жарияланым тілі: ағылшын"],
+    },
+    officialLinks: {
+      journal: "Журналдың негізгі сайты",
+      submission: "EditorialPark арқылы жіберу",
     },
     benefits: {
       title: "Авторлар ClinMedKaz-ты неге таңдайды",
@@ -120,7 +128,7 @@ export function getLandingContent(lang, config) {
         { title: "Scopus-та индекстеу (Q3)", text: "Мақалаңыз халықаралық дәйексөз базасына түсіп, наукометриялық көрсеткіштерде ескеріледі." },
         { title: "Әділ рецензиялау", text: "Бейінді сарапшылардың қос жасырын рецензиясы және ғылыми жаңалықты объективті бағалау." },
         { title: "DOI және ашық қолжетімділік", text: "Әр мақалаға DOI беріледі, жарияланым оқырмандарға ақысыз қолжетімді." },
-        { title: "Үш тіл", text: "Қолжазбаларды қазақ, орыс және ағылшын тілдерінде қабылдаймыз." },
+        { title: "Ағылшын форматы", text: "2020 жылдан бастап журналдың тұрақты шығарылымдары ағылшын тілінде жарияланады." },
         { title: "Айқын мерзімдер", text: "Берілуден жариялауға дейінгі түсінікті процесс, әр кезеңде кері байланыс." },
         { title: "Авторларға қолдау", text: "Редакция авторды рәсімдеу, төлем және жариялау мәселелері бойынша сүйемелдейді." },
       ],
@@ -153,37 +161,41 @@ export function getLandingContent(lang, config) {
   const en = {
     hero: {
       pill: "Peer-reviewed scientific medical journal",
-      title: "Publish your research in",
+      title: "Article publication payment for",
       titleAccent: "ClinMedKaz",
-      lead: "An international peer-reviewed journal of the National Scientific Medical Center (NNMC). Original research, clinical cases and reviews in medicine. Indexed in Scopus — Q3 quartile.",
-      primaryCta: "Submit an article",
+      lead: "A secure payment platform for authors of the Journal of Clinical Medicine of Kazakhstan. Payment is available only through a personal link after editorial approval.",
+      primaryCta: "Pay for article",
       secondaryCta: "About the journal",
       scroll: "Learn more",
       card: {
-        title: "Article publication",
-        subtitle: "International scientific journal",
+        title: "Journal of Clinical Medicine of Kazakhstan",
+        subtitle: "Online ISSN 2313-1519 · Print ISSN 1812-2892",
         features: [
-          { title: "Indexed in Scopus", text: "Q3 quartile, international citation database" },
-          { title: "Peer review & DOI", text: "Double-blind review, a DOI for every article" },
-          { title: "Open access", text: "Full texts available to readers free of charge" },
+          { title: "Indexing", text: "Scopus, DOAJ, CrossRef, Google Scholar, Index Copernicus" },
+          { title: "Publication schedule", text: "6 issues per year: February, April, June, August, October and December" },
+          { title: "Submission", text: "Manuscripts are submitted through the official EditorialPark system" },
         ],
-        cta: "Submit an article",
+        cta: "Pay for article",
       },
     },
     stats: [
-      { value: "Q3", label: "Scopus quartile" },
+      { value: "ISSN", label: "Online 2313-1519 · Print 1812-2892" },
       { value: "Scopus", label: "International indexing" },
-      { value: "3", label: "Languages: KZ · RU · EN" },
+      { value: "6", label: "Issues per year, English publications" },
       { value: fee, label: "Article publication fee" },
     ],
     about: {
       title: "About the journal",
       paragraphs: [
-        `${b.name} publishes the ClinMedKaz scientific journal — a venue for clinical and experimental research in medicine and public health.`,
-        "The journal follows research-ethics principles (COPE), double-blind peer review and open access: full texts are available to readers worldwide free of charge.",
+        `${b.name} is the owner and publisher of the Journal of Clinical Medicine of Kazakhstan, an international peer-reviewed medical journal in translational and clinical medicine.`,
+        "The main journal website is clinmedkaz.org. Manuscripts are submitted through EditorialPark; this platform is intended for payment by a personal administrator link.",
       ],
-      scopeTitle: "Scope",
-      scope: ["Clinical medicine", "Surgery and transplantology", "Cardiology and oncology", "Public health", "Experimental and translational medicine"],
+      scopeTitle: "Official details",
+      scope: ["Online ISSN: 2313-1519", "Print ISSN: 1812-2892", "Indexing: Scopus, DOAJ, CrossRef, Google Scholar", "Schedule: 6 issues per year", "Primary publication language: English"],
+    },
+    officialLinks: {
+      journal: "Official journal website",
+      submission: "Submit via EditorialPark",
     },
     benefits: {
       title: "Why authors choose ClinMedKaz",
@@ -191,7 +203,7 @@ export function getLandingContent(lang, config) {
         { title: "Indexed in Scopus (Q3)", text: "Your article enters the international citation database and counts toward scientometric metrics." },
         { title: "Fair peer review", text: "Double-blind review by subject experts and an objective assessment of scientific novelty." },
         { title: "DOI and open access", text: "Every article receives a DOI and is available to readers with no paywall." },
-        { title: "Three languages", text: "We accept manuscripts in Kazakh, Russian and English." },
+        { title: "English format", text: "Since 2020, regular journal issues have been published in English." },
         { title: "Transparent timelines", text: "A clear process from submission to publication with feedback at every stage." },
         { title: "Author support", text: "The editorial office guides authors on formatting, payment and publication." },
       ],

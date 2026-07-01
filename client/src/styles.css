@@ -12,6 +12,7 @@
   --danger: #ab2d2d;
   --success: #14703f;
   --shadow: 0 18px 45px rgba(19, 26, 43, 0.08);
+  --page-max: 1440px;
 }
 
 * {
@@ -38,18 +39,24 @@ main {
 }
 
 .top-nav {
-  align-items: center;
   backdrop-filter: blur(18px);
   background: rgba(255, 255, 255, 0.92);
   border-bottom: 1px solid var(--line);
-  display: grid;
-  gap: 16px;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  min-height: 76px;
-  padding: 0 clamp(24px, 6vw, 88px);
   position: sticky;
   top: 0;
   z-index: 20;
+}
+
+.top-nav-inner {
+  align-items: center;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  margin: 0 auto;
+  max-width: var(--page-max);
+  min-height: 76px;
+  padding: 0 clamp(24px, 6vw, 88px);
+  width: 100%;
 }
 
 .brand {
@@ -95,6 +102,18 @@ main {
 .nav-links a:hover {
   background: #eef3f8;
   color: var(--ink);
+}
+
+.nav-links a.nav-pay-link {
+  background: var(--accent);
+  color: #fff;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+.nav-links a.nav-pay-link:hover {
+  background: var(--accent-dark);
+  color: #fff;
 }
 
 .menu-toggle {
@@ -166,7 +185,9 @@ main {
   display: grid;
   gap: 28px;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  margin: 0 auto;
   padding: clamp(34px, 6vw, 72px) clamp(24px, 6vw, 88px) 28px;
+  width: min(100%, var(--page-max));
 }
 
 .hero h1,
@@ -247,7 +268,9 @@ main {
   display: grid;
   gap: 24px;
   grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  margin: 0 auto;
   padding: 0 clamp(24px, 6vw, 88px) 64px;
+  width: min(100%, var(--page-max));
 }
 
 .panel {
@@ -832,6 +855,9 @@ th {
   display: flex;
   gap: 24px;
   justify-content: space-between;
+  margin: 0 auto;
+  max-width: var(--page-max);
+  width: 100%;
 }
 
 .site-footer a {
@@ -843,7 +869,10 @@ th {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 24px;
+  margin: 0 auto;
+  max-width: var(--page-max);
   padding-top: 18px;
+  width: 100%;
 }
 
 .footer-legal a {
@@ -860,6 +889,9 @@ th {
 .footer-copy {
   color: #8b97ad;
   font-size: 0.82rem;
+  margin: 0 auto;
+  max-width: var(--page-max);
+  width: 100%;
 }
 
 .payment-mark {
@@ -926,7 +958,7 @@ th {
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  .top-nav {
+  .top-nav-inner {
     align-items: center;
     gap: 10px 12px;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -1376,6 +1408,8 @@ th {
   display: grid;
   gap: clamp(28px, 4vw, 56px);
   grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.85fr);
+  margin: 0 auto;
+  max-width: var(--page-max);
   min-height: 520px;
 }
 
@@ -1426,6 +1460,19 @@ th {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.45);
   color: #fff;
+}
+
+.hero-actions .primary-btn {
+  background: #ffffff;
+  border-color: #ffffff;
+  box-shadow: 0 16px 34px rgba(6, 58, 50, 0.22);
+  color: var(--accent-dark);
+}
+
+.hero-actions .primary-btn:hover {
+  background: #eefaf6;
+  border-color: #eefaf6;
+  color: var(--accent-dark);
 }
 
 .hero-actions .ghost-btn:hover {
@@ -1581,6 +1628,12 @@ th {
   padding: clamp(36px, 5vw, 64px) clamp(24px, 6vw, 88px);
 }
 
+.landing-section > * {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: var(--page-max);
+}
+
 .landing-section.band {
   background: var(--band);
 }
@@ -1593,6 +1646,28 @@ th {
 .landing-text {
   color: var(--ink);
   max-width: 68ch;
+}
+
+.official-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.official-links a {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--accent-dark);
+  font-size: 14px;
+  font-weight: 760;
+  padding: 10px 14px;
+  text-decoration: none;
+}
+
+.official-links a:hover {
+  border-color: var(--accent);
 }
 
 .landing-about {
@@ -1735,10 +1810,11 @@ th {
 .landing-cta {
   background: linear-gradient(155deg, #172033 0%, #0f1830 100%);
   color: #fff;
-  margin: clamp(24px, 4vw, 48px) clamp(24px, 6vw, 88px) clamp(40px, 5vw, 72px);
+  margin: clamp(24px, 4vw, 48px) auto clamp(40px, 5vw, 72px);
   border-radius: 24px;
   padding: clamp(36px, 5vw, 64px);
   text-align: center;
+  width: min(calc(100% - 48px), var(--page-max));
 }
 
 .landing-cta h2 {

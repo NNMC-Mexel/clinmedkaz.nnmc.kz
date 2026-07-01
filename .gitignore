@@ -9,5 +9,6 @@ server/.strapi/
 server/.strapi-updater.json
 server/.cache/
 server/exports/
+data/
 .env
 *.log
