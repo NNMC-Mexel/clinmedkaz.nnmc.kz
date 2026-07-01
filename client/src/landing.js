@@ -7,6 +7,19 @@ export function getLandingContent(lang, config) {
   const fee = config.publicationFeeDisplay || "300 USD";
   const email = b.supportEmail || "";
   const phone = b.supportPhone || "";
+  const streetAddress = b.actualAddress || b.legalAddress || "пр. Абылай хана, 42";
+  const addressRu = `Республика Казахстан, г. Астана, ${streetAddress}`;
+  const addressKk = `Қазақстан Республикасы, Астана қ., ${streetAddress}`;
+  const addressEn = `Republic of Kazakhstan, Astana, ${streetAddress}`;
+  const workHoursRu = "Пн-Пт: 09:00-18:00";
+  const workHoursKk = "Дс-Жм: 09:00-18:00";
+  const workHoursEn = b.workHours || "Mon-Fri 09:00-18:00";
+  const mapUrl = "https://2gis.kz/astana/search/%D0%BD%D0%BD%D0%BC%D1%86/firm/70000001018106739/71.495078%2C51.149008?m=71.443112%2C51.130396%2F11";
+  const mapWidgetSrc = `https://widgets.2gis.com/widget?type=firmsonmap&options=${encodeURIComponent(JSON.stringify({
+    pos: { lat: 51.149008, lon: 71.495078, zoom: 16 },
+    opt: { city: "astana" },
+    org: "70000001018106739",
+  }))}`;
 
   const ru = {
     hero: {
@@ -80,6 +93,28 @@ export function getLandingContent(lang, config) {
       subject: "Подача статьи в ClinMedKaz",
       email,
       phone,
+    },
+    contact: {
+      title: "Контакты",
+      cards: [
+        { type: "phone", title: "Телефон", meta: workHoursRu, value: phone },
+        { type: "mail", title: "Электронная почта", meta: "Ответим по вопросам оплаты и публикации", value: email },
+        { type: "pin", title: "Адрес", meta: "АО «Национальный научный медицинский центр»", value: addressRu },
+      ],
+      map: {
+        title: "Национальный научный медицинский центр",
+        address: addressRu,
+        rating: "4,1",
+        action: "Открыть в 2GIS",
+        url: mapUrl,
+        widgetSrc: `${mapWidgetSrc}&lang=ru`,
+      },
+      quick: {
+        title: "Нужна помощь с оплатой?",
+        text: "Напишите в редакцию или откройте адрес в 2GIS, если нужно уточнить маршрут и контакты центра.",
+        items: ["Персональные ссылки на оплату", "Вопросы по публикации", "Маршрут до центра в 2GIS"],
+        button: "Написать в редакцию",
+      },
     },
   };
 
@@ -156,6 +191,28 @@ export function getLandingContent(lang, config) {
       email,
       phone,
     },
+    contact: {
+      title: "Байланыс",
+      cards: [
+        { type: "phone", title: "Телефон", meta: workHoursKk, value: phone },
+        { type: "mail", title: "Электрондық пошта", meta: "Төлем және жариялау сұрақтарына жауап береміз", value: email },
+        { type: "pin", title: "Мекенжай", meta: "«Ұлттық ғылыми медициналық орталық» АҚ", value: addressKk },
+      ],
+      map: {
+        title: "Ұлттық ғылыми медициналық орталық",
+        address: addressKk,
+        rating: "4,1",
+        action: "2GIS-те ашу",
+        url: mapUrl,
+        widgetSrc: `${mapWidgetSrc}&lang=ru`,
+      },
+      quick: {
+        title: "Төлем бойынша көмек керек пе?",
+        text: "Редакцияға жазыңыз немесе орталыққа жету бағыты мен байланыстарын нақтылау үшін 2GIS-ті ашыңыз.",
+        items: ["Жеке төлем сілтемелері", "Жариялау бойынша сұрақтар", "2GIS-тегі орталық бағыты"],
+        button: "Редакцияға жазу",
+      },
+    },
   };
 
   const en = {
@@ -230,6 +287,28 @@ export function getLandingContent(lang, config) {
       subject: "Article submission to ClinMedKaz",
       email,
       phone,
+    },
+    contact: {
+      title: "Contacts",
+      cards: [
+        { type: "phone", title: "Phone", meta: workHoursEn, value: phone },
+        { type: "mail", title: "Email", meta: "We answer payment and publication questions", value: email },
+        { type: "pin", title: "Address", meta: "National Scientific Medical Center JSC", value: addressEn },
+      ],
+      map: {
+        title: "National Scientific Medical Center",
+        address: addressEn,
+        rating: "4.1",
+        action: "Open in 2GIS",
+        url: mapUrl,
+        widgetSrc: `${mapWidgetSrc}&lang=en`,
+      },
+      quick: {
+        title: "Need help with payment?",
+        text: "Email the editorial office or open the address in 2GIS if you need directions and center contacts.",
+        items: ["Personal payment links", "Publication questions", "Route to the center in 2GIS"],
+        button: "Email the editorial office",
+      },
     },
   };
 

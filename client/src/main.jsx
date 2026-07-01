@@ -205,10 +205,42 @@ function Footer({ ctx, lang, onNavigate }) {
   );
 }
 
+function ContactIcon({ type }) {
+  if (type === "phone") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z" />
+      </svg>
+    );
+  }
+  if (type === "mail") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
+        <path d="m22 7-10 7L2 7" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
 function Landing({ ctx, lang, onNavigate }) {
   const c = getLandingContent(lang, ctx.config);
   const mailto = c.cta.email ? `mailto:${c.cta.email}?subject=${encodeURIComponent(c.cta.subject)}` : "#contact";
   const paymentHref = localizedPath("/payment", lang);
+  const phoneValue = c.contact.cards.find((item) => item.type === "phone")?.value || "";
+  const phoneHref = phoneValue.replace(/[^\d+]/g, "");
+  function contactHref(item) {
+    if (item.type === "phone" && phoneHref) return `tel:${phoneHref}`;
+    if (item.type === "mail" && item.value) return `mailto:${item.value}`;
+    if (item.type === "pin") return c.contact.map.url;
+    return undefined;
+  }
   return (
     <div className="landing">
       <section className="landing-hero">
@@ -295,11 +327,37 @@ function Landing({ ctx, lang, onNavigate }) {
         </div>
       </section>
 
-      <section className="landing-cta" id="contact">
-        <h2>{c.cta.title}</h2>
-        <p>{c.cta.text}</p>
-        <a className="primary-btn" href={mailto}>{c.cta.button}</a>
-        {c.cta.phone && <p className="landing-contact">{c.cta.email} · {c.cta.phone}</p>}
+      <section className="landing-section contact-section" id="contact">
+        <h2>{c.contact.title}</h2>
+        <div className="contact-cards">
+          {c.contact.cards.map((item) => (
+            <a className={`contact-card contact-card-${item.type}`} href={contactHref(item)} target={item.type === "pin" ? "_blank" : undefined} rel={item.type === "pin" ? "noreferrer" : undefined} key={item.title}>
+              <span className="contact-icon"><ContactIcon type={item.type} /></span>
+              <span className="contact-title">{item.title}</span>
+              <span className="contact-meta">{item.meta}</span>
+              <strong>{item.value}</strong>
+            </a>
+          ))}
+        </div>
+        <div className="contact-main">
+          <div className="contact-map-widget">
+            <iframe
+              src={c.contact.map.widgetSrc}
+              title={c.contact.map.title}
+              loading="lazy"
+              allowFullScreen
+            />
+          </div>
+          <a className="map-action" href={c.contact.map.url} target="_blank" rel="noreferrer">{c.contact.map.action}</a>
+          <aside className="contact-quick">
+            <h3>{c.contact.quick.title}</h3>
+            <p>{c.contact.quick.text}</p>
+            <ul>
+              {c.contact.quick.items.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+            <a className="primary-btn" href={mailto}>{c.contact.quick.button}</a>
+          </aside>
+        </div>
       </section>
     </div>
   );
