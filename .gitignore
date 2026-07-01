@@ -3,5 +3,11 @@ client/node_modules/
 client/dist/
 server/node_modules/
 server/.tmp/
+server/dist/
+server/build/
+server/.strapi/
+server/.strapi-updater.json
+server/.cache/
+server/exports/
 .env
 *.log

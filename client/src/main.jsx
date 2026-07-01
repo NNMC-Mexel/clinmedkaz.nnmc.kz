@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
+import { getLegalContent } from "./legal";
+import { getLandingContent } from "./landing";
 
 const supportedLanguages = ["ru", "kk", "en"];
 const defaultApiBaseUrl = import.meta.env.PROD ? "https://clinmedkazserver.nnmc.kz/api" : "/api";
@@ -41,7 +43,7 @@ const paymentLogos = [
 
 const i18n = {
   ru: {
-    nav: ["Главная", "Услуга", "Оферта", "Конфиденциальность", "Возвраты", "Контакты"],
+    nav: ["Главная", "О журнале", "Публикация", "Стоимость", "Контакты"],
     payment: {
       title: "Оплата публикации статьи",
       eyebrow: "Научная публикация ClinMedKaz",
@@ -67,7 +69,7 @@ const i18n = {
     legal: { service: "Описание услуги", terms: "Публичная оферта", privacy: "Политика конфиденциальности", refunds: "Правила возврата", contacts: "Контакты" },
   },
   kk: {
-    nav: ["Басты бет", "Қызмет", "Оферта", "Құпиялылық", "Қайтару", "Байланыс"],
+    nav: ["Басты бет", "Журнал туралы", "Жариялау", "Құны", "Байланыс"],
     payment: {
       title: "Мақаланы жариялау ақысын төлеу",
       eyebrow: "ClinMedKaz ғылыми жарияланымы",
@@ -93,7 +95,7 @@ const i18n = {
     legal: { service: "Қызмет сипаттамасы", terms: "Жария оферта", privacy: "Құпиялылық саясаты", refunds: "Қайтару ережелері", contacts: "Байланыс" },
   },
   en: {
-    nav: ["Home", "Service", "Offer", "Privacy", "Refunds", "Contacts"],
+    nav: ["Home", "About", "Publish", "Pricing", "Contacts"],
     payment: {
       title: "Article publication payment",
       eyebrow: "ClinMedKaz scientific publication",
@@ -139,11 +141,16 @@ function formatDate(value) {
 function Nav({ lang, path, search, onNavigate, onChangeLang }) {
   const t = i18n[lang];
   const [menuOpen, setMenuOpen] = useState(false);
-  const links = ["/", "/service", "/terms", "/privacy", "/refunds", "/contacts"];
-  function go(event, href) {
+  const links = [["/", ""], ["/", "about"], ["/", "process"], ["/", "pricing"], ["/", "contact"]];
+  function go(event, base, hash) {
     event.preventDefault();
     setMenuOpen(false);
-    onNavigate(href);
+    if (window.location.pathname !== base) onNavigate(base);
+    if (hash) {
+      window.setTimeout(() => document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "start" }), window.location.pathname !== base ? 400 : 0);
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }
   function switchLang(event, nextLang) {
     event.preventDefault();
@@ -151,27 +158,137 @@ function Nav({ lang, path, search, onNavigate, onChangeLang }) {
   }
   return (
     <nav className={`top-nav${menuOpen ? " menu-open" : ""}`}>
-      <a className="brand" href={localizedPath("/", lang)} onClick={(event) => go(event, "/")}><span className="brand-mark">CM</span><span>ClinMedKaz Pay</span></a>
+      <a className="brand" href={localizedPath("/", lang)} onClick={(event) => go(event, "/", "")}><span className="brand-mark">CM</span><span>ClinMedKaz</span></a>
       <button className="menu-toggle" type="button" aria-controls="primary-menu" aria-expanded={menuOpen} aria-label="Menu" onClick={() => setMenuOpen((value) => !value)}><span /><span /><span /></button>
-      <div className="nav-links" id="primary-menu">{links.map((href, index) => <a key={href} href={localizedPath(href, lang)} onClick={(event) => go(event, href)}>{t.nav[index]}</a>)}</div>
+      <div className="nav-links" id="primary-menu">{links.map(([base, hash], index) => <a key={index} href={localizedPath(base, lang)} onClick={(event) => go(event, base, hash)}>{t.nav[index]}</a>)}</div>
       <div className="lang-switch">{supportedLanguages.map((item) => <a key={item} className={item === lang ? "active" : ""} href={localizedPath(path, item, search)} onClick={(event) => switchLang(event, item)}>{item.toUpperCase()}</a>)}</div>
     </nav>
   );
 }
 
-function Footer({ ctx, lang }) {
+function Footer({ ctx, lang, onNavigate }) {
   const b = ctx.config.business;
+  const t = i18n[lang].legal;
+  const legalLinks = [["/service", t.service], ["/terms", t.terms], ["/privacy", t.privacy], ["/refunds", t.refunds], ["/contacts", t.contacts]];
+  function go(event, href) {
+    if (!onNavigate) return;
+    event.preventDefault();
+    onNavigate(href);
+  }
   return (
     <footer className="site-footer">
-      <div><strong>{b.name}</strong><br />{b.country}, {b.city}<br />Support: <a href={`mailto:${b.supportEmail}`}>{b.supportEmail}</a>, {b.supportPhone}</div>
-      <div className="payment-mark">
-        {paymentLogos.map((logo) => (
-          <span className={`payment-logo ${logo.className}`} key={logo.name}>
-            <img src={`/assets/payments/${logo.name}`} alt={logo.label} />
-          </span>
-        ))}
+      <div className="footer-top">
+        <div><strong>{b.name}</strong><br />{b.country}, {b.city}<br />Support: <a href={`mailto:${b.supportEmail}`}>{b.supportEmail}</a>, {b.supportPhone}</div>
+        <div className="payment-mark">
+          {paymentLogos.map((logo) => (
+            <span className={`payment-logo ${logo.className}`} key={logo.name}>
+              <img src={`/assets/payments/${logo.name}`} alt={logo.label} />
+            </span>
+          ))}
+        </div>
       </div>
+      <nav className="footer-legal" aria-label="Legal">
+        {legalLinks.map(([href, label]) => (
+          <a key={href} href={localizedPath(href, lang)} onClick={(event) => go(event, href)}>{label}</a>
+        ))}
+      </nav>
+      <div className="footer-copy">© {new Date().getFullYear()} {b.name}. {b.bin ? `БИН ${b.bin}` : ""}</div>
     </footer>
+  );
+}
+
+function Landing({ ctx, lang, onNavigate }) {
+  const c = getLandingContent(lang, ctx.config);
+  const mailto = c.cta.email ? `mailto:${c.cta.email}?subject=${encodeURIComponent(c.cta.subject)}` : "#contact";
+  return (
+    <div className="landing">
+      <section className="landing-hero">
+        <div className="landing-hero-inner">
+          <div className="landing-hero-copy">
+            <span className="hero-pill">{c.hero.pill}</span>
+            <h1>{c.hero.title} <span className="accent">{c.hero.titleAccent}</span></h1>
+            <p className="hero-lead">{c.hero.lead}</p>
+            <div className="hero-actions">
+              <a className="primary-btn" href={mailto}>{c.hero.primaryCta} <span aria-hidden="true">→</span></a>
+              <a className="ghost-btn" href={"#about"} onClick={(event) => { event.preventDefault(); document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }); }}>{c.hero.secondaryCta}</a>
+            </div>
+            <div className="hero-stats">
+              {c.stats.slice(0, 3).map((stat) => (
+                <div className="hero-stat" key={stat.label}><strong>{stat.value}</strong><span>{stat.label}</span></div>
+              ))}
+            </div>
+          </div>
+          <aside className="hero-card">
+            <div className="hero-card-head">
+              <span className="hero-card-icon">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v16H6a2 2 0 0 1-2-2z" /><path d="M9 3v18" /><path d="M13 7h1M13 11h1" /></svg>
+              </span>
+              <div><strong>{c.hero.card.title}</strong><span>{c.hero.card.subtitle}</span></div>
+            </div>
+            <ul className="hero-card-features">
+              {c.hero.card.features.map((f) => (
+                <li key={f.title}><span className="feat-check">✓</span><div><strong>{f.title}</strong><p>{f.text}</p></div></li>
+              ))}
+            </ul>
+            <a className="primary-btn hero-card-btn" href={mailto}>{c.hero.card.cta}</a>
+          </aside>
+        </div>
+        <a className="hero-scroll" href={"#about"} onClick={(event) => { event.preventDefault(); document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }); }}>
+          {c.hero.scroll}
+          <span className="hero-scroll-mouse" />
+        </a>
+      </section>
+
+      <section className="landing-section" id="about">
+        <div className="landing-about">
+          <div>
+            <h2>{c.about.title}</h2>
+            {c.about.paragraphs.map((p, i) => <p key={i} className="landing-text">{p}</p>)}
+          </div>
+          <div className="landing-scope">
+            <h3>{c.about.scopeTitle}</h3>
+            <ul>{c.about.scope.map((item) => <li key={item}>{item}</li>)}</ul>
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-section band">
+        <h2>{c.benefits.title}</h2>
+        <div className="landing-cards">
+          {c.benefits.items.map((item) => (
+            <article className="benefit-card" key={item.title}><h3>{item.title}</h3><p>{item.text}</p></article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landing-section" id="process">
+        <h2>{c.process.title}</h2>
+        <ol className="landing-steps">
+          {c.process.steps.map((step, i) => (
+            <li key={step.title}><span className="step-num">{i + 1}</span><div><strong>{step.title}</strong><p>{step.text}</p></div></li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="landing-section" id="pricing">
+        <div className="landing-pricing">
+          <div>
+            <h2>{c.pricing.title}</h2>
+            <p className="landing-text">{c.pricing.lead}</p>
+            <p className="landing-note">{c.pricing.note}</p>
+            <button className="secondary-btn" type="button" onClick={() => onNavigate("/service")}>{c.pricing.cta}</button>
+          </div>
+          <div className="price-badge"><span>{ctx.config.publicationFeeDisplay}</span><small>{money(ctx.config.pricing.residentKztAmount, "KZT")}</small></div>
+        </div>
+      </section>
+
+      <section className="landing-cta" id="contact">
+        <h2>{c.cta.title}</h2>
+        <p>{c.cta.text}</p>
+        <a className="primary-btn" href={mailto}>{c.cta.button}</a>
+        {c.cta.phone && <p className="landing-contact">{c.cta.email} · {c.cta.phone}</p>}
+      </section>
+    </div>
   );
 }
 
@@ -444,10 +561,30 @@ function AdminPage({ lang, path, onNavigate }) {
   );
 }
 
+const updatedLabel = { ru: "Обновлено", kk: "Жаңартылды", en: "Last updated" };
+
 function LegalPage({ ctx, lang, kind }) {
-  const t = i18n[lang].legal;
-  const b = ctx.config.business;
-  return <section className="doc-page panel"><h1>{t[kind] || t.service}</h1><p>{b.name} accepts online payment for ClinMedKaz article publication services.</p><p>{b.country}, {b.city}. {b.legalAddress}</p><p>Support: {b.supportEmail}, {b.supportPhone}</p></section>;
+  const { content, updated } = getLegalContent(lang, ctx.config);
+  const doc = content[kind] || content.service;
+  return (
+    <section className="doc-page panel">
+      <h1>{doc.title}</h1>
+      {doc.blocks.map((block, index) => {
+        if (block.h) return <h2 key={index}>{block.h}</h2>;
+        if (block.p) return <p key={index}>{block.p}</p>;
+        if (block.list) return <ul key={index}>{block.list.map((item, i) => <li key={i}>{item}</li>)}</ul>;
+        if (block.requisites) return (
+          <dl className="requisites" key={index}>
+            {block.requisites.map(([label, value], i) => (
+              <div className="requisite-row" key={i}><dt>{label}</dt><dd>{value}</dd></div>
+            ))}
+          </dl>
+        );
+        return null;
+      })}
+      <p className="doc-updated muted">{updatedLabel[lang] || updatedLabel.ru}: {updated}</p>
+    </section>
+  );
 }
 
 function App() {
@@ -499,7 +636,7 @@ function App() {
   if (!ctx) return <main className="center-panel"><div className="panel">Loading...</div></main>;
   const path = location.path;
   let page;
-  if (path === "/") page = <PaymentForm ctx={ctx} lang={lang} />;
+  if (path === "/") page = ctx.invitation ? <PaymentForm ctx={ctx} lang={lang} /> : <Landing ctx={ctx} lang={lang} onNavigate={navigate} />;
   else if (path.startsWith("/pay/")) {
     const closedStatuses = ["failed", "postlink_rejected", "cancelled", "refunded"];
     if (!ctx.order || closedStatuses.includes(ctx.order.status)) page = <ResultPage ctx={ctx} lang={lang} ok={false} />;
@@ -511,7 +648,7 @@ function App() {
   else if (path === "/admin/login") page = <AdminLogin lang={lang} onNavigate={navigate} />;
   else if (path === "/admin" || path === "/admin/create" || path === "/admin/transactions") page = adminJwt() ? <AdminPage lang={lang} path={path} onNavigate={navigate} /> : <AdminLogin lang={lang} onNavigate={navigate} />;
   else page = <LegalPage ctx={ctx} lang={lang} kind={path.slice(1)} />;
-  return <><Nav lang={lang} path={path} search={location.search} onNavigate={navigate} onChangeLang={changeLang} /><main>{page}</main><Footer ctx={ctx} lang={lang} /></>;
+  return <><Nav lang={lang} path={path} search={location.search} onNavigate={navigate} onChangeLang={changeLang} /><main>{page}</main><Footer ctx={ctx} lang={lang} onNavigate={navigate} /></>;
 }
 
 createRoot(document.getElementById("app")).render(<App />);
