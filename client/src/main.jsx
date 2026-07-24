@@ -641,6 +641,7 @@ function LegalPage({ ctx, lang, kind }) {
     <section className="doc-page panel">
       <h1>{doc.title}</h1>
       {doc.blocks.map((block, index) => {
+        if (block.note) return <p className="doc-note" key={index}>{block.note}</p>;
         if (block.h) return <h2 key={index}>{block.h}</h2>;
         if (block.p) return <p key={index}>{block.p}</p>;
         if (block.list) return <ul key={index}>{block.list.map((item, i) => <li key={i}>{item}</li>)}</ul>;
