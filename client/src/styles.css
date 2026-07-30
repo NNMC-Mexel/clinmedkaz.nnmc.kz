@@ -565,9 +565,13 @@ a:focus-visible {
 }
 
 .admin-form-grid {
+  border: none;
   display: grid;
   gap: 0 18px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  min-width: 0;
+  padding: 0;
 }
 
 .admin-form-wide {
@@ -580,6 +584,23 @@ a:focus-visible {
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 8px;
+}
+
+.btn-spinner {
+  animation: btnSpin 0.7s linear infinite;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  border-top-color: #fff;
+  display: inline-block;
+  height: 16px;
+  margin-right: 10px;
+  width: 16px;
+}
+
+@keyframes btnSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .created-link {

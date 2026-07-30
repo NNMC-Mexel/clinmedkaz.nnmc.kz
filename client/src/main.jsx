@@ -66,7 +66,7 @@ const i18n = {
     },
     pay: { title: "Открываем Halyk ePay", button: "Открыть форму оплаты", token: "Запрашиваем платежный токен...", error: "Не удалось начать оплату." },
     result: { ok: "Оплата получена", fail: "Оплата не прошла", back: "Вернуться к форме оплаты" },
-    admin: { title: "Администрирование оплат", login: "Вход в панель управления", loginTitle: "Панель управления оплатами", loginLead: "Авторизуйтесь, чтобы создавать платежные ссылки и просматривать транзакции.", username: "Логин", password: "Пароль", signIn: "Войти", logout: "Выйти", create: "Создать ссылку", createLead: "Заполните данные автора, выберите язык письма и отправьте персональную ссылку на оплату.", orders: "История транзакций", ordersLead: "Отслеживайте статусы оплат, автора и сумму без отвлечения на форму создания ссылки.", refresh: "Обновить", noAccess: "У этой учетной записи нет доступа к управлению оплатами.", sessionExpired: "Сессия истекла. Войдите снова.", invalidCredentials: "Неверный логин или пароль.", loginRequired: "Введите логин и пароль.", authError: "Не удалось выполнить вход. Проверьте данные и повторите попытку.", loadError: "Не удалось загрузить панель управления.", email: "Email", fullName: "ФИО", phone: "Телефон", article: "Статья", lang: "Язык", sendEmail: "Отправить ссылку на Email", createdLink: "Ссылка создана", status: "Статус", invoice: "Инвойс", author: "Автор", amount: "Сумма", createdAt: "Создано", search: "Поиск по автору, email, статье или инвойсу", allStatuses: "Все статусы", emptyOrders: "Транзакций пока нет.", open: "Открыть", transactions: "Транзакции" },
+    admin: { title: "Администрирование оплат", login: "Вход в панель управления", loginTitle: "Панель управления оплатами", loginLead: "Авторизуйтесь, чтобы создавать платежные ссылки и просматривать транзакции.", username: "Логин", password: "Пароль", signIn: "Войти", logout: "Выйти", create: "Создать ссылку", creating: "Создаём ссылку…", createLead: "Заполните данные автора, выберите язык письма и отправьте персональную ссылку на оплату.", orders: "История транзакций", ordersLead: "Отслеживайте статусы оплат, автора и сумму без отвлечения на форму создания ссылки.", refresh: "Обновить", noAccess: "У этой учетной записи нет доступа к управлению оплатами.", sessionExpired: "Сессия истекла. Войдите снова.", invalidCredentials: "Неверный логин или пароль.", loginRequired: "Введите логин и пароль.", authError: "Не удалось выполнить вход. Проверьте данные и повторите попытку.", loadError: "Не удалось загрузить панель управления.", email: "Email", fullName: "ФИО", phone: "Телефон", article: "Статья", lang: "Язык", sendEmail: "Отправить ссылку на Email", createdLink: "Ссылка создана", status: "Статус", invoice: "Инвойс", author: "Автор", amount: "Сумма", createdAt: "Создано", search: "Поиск по автору, email, статье или инвойсу", allStatuses: "Все статусы", emptyOrders: "Транзакций пока нет.", open: "Открыть", transactions: "Транзакции" },
     legal: { service: "Описание услуги", terms: "Публичная оферта", privacy: "Политика конфиденциальности", refunds: "Правила возврата", contacts: "Контакты" },
   },
   kk: {
@@ -93,7 +93,7 @@ const i18n = {
     },
     pay: { title: "Halyk ePay ашылуда", button: "Төлем формасын ашу", token: "Төлем токені сұралуда...", error: "Төлемді бастау мүмкін болмады." },
     result: { ok: "Төлем қабылданды", fail: "Төлем өтпеді", back: "Төлем формасына оралу" },
-    admin: { title: "Төлемдерді басқару", login: "Басқару панеліне кіру", loginTitle: "Төлемдерді басқару панелі", loginLead: "Төлем сілтемелерін жасау және транзакцияларды қарау үшін авторизациядан өтіңіз.", username: "Логин", password: "Құпиясөз", signIn: "Кіру", logout: "Шығу", create: "Сілтеме жасау", createLead: "Автор деректерін енгізіп, хат тілін таңдаңыз және жеке төлем сілтемесін жіберіңіз.", orders: "Транзакциялар тарихы", ordersLead: "Төлем мәртебесін, авторды және соманы сілтеме жасау формасынан бөлек бақылаңыз.", refresh: "Жаңарту", noAccess: "Бұл есептік жазбада төлемдерді басқаруға рұқсат жоқ.", sessionExpired: "Сессия мерзімі аяқталды. Қайта кіріңіз.", invalidCredentials: "Логин немесе құпиясөз дұрыс емес.", loginRequired: "Логин мен құпиясөзді енгізіңіз.", authError: "Кіру мүмкін болмады. Деректерді тексеріп, қайталап көріңіз.", loadError: "Басқару панелін жүктеу мүмкін болмады.", email: "Email", fullName: "Т.А.Ә.", phone: "Телефон", article: "Мақала", lang: "Тіл", sendEmail: "Сілтемені Email арқылы жіберу", createdLink: "Сілтеме жасалды", status: "Мәртебе", invoice: "Инвойс", author: "Автор", amount: "Сома", createdAt: "Жасалды", search: "Автор, email, мақала немесе инвойс бойынша іздеу", allStatuses: "Барлық мәртебелер", emptyOrders: "Транзакциялар әлі жоқ.", open: "Ашу", transactions: "Транзакциялар" },
+    admin: { title: "Төлемдерді басқару", login: "Басқару панеліне кіру", loginTitle: "Төлемдерді басқару панелі", loginLead: "Төлем сілтемелерін жасау және транзакцияларды қарау үшін авторизациядан өтіңіз.", username: "Логин", password: "Құпиясөз", signIn: "Кіру", logout: "Шығу", create: "Сілтеме жасау", creating: "Сілтеме жасалуда…", createLead: "Автор деректерін енгізіп, хат тілін таңдаңыз және жеке төлем сілтемесін жіберіңіз.", orders: "Транзакциялар тарихы", ordersLead: "Төлем мәртебесін, авторды және соманы сілтеме жасау формасынан бөлек бақылаңыз.", refresh: "Жаңарту", noAccess: "Бұл есептік жазбада төлемдерді басқаруға рұқсат жоқ.", sessionExpired: "Сессия мерзімі аяқталды. Қайта кіріңіз.", invalidCredentials: "Логин немесе құпиясөз дұрыс емес.", loginRequired: "Логин мен құпиясөзді енгізіңіз.", authError: "Кіру мүмкін болмады. Деректерді тексеріп, қайталап көріңіз.", loadError: "Басқару панелін жүктеу мүмкін болмады.", email: "Email", fullName: "Т.А.Ә.", phone: "Телефон", article: "Мақала", lang: "Тіл", sendEmail: "Сілтемені Email арқылы жіберу", createdLink: "Сілтеме жасалды", status: "Мәртебе", invoice: "Инвойс", author: "Автор", amount: "Сома", createdAt: "Жасалды", search: "Автор, email, мақала немесе инвойс бойынша іздеу", allStatuses: "Барлық мәртебелер", emptyOrders: "Транзакциялар әлі жоқ.", open: "Ашу", transactions: "Транзакциялар" },
     legal: { service: "Қызмет сипаттамасы", terms: "Жария оферта", privacy: "Құпиялылық саясаты", refunds: "Қайтару ережелері", contacts: "Байланыс" },
   },
   en: {
@@ -120,7 +120,7 @@ const i18n = {
     },
     pay: { title: "Opening Halyk ePay", button: "Open payment form", token: "Requesting payment token...", error: "Could not start payment." },
     result: { ok: "Payment received", fail: "Payment failed", back: "Back to payment form" },
-    admin: { title: "Payment administration", login: "Management portal sign in", loginTitle: "Payment management portal", loginLead: "Sign in to create payment links and review transaction history.", username: "Username", password: "Password", signIn: "Sign in", logout: "Logout", create: "Create link", createLead: "Enter author details, choose the email language and send a personal payment link.", orders: "Transaction history", ordersLead: "Track payment status, author and amount separately from the link creation workflow.", refresh: "Refresh", noAccess: "This account does not have access to payment administration.", sessionExpired: "Session expired. Sign in again.", invalidCredentials: "Invalid username or password.", loginRequired: "Enter username and password.", authError: "Could not sign in. Check the details and try again.", loadError: "Could not load the management portal.", email: "Email", fullName: "Full name", phone: "Phone", article: "Article", lang: "Language", sendEmail: "Send link by email", createdLink: "Link created", status: "Status", invoice: "Invoice", author: "Author", amount: "Amount", createdAt: "Created", search: "Search author, email, article or invoice", allStatuses: "All statuses", emptyOrders: "No transactions yet.", open: "Open", transactions: "Transactions" },
+    admin: { title: "Payment administration", login: "Management portal sign in", loginTitle: "Payment management portal", loginLead: "Sign in to create payment links and review transaction history.", username: "Username", password: "Password", signIn: "Sign in", logout: "Logout", create: "Create link", creating: "Creating link…", createLead: "Enter author details, choose the email language and send a personal payment link.", orders: "Transaction history", ordersLead: "Track payment status, author and amount separately from the link creation workflow.", refresh: "Refresh", noAccess: "This account does not have access to payment administration.", sessionExpired: "Session expired. Sign in again.", invalidCredentials: "Invalid username or password.", loginRequired: "Enter username and password.", authError: "Could not sign in. Check the details and try again.", loadError: "Could not load the management portal.", email: "Email", fullName: "Full name", phone: "Phone", article: "Article", lang: "Language", sendEmail: "Send link by email", createdLink: "Link created", status: "Status", invoice: "Invoice", author: "Author", amount: "Amount", createdAt: "Created", search: "Search author, email, article or invoice", allStatuses: "All statuses", emptyOrders: "No transactions yet.", open: "Open", transactions: "Transactions" },
     legal: { service: "Service description", terms: "Public offer", privacy: "Privacy policy", refunds: "Refund policy", contacts: "Contacts" },
   },
 };
@@ -512,35 +512,48 @@ function AdminCreatePage({ lang, onCreated }) {
   const t = i18n[lang].admin;
   const [status, setStatus] = useState("");
   const [createdLink, setCreatedLink] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   async function create(event) {
     event.preventDefault();
+    const form = event.currentTarget;
     setStatus("");
     setCreatedLink("");
-    const raw = Object.fromEntries(new FormData(event.currentTarget).entries());
-    const response = await apiFetch("/invitations", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...raw, sendEmail: raw.sendEmail === "on" }) });
-    const payload = await response.json().catch(() => ({}));
-    if (response.status === 401) { clearAdminJwt(); onCreated("auth"); return; }
-    if (response.ok) {
-      setCreatedLink(payload.link);
-      setStatus(payload.duplicateWarning ? payload.duplicateWarning : t.createdLink);
-      event.currentTarget.reset();
-      onCreated();
-      return;
+    setSubmitting(true);
+    try {
+      const raw = Object.fromEntries(new FormData(form).entries());
+      const response = await apiFetch("/invitations", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...raw, sendEmail: raw.sendEmail === "on" }) });
+      const payload = await response.json().catch(() => ({}));
+      if (response.status === 401) { clearAdminJwt(); onCreated("auth"); return; }
+      if (response.ok) {
+        setCreatedLink(payload.link);
+        setStatus(payload.duplicateWarning ? payload.duplicateWarning : t.createdLink);
+        form.reset();
+        onCreated();
+        return;
+      }
+      setStatus(response.status === 403 ? t.noAccess : payload.error || t.loadError);
+    } finally {
+      setSubmitting(false);
     }
-    setStatus(response.status === 403 ? t.noAccess : payload.error || t.loadError);
   }
   return (
-    <form className="panel admin-form" onSubmit={create}>
+    <form className="panel admin-form" onSubmit={create} aria-busy={submitting}>
       <div className="section-heading"><h2>{t.create}</h2><p>{t.createLead}</p></div>
-      <div className="admin-form-grid">
+      <fieldset className="admin-form-grid" disabled={submitting}>
         <label>{t.email}<input name="email" type="email" autoComplete="email" required /></label>
         <label>{t.fullName}<input name="fullName" autoComplete="name" /></label>
         <label>{t.phone}<input name="phone" autoComplete="tel" /></label>
         <label>{t.lang}<select name="lang" defaultValue={lang}><option value="ru">Русский</option><option value="kk">Қазақша</option><option value="en">English</option></select></label>
         <label className="admin-form-wide">{t.article}<textarea name="articleTitle" required /></label>
+      </fieldset>
+      <label className="checkline"><input name="sendEmail" type="checkbox" defaultChecked disabled={submitting} /><span>{t.sendEmail}</span></label>
+      <div className="form-actions">
+        <button className="primary-btn" disabled={submitting} aria-busy={submitting}>
+          {submitting && <span className="btn-spinner" aria-hidden="true" />}
+          {submitting ? t.creating : t.create}
+        </button>
+        {createdLink && <a className="secondary-btn" href={createdLink} target="_blank" rel="noreferrer">{t.open}</a>}
       </div>
-      <label className="checkline"><input name="sendEmail" type="checkbox" defaultChecked /><span>{t.sendEmail}</span></label>
-      <div className="form-actions"><button className="primary-btn">{t.create}</button>{createdLink && <a className="secondary-btn" href={createdLink} target="_blank" rel="noreferrer">{t.open}</a>}</div>
       {createdLink && <p className="created-link"><span>{t.createdLink}</span><a href={createdLink} target="_blank" rel="noreferrer">{createdLink}</a></p>}
       <p className="status-text">{status}</p>
     </form>
