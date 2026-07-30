@@ -1,6 +1,7 @@
 import { requireAdmin } from '../../../lib/auth';
 import { refundOutcome, sanitizeOrderPatch } from '../../../lib/domain';
 import { logger } from '../../../lib/logger';
+import { readPricing, savePricing } from '../../../lib/pricing';
 import { readStore, updateStore } from '../../../lib/store';
 
 function nowIso() {
@@ -54,13 +55,25 @@ export default {
 
   async orders(ctx: any) {
     requireAdmin(ctx);
-    const store = await readStore();
+    const [store, pricing] = await Promise.all([readStore(), readPricing()]);
     ctx.body = {
       invitations: store.invitations,
       callbacks: store.callbacks || [],
       auditLog: [],
       orders: store.orders.map(orderSummary),
+      pricing,
     };
+  },
+
+  async updatePricing(ctx: any) {
+    const actor = requireAdmin(ctx);
+    const pricing = await savePricing(ctx.request.body || {}, actor);
+    logger.info('Publication pricing updated by admin', {
+      by: actor,
+      residentKztAmount: pricing.residentKztAmount,
+      usdToKztRate: pricing.usdToKztRate,
+    });
+    ctx.body = { pricing };
   },
 
   async updateOrder(ctx: any) {

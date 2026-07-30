@@ -1,5 +1,4 @@
 import crypto from 'node:crypto';
-import { config } from '../../../lib/config';
 import {
   activeOrderForInvitation,
   calculateOrderPrice,
@@ -10,6 +9,7 @@ import {
 } from '../../../lib/domain';
 import { getPaymentToken, makeInvoiceId, makePaymentObject, makeSecretHash, postLinkUrl } from '../../../lib/halyk';
 import { logger } from '../../../lib/logger';
+import { readPricing } from '../../../lib/pricing';
 import { readStore, updateStore } from '../../../lib/store';
 
 function makeId(prefix: string) {
@@ -38,7 +38,8 @@ export default {
       return;
     }
 
-    const price = calculateOrderPrice(input.residency, invitation);
+    const pricing = await readPricing();
+    const price = calculateOrderPrice(input.residency, invitation, pricing);
     const order = {
       id: makeId('ord'),
       invoiceId: makeInvoiceId(),
@@ -46,7 +47,7 @@ export default {
       status: 'created',
       amount: price.amount,
       currency: price.currency,
-      publicationFeeUsd: Number(invitation.publicationFeeUsd || config.pricing.publicationFeeUsd),
+      publicationFeeUsd: Number(invitation.publicationFeeUsd || pricing.publicationFeeUsd),
       exchangeRate: price.exchangeRate,
       residency: input.residency,
       fullName: input.fullName,

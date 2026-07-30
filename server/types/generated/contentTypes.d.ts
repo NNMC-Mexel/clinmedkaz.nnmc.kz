@@ -636,6 +636,39 @@ export interface ApiPaymentCallbackPaymentCallback
   };
 }
 
+export interface ApiPricingSettingPricingSetting
+  extends Struct.SingleTypeSchema {
+  collectionName: 'payment_pricing_setting';
+  info: {
+    description: 'Editable publication fee. KZT is the base currency, USD is derived from the rate.';
+    displayName: 'Publication pricing';
+    pluralName: 'pricing-settings';
+    singularName: 'pricing-setting';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::pricing-setting.pricing-setting'
+    > &
+      Schema.Attribute.Private;
+    pricingUpdatedAt: Schema.Attribute.DateTime;
+    publishedAt: Schema.Attribute.DateTime;
+    residentKztAmount: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    updatedByAdmin: Schema.Attribute.String;
+    usdToKztRate: Schema.Attribute.Decimal & Schema.Attribute.Required;
+  };
+}
+
 export interface PluginContentReleasesRelease
   extends Struct.CollectionTypeSchema {
   collectionName: 'strapi_releases';
@@ -1150,6 +1183,7 @@ declare module '@strapi/strapi' {
       'api::invitation.invitation': ApiInvitationInvitation;
       'api::order.order': ApiOrderOrder;
       'api::payment-callback.payment-callback': ApiPaymentCallbackPaymentCallback;
+      'api::pricing-setting.pricing-setting': ApiPricingSettingPricingSetting;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

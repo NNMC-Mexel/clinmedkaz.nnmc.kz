@@ -6,9 +6,12 @@ dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
 
 const isProduction = process.env.NODE_ENV === 'production';
 const halykEnv = process.env.HALYK_ENV === 'prod' ? 'prod' : 'test';
-const publicationFeeUsd = Number(process.env.PUBLICATION_FEE_USD || 300);
 const usdToKztRate = Number(process.env.USD_TO_KZT_RATE || 485.4);
-const residentKztAmount = Math.round(publicationFeeUsd * usdToKztRate);
+// KZT is the base currency: it is the amount actually charged through Halyk ePay.
+// PUBLICATION_FEE_KZT wins; otherwise the legacy USD fee is converted once at boot.
+const residentKztAmount = Math.round(
+  Number(process.env.PUBLICATION_FEE_KZT) || Number(process.env.PUBLICATION_FEE_USD || 300) * usdToKztRate
+);
 const productionFrontendUrl = 'https://clinmedkaz.nnmc.kz';
 const productionBackendUrl = 'https://clinmedkazserver.nnmc.kz';
 
@@ -22,14 +25,10 @@ export const config = {
   baseUrl: env('BASE_URL', env('FRONTEND_URL', isProduction ? productionFrontendUrl : 'http://localhost:5173')),
   backendUrl: env('BACKEND_URL', env('STRAPI_URL', isProduction ? productionBackendUrl : `http://localhost:${process.env.PORT || 1337}`)),
   adminEmail: env('ADMIN_EMAIL', 'Nnmc.marketing@gmail.com'),
-  publicationFeeDisplay: env('PUBLICATION_FEE_DISPLAY', '300 USD'),
-  pricing: {
-    publicationFeeUsd,
-    usdToKztRate,
+  // Fallback used until an admin saves a price (see lib/pricing.ts).
+  pricingDefaults: {
     residentKztAmount,
-    residentCurrency: 'KZT',
-    nonResidentAmount: publicationFeeUsd,
-    nonResidentCurrency: 'USD',
+    usdToKztRate,
   },
   halyk: {
     env: halykEnv,
@@ -75,10 +74,24 @@ export const config = {
   },
 };
 
-export function publicConfig() {
+export function formatMoney(amount: unknown, currency: string) {
+  const formatted = new Intl.NumberFormat('ru-RU', {
+    maximumFractionDigits: currency === 'KZT' ? 0 : 2,
+  }).format(Number(amount || 0));
+  return `${formatted} ${currency}`;
+}
+
+type PublicPricing = {
+  residentKztAmount: number;
+  nonResidentAmount: number;
+};
+
+export function publicConfig(pricing: PublicPricing & Record<string, any>) {
   return {
-    publicationFeeDisplay: config.publicationFeeDisplay,
-    pricing: config.pricing,
+    // KZT first: the acquirer (Halyk ePay) settles in tenge, so tenge is the headline price.
+    publicationFeeDisplay: formatMoney(pricing.residentKztAmount, 'KZT'),
+    publicationFeeDisplaySecondary: formatMoney(pricing.nonResidentAmount, 'USD'),
+    pricing,
     business: config.business,
     bank: config.bank,
     halykPaymentJsUrl: config.halyk.paymentJsUrl,

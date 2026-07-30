@@ -11,9 +11,9 @@ function money(amount, currency) {
 function priceStrings(config) {
   const pricing = config.pricing || {};
   return {
-    display: config.publicationFeeDisplay || `${pricing.nonResidentAmount || 300} USD`,
-    kzt: money(pricing.residentKztAmount, "KZT"),
-    usd: money(pricing.nonResidentAmount, "USD"),
+    // Tenge is the headline price: it is the amount Halyk ePay actually charges.
+    kzt: config.publicationFeeDisplay || money(pricing.residentKztAmount, "KZT"),
+    usd: config.publicationFeeDisplaySecondary || money(pricing.nonResidentAmount, "USD"),
     rate: pricing.usdToKztRate,
   };
 }
@@ -583,10 +583,8 @@ export function getLegalContent(lang, config) {
           { p: "Плательщиком является автор статьи (физическое лицо) либо организация, направляющая статью к публикации. Оплата вносится за услугу по рецензированию, редакционно-издательской подготовке и публикации одной научной статьи в журнале ClinMedKaz." },
           { h: "Стоимость" },
           { list: [
-            `Стоимость публикации одной статьи — ${price.display}.`,
-            `Для резидентов Республики Казахстан оплата производится в тенге: ${price.kzt} (по курсу ${price.rate} ₸ за 1 USD).`,
-            `Для нерезидентов — ${price.usd}.`,
-            "Все платежи проводятся в национальной валюте — тенге (KZT).",
+            `Стоимость публикации одной статьи для резидентов Республики Казахстан — ${price.kzt}. Оплата производится в национальной валюте — тенге (KZT).`,
+            `Для нерезидентов стоимость составляет ${price.usd} (по курсу ${price.rate} ₸ за 1 USD).`,
           ] },
           { h: "Как оплатить" },
           { list: [
@@ -633,10 +631,8 @@ export function getLegalContent(lang, config) {
           { p: "The payer is the author of the article (an individual) or the organization submitting the article. Payment is made for reviewing, editorial preparation and publication of one scientific article in the ClinMedKaz journal." },
           { h: "Price" },
           { list: [
-            `Publication of one article costs ${price.display}.`,
-            `Residents of Kazakhstan pay in tenge: ${price.kzt} (at the rate of ${price.rate} ₸ per 1 USD).`,
-            `Non-residents pay ${price.usd}.`,
-            "All payments are processed in the national currency, tenge (KZT).",
+            `Publication of one article costs ${price.kzt} for residents of Kazakhstan. Payment is processed in the national currency, tenge (KZT).`,
+            `Non-residents pay ${price.usd} (at the rate of ${price.rate} ₸ per 1 USD).`,
           ] },
           { h: "How to pay" },
           { list: [
@@ -683,10 +679,8 @@ export function getLegalContent(lang, config) {
           { p: "Төлеуші — мақала авторы (жеке тұлға) немесе мақаланы жариялауға жіберетін ұйым. Төлем ClinMedKaz журналында бір ғылыми мақаланы рецензиялау, редакциялық-баспалық дайындау және жариялау қызметі үшін жасалады." },
           { h: "Құны" },
           { list: [
-            `Бір мақаланы жариялау құны — ${price.display}.`,
-            `Қазақстан Республикасының резиденттері теңгемен төлейді: ${price.kzt} (1 USD үшін ${price.rate} ₸ бағамы бойынша).`,
-            `Резидент еместер үшін — ${price.usd}.`,
-            "Барлық төлемдер ұлттық валютада — теңгемен (KZT) жүргізіледі.",
+            `Қазақстан Республикасының резиденттері үшін бір мақаланы жариялау құны — ${price.kzt}. Төлем ұлттық валютада — теңгемен (KZT) жүргізіледі.`,
+            `Резидент еместер үшін құны ${price.usd} (1 USD үшін ${price.rate} ₸ бағамы бойынша).`,
           ] },
           { h: "Қалай төлеуге болады" },
           { list: [

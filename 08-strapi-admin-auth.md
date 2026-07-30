@@ -34,6 +34,7 @@ Authorization: Bearer <jwt>
 - `GET /api/admin/orders`
 - `PATCH /api/admin/orders/:id`
 - `GET /api/admin/orders/export.csv`
+- `PUT /api/admin/pricing`
 - `POST /api/invitations`
 - `POST /api/invitations/:id/resend`
 - `POST /api/invitations/:id/cancel`
@@ -41,7 +42,7 @@ Authorization: Bearer <jwt>
 В Strapi нужно создать пользователя в Users & Permissions и включить для его
 роли нужные действия:
 
-- `Admin-api`: `session`, `orders`, `updateOrder`, `exportCsv`
+- `Admin-api`: `session`, `orders`, `updateOrder`, `exportCsv`, `updatePricing`
 - `Invitation`: `createPaymentInvitation`, `resend`, `cancel`
 - `Users-permissions`: `auth.callback` должен быть доступен Public role, чтобы
   работал `POST /api/auth/local`

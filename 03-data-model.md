@@ -131,14 +131,24 @@
 
 ## Прайсинг (снимок цены)
 
+**Базовая валюта — тенге.** Именно сумма в KZT списывается через Halyk ePay и
+показывается основной ценой на сайте; USD рассчитывается из курса и служит
+справочной ценой для нерезидентов.
+
 Цена определяется при создании приглашения и копируется в заказ:
 
-- **Резидент РК** → `residentAmount` (`KZT`) = `round(publicationFeeUsd × usdToKztRate)`.
-- **Нерезидент** → `nonResidentAmount` (`USD`) = `publicationFeeUsd`.
+- **Резидент РК** → `residentAmount` (`KZT`) = `residentKztAmount`.
+- **Нерезидент** → `nonResidentAmount` (`USD`) = `round(residentKztAmount / usdToKztRate, 2)`.
 
-Базовые значения — из `.env`: `PUBLICATION_FEE_USD` (300), `USD_TO_KZT_RATE` (485.4).
-Снимок защищает от изменения курса между приглашением и оплатой — это правильно.
+Действующая цена живёт в single type `pricing-setting` (`residentKztAmount`,
+`usdToKztRate`, `updatedByAdmin`, `pricingUpdatedAt`) и правится админом во вкладке
+«Цена» через `PUT /api/admin/pricing` — без релиза. Пока админ не сохранил цену ни
+разу, действуют значения из `.env`: `PUBLICATION_FEE_KZT` (145620), `USD_TO_KZT_RATE`
+(485.4); при отсутствии `PUBLICATION_FEE_KZT` сумма выводится из legacy
+`PUBLICATION_FEE_USD`. Разрешение резолвится в `server/src/lib/pricing.ts`.
 
-> Риск: курс `USD_TO_KZT_RATE` статичен в `.env` и обновляется вручную. Целевой
-> вариант — фиксировать актуальный курс на момент приглашения из надёжного источника
-> (см. [06-roadmap.md](06-roadmap.md)).
+Снимок цены на приглашении защищает от изменения курса и цены между приглашением и
+оплатой: уже отправленная ссылка сохраняет свою сумму.
+
+> Риск: курс `usdToKztRate` вводится вручную. Целевой вариант — подтягивать актуальный
+> курс на момент приглашения из надёжного источника (см. [06-roadmap.md](06-roadmap.md)).

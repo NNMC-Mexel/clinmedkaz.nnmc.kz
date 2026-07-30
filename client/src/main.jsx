@@ -32,6 +32,14 @@ function apiFetch(path, options = {}) {
   return fetch(`${apiBaseUrl}${path}`, { credentials: "include", ...options, headers });
 }
 
+// Strapi answers with { error: { status, name, message } }, plain throws give { error: "text" }.
+function errorMessage(payload, fallback) {
+  const error = payload?.error;
+  if (typeof error === "string" && error) return error;
+  if (error && typeof error.message === "string" && error.message) return error.message;
+  return fallback;
+}
+
 const paymentLogos = [
   { name: "epay-halyk.png", label: "Halyk ePay", className: "payment-logo-epay payment-logo-dark" },
   { name: "halyk-bank.png", label: "Halyk Bank", className: "payment-logo-bank" },
@@ -66,7 +74,7 @@ const i18n = {
     },
     pay: { title: "Открываем Halyk ePay", button: "Открыть форму оплаты", token: "Запрашиваем платежный токен...", error: "Не удалось начать оплату." },
     result: { ok: "Оплата получена", fail: "Оплата не прошла", back: "Вернуться к форме оплаты" },
-    admin: { title: "Администрирование оплат", login: "Вход в панель управления", loginTitle: "Панель управления оплатами", loginLead: "Авторизуйтесь, чтобы создавать платежные ссылки и просматривать транзакции.", username: "Логин", password: "Пароль", signIn: "Войти", logout: "Выйти", create: "Создать ссылку", creating: "Создаём ссылку…", createLead: "Заполните данные автора, выберите язык письма и отправьте персональную ссылку на оплату.", orders: "История транзакций", ordersLead: "Отслеживайте статусы оплат, автора и сумму без отвлечения на форму создания ссылки.", refresh: "Обновить", noAccess: "У этой учетной записи нет доступа к управлению оплатами.", sessionExpired: "Сессия истекла. Войдите снова.", invalidCredentials: "Неверный логин или пароль.", loginRequired: "Введите логин и пароль.", authError: "Не удалось выполнить вход. Проверьте данные и повторите попытку.", loadError: "Не удалось загрузить панель управления.", email: "Email", fullName: "ФИО", phone: "Телефон", article: "Статья", lang: "Язык", sendEmail: "Отправить ссылку на Email", createdLink: "Ссылка создана", status: "Статус", invoice: "Инвойс", author: "Автор", amount: "Сумма", createdAt: "Создано", search: "Поиск по автору, email, статье или инвойсу", allStatuses: "Все статусы", emptyOrders: "Транзакций пока нет.", open: "Открыть", transactions: "Транзакции" },
+    admin: { title: "Администрирование оплат", login: "Вход в панель управления", loginTitle: "Панель управления оплатами", loginLead: "Авторизуйтесь, чтобы создавать платежные ссылки и просматривать транзакции.", username: "Логин", password: "Пароль", signIn: "Войти", logout: "Выйти", create: "Создать ссылку", creating: "Создаём ссылку…", createLead: "Заполните данные автора, выберите язык письма и отправьте персональную ссылку на оплату.", orders: "История транзакций", ordersLead: "Отслеживайте статусы оплат, автора и сумму без отвлечения на форму создания ссылки.", refresh: "Обновить", noAccess: "У этой учетной записи нет доступа к управлению оплатами.", sessionExpired: "Сессия истекла. Войдите снова.", invalidCredentials: "Неверный логин или пароль.", loginRequired: "Введите логин и пароль.", authError: "Не удалось выполнить вход. Проверьте данные и повторите попытку.", loadError: "Не удалось загрузить панель управления.", email: "Email", fullName: "ФИО", phone: "Телефон", article: "Статья", lang: "Язык", sendEmail: "Отправить ссылку на Email", createdLink: "Ссылка создана", status: "Статус", invoice: "Инвойс", author: "Автор", amount: "Сумма", createdAt: "Создано", search: "Поиск по автору, email, статье или инвойсу", allStatuses: "Все статусы", emptyOrders: "Транзакций пока нет.", open: "Открыть", transactions: "Транзакции", pricing: "Цена", pricingLead: "Стоимость публикации задаётся в тенге — именно эта сумма списывается через Halyk ePay. Цена в USD рассчитывается по курсу и показывается справочно для нерезидентов.", priceKzt: "Стоимость публикации, ₸", rate: "Курс, ₸ за 1 USD", pricingPreview: "Так цена будет показана на сайте", pricingSave: "Сохранить цену", pricingSaving: "Сохраняем…", pricingSaved: "Цена обновлена. Новые ссылки будут создаваться с этой суммой.", pricingInvalid: "Укажите цену в тенге и курс числами больше нуля.", pricingFrozen: "Уже отправленные ссылки на оплату сохраняют сумму, с которой были созданы, — изменение цены их не затронет.", pricingFromEnv: "Сейчас действует значение по умолчанию из настроек сервера.", pricingUpdatedBy: "Изменено" },
     legal: { service: "Описание услуги", terms: "Публичная оферта", privacy: "Политика конфиденциальности", refunds: "Правила возврата", contacts: "Контакты" },
   },
   kk: {
@@ -93,7 +101,7 @@ const i18n = {
     },
     pay: { title: "Halyk ePay ашылуда", button: "Төлем формасын ашу", token: "Төлем токені сұралуда...", error: "Төлемді бастау мүмкін болмады." },
     result: { ok: "Төлем қабылданды", fail: "Төлем өтпеді", back: "Төлем формасына оралу" },
-    admin: { title: "Төлемдерді басқару", login: "Басқару панеліне кіру", loginTitle: "Төлемдерді басқару панелі", loginLead: "Төлем сілтемелерін жасау және транзакцияларды қарау үшін авторизациядан өтіңіз.", username: "Логин", password: "Құпиясөз", signIn: "Кіру", logout: "Шығу", create: "Сілтеме жасау", creating: "Сілтеме жасалуда…", createLead: "Автор деректерін енгізіп, хат тілін таңдаңыз және жеке төлем сілтемесін жіберіңіз.", orders: "Транзакциялар тарихы", ordersLead: "Төлем мәртебесін, авторды және соманы сілтеме жасау формасынан бөлек бақылаңыз.", refresh: "Жаңарту", noAccess: "Бұл есептік жазбада төлемдерді басқаруға рұқсат жоқ.", sessionExpired: "Сессия мерзімі аяқталды. Қайта кіріңіз.", invalidCredentials: "Логин немесе құпиясөз дұрыс емес.", loginRequired: "Логин мен құпиясөзді енгізіңіз.", authError: "Кіру мүмкін болмады. Деректерді тексеріп, қайталап көріңіз.", loadError: "Басқару панелін жүктеу мүмкін болмады.", email: "Email", fullName: "Т.А.Ә.", phone: "Телефон", article: "Мақала", lang: "Тіл", sendEmail: "Сілтемені Email арқылы жіберу", createdLink: "Сілтеме жасалды", status: "Мәртебе", invoice: "Инвойс", author: "Автор", amount: "Сома", createdAt: "Жасалды", search: "Автор, email, мақала немесе инвойс бойынша іздеу", allStatuses: "Барлық мәртебелер", emptyOrders: "Транзакциялар әлі жоқ.", open: "Ашу", transactions: "Транзакциялар" },
+    admin: { title: "Төлемдерді басқару", login: "Басқару панеліне кіру", loginTitle: "Төлемдерді басқару панелі", loginLead: "Төлем сілтемелерін жасау және транзакцияларды қарау үшін авторизациядан өтіңіз.", username: "Логин", password: "Құпиясөз", signIn: "Кіру", logout: "Шығу", create: "Сілтеме жасау", creating: "Сілтеме жасалуда…", createLead: "Автор деректерін енгізіп, хат тілін таңдаңыз және жеке төлем сілтемесін жіберіңіз.", orders: "Транзакциялар тарихы", ordersLead: "Төлем мәртебесін, авторды және соманы сілтеме жасау формасынан бөлек бақылаңыз.", refresh: "Жаңарту", noAccess: "Бұл есептік жазбада төлемдерді басқаруға рұқсат жоқ.", sessionExpired: "Сессия мерзімі аяқталды. Қайта кіріңіз.", invalidCredentials: "Логин немесе құпиясөз дұрыс емес.", loginRequired: "Логин мен құпиясөзді енгізіңіз.", authError: "Кіру мүмкін болмады. Деректерді тексеріп, қайталап көріңіз.", loadError: "Басқару панелін жүктеу мүмкін болмады.", email: "Email", fullName: "Т.А.Ә.", phone: "Телефон", article: "Мақала", lang: "Тіл", sendEmail: "Сілтемені Email арқылы жіберу", createdLink: "Сілтеме жасалды", status: "Мәртебе", invoice: "Инвойс", author: "Автор", amount: "Сома", createdAt: "Жасалды", search: "Автор, email, мақала немесе инвойс бойынша іздеу", allStatuses: "Барлық мәртебелер", emptyOrders: "Транзакциялар әлі жоқ.", open: "Ашу", transactions: "Транзакциялар", pricing: "Баға", pricingLead: "Жариялау құны теңгемен белгіленеді — Halyk ePay арқылы дәл осы сома алынады. USD бағасы бағам бойынша есептеледі және резидент еместер үшін анықтама ретінде көрсетіледі.", priceKzt: "Жариялау құны, ₸", rate: "Бағам, 1 USD үшін ₸", pricingPreview: "Баға сайтта осылай көрсетіледі", pricingSave: "Бағаны сақтау", pricingSaving: "Сақталуда…", pricingSaved: "Баға жаңартылды. Жаңа сілтемелер осы сомамен жасалады.", pricingInvalid: "Теңгемен бағаны және бағамды нөлден үлкен сан ретінде көрсетіңіз.", pricingFrozen: "Жіберілген төлем сілтемелері жасалған кездегі сомасын сақтайды — баға өзгерісі оларға әсер етпейді.", pricingFromEnv: "Қазір сервер параметрлеріндегі әдепкі мән қолданылады.", pricingUpdatedBy: "Өзгертілді" },
     legal: { service: "Қызмет сипаттамасы", terms: "Жария оферта", privacy: "Құпиялылық саясаты", refunds: "Қайтару ережелері", contacts: "Байланыс" },
   },
   en: {
@@ -120,7 +128,7 @@ const i18n = {
     },
     pay: { title: "Opening Halyk ePay", button: "Open payment form", token: "Requesting payment token...", error: "Could not start payment." },
     result: { ok: "Payment received", fail: "Payment failed", back: "Back to payment form" },
-    admin: { title: "Payment administration", login: "Management portal sign in", loginTitle: "Payment management portal", loginLead: "Sign in to create payment links and review transaction history.", username: "Username", password: "Password", signIn: "Sign in", logout: "Logout", create: "Create link", creating: "Creating link…", createLead: "Enter author details, choose the email language and send a personal payment link.", orders: "Transaction history", ordersLead: "Track payment status, author and amount separately from the link creation workflow.", refresh: "Refresh", noAccess: "This account does not have access to payment administration.", sessionExpired: "Session expired. Sign in again.", invalidCredentials: "Invalid username or password.", loginRequired: "Enter username and password.", authError: "Could not sign in. Check the details and try again.", loadError: "Could not load the management portal.", email: "Email", fullName: "Full name", phone: "Phone", article: "Article", lang: "Language", sendEmail: "Send link by email", createdLink: "Link created", status: "Status", invoice: "Invoice", author: "Author", amount: "Amount", createdAt: "Created", search: "Search author, email, article or invoice", allStatuses: "All statuses", emptyOrders: "No transactions yet.", open: "Open", transactions: "Transactions" },
+    admin: { title: "Payment administration", login: "Management portal sign in", loginTitle: "Payment management portal", loginLead: "Sign in to create payment links and review transaction history.", username: "Username", password: "Password", signIn: "Sign in", logout: "Logout", create: "Create link", creating: "Creating link…", createLead: "Enter author details, choose the email language and send a personal payment link.", orders: "Transaction history", ordersLead: "Track payment status, author and amount separately from the link creation workflow.", refresh: "Refresh", noAccess: "This account does not have access to payment administration.", sessionExpired: "Session expired. Sign in again.", invalidCredentials: "Invalid username or password.", loginRequired: "Enter username and password.", authError: "Could not sign in. Check the details and try again.", loadError: "Could not load the management portal.", email: "Email", fullName: "Full name", phone: "Phone", article: "Article", lang: "Language", sendEmail: "Send link by email", createdLink: "Link created", status: "Status", invoice: "Invoice", author: "Author", amount: "Amount", createdAt: "Created", search: "Search author, email, article or invoice", allStatuses: "All statuses", emptyOrders: "No transactions yet.", open: "Open", transactions: "Transactions", pricing: "Price", pricingLead: "The publication fee is set in tenge — this is the amount Halyk ePay actually charges. The USD figure is derived from the rate and shown for reference to non-residents.", priceKzt: "Publication fee, ₸", rate: "Rate, ₸ per 1 USD", pricingPreview: "How the price will appear on the site", pricingSave: "Save price", pricingSaving: "Saving…", pricingSaved: "Price updated. New links will be created with this amount.", pricingInvalid: "Enter the tenge price and the rate as numbers greater than zero.", pricingFrozen: "Payment links already sent keep the amount they were created with — a price change does not affect them.", pricingFromEnv: "The server default is currently in effect.", pricingUpdatedBy: "Updated" },
     legal: { service: "Service description", terms: "Public offer", privacy: "Privacy policy", refunds: "Refund policy", contacts: "Contacts" },
   },
 };
@@ -323,7 +331,7 @@ function Landing({ ctx, lang, onNavigate }) {
             <p className="landing-note">{c.pricing.note}</p>
             <button className="secondary-btn" type="button" onClick={() => onNavigate("/service")}>{c.pricing.cta}</button>
           </div>
-          <div className="price-badge"><span>{ctx.config.publicationFeeDisplay}</span><small>{money(ctx.config.pricing.residentKztAmount, "KZT")}</small></div>
+          <div className="price-badge"><span>{ctx.config.publicationFeeDisplay}</span><small>{c.pricing.secondary}</small></div>
         </div>
       </section>
 
@@ -379,7 +387,7 @@ function PaymentForm({ ctx, lang }) {
     const response = await apiFetch("/payments", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setStatus(payload.error || "Payment could not be created.");
+      setStatus(errorMessage(payload, "Payment could not be created."));
       return;
     }
     window.location.href = payload.payUrl;
@@ -389,7 +397,8 @@ function PaymentForm({ ctx, lang }) {
     <>
       <section className="hero">
         <div><p className="eyebrow">{t.eyebrow}</p><h1>{t.title}</h1><p className="lead">{t.lead}</p></div>
-        <div className="price-panel"><span className="price-label">{t.amount}</span><strong>{ctx.config.publicationFeeDisplay}</strong><small>{residency === "non_resident" ? nonResident : resident}</small></div>
+        {/* The headline is the amount that will actually be charged for the chosen residency. */}
+        <div className="price-panel"><span className="price-label">{t.amount}</span><strong>{residency === "non_resident" ? nonResident : resident}</strong><small>{residency === "non_resident" ? resident : nonResident}</small></div>
       </section>
       <section className="content-grid">
         <form id="payment-form" className="panel form-panel" onSubmit={submit}>
@@ -424,7 +433,7 @@ function PayPage({ ctx, lang }) {
     const response = await apiFetch(`/payments/${encodeURIComponent(ctx.order.id)}/payment-object`);
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setStatus(payload.error || t.error);
+      setStatus(errorMessage(payload, t.error));
       return;
     }
     if (!window.halyk?.pay) {
@@ -531,7 +540,7 @@ function AdminCreatePage({ lang, onCreated }) {
         onCreated();
         return;
       }
-      setStatus(response.status === 403 ? t.noAccess : payload.error || t.loadError);
+      setStatus(response.status === 403 ? t.noAccess : errorMessage(payload, t.loadError));
     } finally {
       setSubmitting(false);
     }
@@ -556,6 +565,93 @@ function AdminCreatePage({ lang, onCreated }) {
       </div>
       {createdLink && <p className="created-link"><span>{t.createdLink}</span><a href={createdLink} target="_blank" rel="noreferrer">{createdLink}</a></p>}
       <p className="status-text">{status}</p>
+    </form>
+  );
+}
+
+function AdminPricingPage({ lang, pricing, onSaved, onAuthLost }) {
+  const t = i18n[lang].admin;
+  const [kzt, setKzt] = useState("");
+  const [rate, setRate] = useState("");
+  const [status, setStatus] = useState("");
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // The form mirrors the loaded pricing; /admin/orders resolves after the first render.
+  useEffect(() => {
+    if (!pricing) return;
+    setKzt(String(pricing.residentKztAmount ?? ""));
+    setRate(String(pricing.usdToKztRate ?? ""));
+  }, [pricing?.residentKztAmount, pricing?.usdToKztRate]);
+
+  const preview = useMemo(() => {
+    const amount = Number(kzt);
+    const usdRate = Number(rate);
+    if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(usdRate) || usdRate <= 0) return null;
+    return {
+      kzt: money(Math.round(amount), "KZT"),
+      usd: money(Math.round((amount / usdRate) * 100) / 100, "USD"),
+    };
+  }, [kzt, rate]);
+
+  async function save(event) {
+    event.preventDefault();
+    setSaved(false);
+    if (!preview) {
+      setStatus(t.pricingInvalid);
+      return;
+    }
+    setStatus("");
+    setSaving(true);
+    try {
+      const response = await apiFetch("/admin/pricing", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ residentKztAmount: Number(kzt), usdToKztRate: Number(rate) }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (response.status === 401) { clearAdminJwt(); onAuthLost(); return; }
+      if (response.ok) {
+        setSaved(true);
+        setStatus(t.pricingSaved);
+        onSaved(payload.pricing);
+        return;
+      }
+      setStatus(response.status === 403 ? t.noAccess : errorMessage(payload, t.loadError));
+    } catch {
+      setStatus(t.loadError);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form className="panel admin-form" onSubmit={save} aria-busy={saving}>
+      <div className="section-heading"><h2>{t.pricing}</h2><p>{t.pricingLead}</p></div>
+      <fieldset className="admin-form-grid" disabled={saving || !pricing}>
+        <label>{t.priceKzt}<input name="residentKztAmount" type="number" min="1" step="1" inputMode="numeric" value={kzt} onChange={(event) => setKzt(event.target.value)} required /></label>
+        <label>{t.rate}<input name="usdToKztRate" type="number" min="1" step="0.01" inputMode="decimal" value={rate} onChange={(event) => setRate(event.target.value)} required /></label>
+      </fieldset>
+      <div className="price-preview">
+        <span>{t.pricingPreview}</span>
+        <strong>{preview ? preview.kzt : "-"}</strong>
+        <small>{preview ? preview.usd : "-"}</small>
+      </div>
+      <p className="landing-note">{t.pricingFrozen}</p>
+      <div className="form-actions">
+        <button className="primary-btn" disabled={saving || !pricing} aria-busy={saving}>
+          {saving && <span className="btn-spinner" aria-hidden="true" />}
+          {saving ? t.pricingSaving : t.pricingSave}
+        </button>
+      </div>
+      {pricing && (
+        <p className="muted pricing-meta">
+          {pricing.source === "db" && pricing.updatedAt
+            ? `${t.pricingUpdatedBy}: ${formatDate(pricing.updatedAt)}${pricing.updatedBy ? ` · ${pricing.updatedBy}` : ""}`
+            : t.pricingFromEnv}
+        </p>
+      )}
+      <p className={`status-text${saved ? " success-text" : status ? " danger-text" : ""}`} role="status">{status}</p>
     </form>
   );
 }
@@ -611,9 +707,9 @@ function AdminTransactionsPage({ data, status, lang, onRefresh }) {
 
 function AdminPage({ lang, path, onNavigate }) {
   const t = i18n[lang].admin;
-  const [data, setData] = useState({ orders: [], invitations: [] });
+  const [data, setData] = useState({ orders: [], invitations: [], pricing: null });
   const [status, setStatus] = useState("");
-  const view = path === "/admin/transactions" ? "transactions" : "create";
+  const view = path === "/admin/transactions" ? "transactions" : path === "/admin/pricing" ? "pricing" : "create";
   async function load() {
     try {
       const response = await apiFetch("/admin/orders");
@@ -637,10 +733,18 @@ function AdminPage({ lang, path, onNavigate }) {
       <nav className="admin-tabs" aria-label="Admin sections">
         <a className={view === "create" ? "active" : ""} href={localizedPath("/admin/create", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/create"); }}>{t.create}</a>
         <a className={view === "transactions" ? "active" : ""} href={localizedPath("/admin/transactions", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/transactions"); }}>{t.transactions}</a>
+        <a className={view === "pricing" ? "active" : ""} href={localizedPath("/admin/pricing", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/pricing"); }}>{t.pricing}</a>
       </nav>
-      {view === "create"
-        ? <AdminCreatePage lang={lang} onCreated={(reason) => reason === "auth" ? onNavigate("/admin/login") : load()} />
-        : <AdminTransactionsPage data={data} status={status} lang={lang} onRefresh={load} />}
+      {view === "create" && <AdminCreatePage lang={lang} onCreated={(reason) => reason === "auth" ? onNavigate("/admin/login") : load()} />}
+      {view === "transactions" && <AdminTransactionsPage data={data} status={status} lang={lang} onRefresh={load} />}
+      {view === "pricing" && (
+        <AdminPricingPage
+          lang={lang}
+          pricing={data.pricing}
+          onSaved={(pricing) => setData((current) => ({ ...current, pricing }))}
+          onAuthLost={() => onNavigate("/admin/login")}
+        />
+      )}
     </section>
   );
 }
@@ -732,7 +836,7 @@ function App() {
   else if (path.startsWith("/payment/success/")) page = <ResultPage ctx={ctx} lang={lang} ok />;
   else if (path.startsWith("/payment/failure/")) page = <ResultPage ctx={ctx} lang={lang} ok={false} />;
   else if (path === "/admin/login") page = <AdminLogin lang={lang} onNavigate={navigate} />;
-  else if (path === "/admin" || path === "/admin/create" || path === "/admin/transactions") page = adminJwt() ? <AdminPage lang={lang} path={path} onNavigate={navigate} /> : <AdminLogin lang={lang} onNavigate={navigate} />;
+  else if (["/admin", "/admin/create", "/admin/transactions", "/admin/pricing"].includes(path)) page = adminJwt() ? <AdminPage lang={lang} path={path} onNavigate={navigate} /> : <AdminLogin lang={lang} onNavigate={navigate} />;
   else page = <LegalPage ctx={ctx} lang={lang} kind={path.slice(1)} />;
   return <><Nav lang={lang} path={path} search={location.search} onNavigate={navigate} onChangeLang={changeLang} /><main>{page}</main><Footer ctx={ctx} lang={lang} onNavigate={navigate} /></>;
 }

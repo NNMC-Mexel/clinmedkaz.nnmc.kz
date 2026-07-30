@@ -1,5 +1,4 @@
 import crypto from 'node:crypto';
-import { config } from './config';
 
 export const SUPPORTED_LANGUAGES = ['ru', 'kk', 'en'];
 export const ORDER_ACTIVE_STATUSES = ['created', 'token_issued'];
@@ -35,29 +34,40 @@ export function normalizeResidency(value: unknown) {
   return cleanText(value, 24) === 'non_resident' ? 'non_resident' : 'resident_kz';
 }
 
-export function invitationPricingSnapshot(cfg = config) {
+type PricingLike = {
+  residentKztAmount: number;
+  usdToKztRate: number;
+  residentCurrency: string;
+  nonResidentAmount: number;
+  nonResidentCurrency: string;
+  publicationFeeUsd: number;
+};
+
+// Frozen onto the invitation so a later price change never moves the amount of a link
+// that has already been sent to an author.
+export function invitationPricingSnapshot(pricing: PricingLike) {
   return {
-    publicationFeeUsd: cfg.pricing.publicationFeeUsd,
-    usdToKztRate: cfg.pricing.usdToKztRate,
-    residentAmount: cfg.pricing.residentKztAmount,
-    residentCurrency: cfg.pricing.residentCurrency,
-    nonResidentAmount: cfg.pricing.nonResidentAmount,
-    nonResidentCurrency: cfg.pricing.nonResidentCurrency,
+    publicationFeeUsd: pricing.publicationFeeUsd,
+    usdToKztRate: pricing.usdToKztRate,
+    residentAmount: pricing.residentKztAmount,
+    residentCurrency: pricing.residentCurrency,
+    nonResidentAmount: pricing.nonResidentAmount,
+    nonResidentCurrency: pricing.nonResidentCurrency,
   };
 }
 
-export function calculateOrderPrice(residency: string, invitation: Record<string, any>, cfg = config) {
+export function calculateOrderPrice(residency: string, invitation: Record<string, any>, pricing: PricingLike) {
   if (residency === 'non_resident') {
     return {
-      amount: Number(invitation.nonResidentAmount || cfg.pricing.nonResidentAmount),
-      currency: invitation.nonResidentCurrency || cfg.pricing.nonResidentCurrency,
+      amount: Number(invitation.nonResidentAmount || pricing.nonResidentAmount),
+      currency: invitation.nonResidentCurrency || pricing.nonResidentCurrency,
       exchangeRate: null,
     };
   }
   return {
-    amount: Number(invitation.residentAmount || cfg.pricing.residentKztAmount),
-    currency: invitation.residentCurrency || cfg.pricing.residentCurrency,
-    exchangeRate: Number(invitation.usdToKztRate || cfg.pricing.usdToKztRate),
+    amount: Number(invitation.residentAmount || pricing.residentKztAmount),
+    currency: invitation.residentCurrency || pricing.residentCurrency,
+    exchangeRate: Number(invitation.usdToKztRate || pricing.usdToKztRate),
   };
 }
 

@@ -4,7 +4,9 @@
 
 export function getLandingContent(lang, config) {
   const b = config.business || {};
-  const fee = config.publicationFeeDisplay || "300 USD";
+  // KZT is the headline price (the amount Halyk ePay charges); USD is a reference figure.
+  const fee = config.publicationFeeDisplay || "145 620 KZT";
+  const feeUsd = config.publicationFeeDisplaySecondary || "300 USD";
   const email = b.supportEmail || "";
   const phone = b.supportPhone || "";
   const streetAddress = b.actualAddress || b.legalAddress || "пр. Абылай хана, 42";
@@ -82,9 +84,10 @@ export function getLandingContent(lang, config) {
     },
     pricing: {
       title: "Стоимость публикации",
-      lead: `Организационный взнос за редакционно-издательскую подготовку и публикацию одной статьи — ${fee}. Для резидентов Республики Казахстан оплата производится в тенге.`,
+      lead: `Организационный взнос за редакционно-издательскую подготовку и публикацию одной статьи — ${fee} для резидентов Республики Казахстан. Для нерезидентов взнос составляет ${feeUsd}.`,
       note: "Оплата возможна только после принятия статьи, по персональной ссылке от редакции. Прямая оплата с сайта без приглашения не производится.",
       cta: "Подробнее об услуге",
+      secondary: feeUsd,
     },
     cta: {
       title: "Готовы опубликовать исследование?",
@@ -179,9 +182,10 @@ export function getLandingContent(lang, config) {
     },
     pricing: {
       title: "Жариялау құны",
-      lead: `Бір мақаланы редакциялық-баспалық дайындау және жариялау үшін ұйымдастыру жарнасы — ${fee}. Қазақстан Республикасының резиденттері теңгемен төлейді.`,
+      lead: `Бір мақаланы редакциялық-баспалық дайындау және жариялау үшін ұйымдастыру жарнасы — Қазақстан Республикасының резиденттері үшін ${fee}. Резидент еместер үшін жарна ${feeUsd} құрайды.`,
       note: "Төлем тек мақала қабылданғаннан кейін, редакцияның жеке сілтемесі арқылы жүргізіледі. Шақыртусыз сайттан тікелей төлем жасалмайды.",
       cta: "Қызмет туралы толығырақ",
+      secondary: feeUsd,
     },
     cta: {
       title: "Зерттеуіңізді жариялауға дайынсыз ба?",
@@ -276,9 +280,10 @@ export function getLandingContent(lang, config) {
     },
     pricing: {
       title: "Publication fee",
-      lead: `The processing fee for editorial preparation and publication of one article is ${fee}. Residents of Kazakhstan pay in tenge.`,
+      lead: `The processing fee for editorial preparation and publication of one article is ${fee} for residents of Kazakhstan. Non-residents pay ${feeUsd}.`,
       note: "Payment is only possible after the article is accepted, via a personal link from the editorial office. Direct payment from the site without an invitation is not available.",
       cta: "More about the service",
+      secondary: feeUsd,
     },
     cta: {
       title: "Ready to publish your research?",

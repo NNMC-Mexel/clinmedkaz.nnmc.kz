@@ -19,6 +19,12 @@ export default {
       config: { auth: { scope: ['api::admin-api.admin-api.updateOrder'] } },
     },
     {
+      method: 'PUT',
+      path: '/admin/pricing',
+      handler: 'admin-api.updatePricing',
+      config: { auth: { scope: ['api::admin-api.admin-api.updatePricing'] } },
+    },
+    {
       method: 'GET',
       path: '/admin/orders/export.csv',
       handler: 'admin-api.exportCsv',

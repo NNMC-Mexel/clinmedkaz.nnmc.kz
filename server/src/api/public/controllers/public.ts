@@ -1,5 +1,6 @@
 import { publicConfig } from '../../../lib/config';
 import { cleanText, normalizeLanguage, SUPPORTED_LANGUAGES } from '../../../lib/domain';
+import { readPricing } from '../../../lib/pricing';
 import { readStore } from '../../../lib/store';
 
 function invitationSummary(invitation: Record<string, any> | null) {
@@ -46,11 +47,12 @@ export default {
       ? store.invitations.find((item) => item.id === inviteId && item.status !== 'cancelled')
       : null;
     const order = paymentOrderId ? store.orders.find((item) => item.id === paymentOrderId) : null;
+    const pricing = await readPricing();
 
     ctx.body = {
       lang,
       supportedLanguages: SUPPORTED_LANGUAGES,
-      config: publicConfig(),
+      config: publicConfig(pricing),
       invitation: invitationSummary(invitation || null),
       order: publicOrderSummary(order || null),
     };

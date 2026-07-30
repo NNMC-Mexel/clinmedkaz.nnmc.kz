@@ -4,6 +4,7 @@ import { requireAdmin } from '../../../lib/auth';
 import { findArticleDuplicates, invitationPricingSnapshot, validateInvitationInput } from '../../../lib/domain';
 import { logger } from '../../../lib/logger';
 import { sendMail } from '../../../lib/mailer';
+import { readPricing } from '../../../lib/pricing';
 import { readStore, updateStore } from '../../../lib/store';
 
 function makeId(prefix: string) {
@@ -36,11 +37,12 @@ export default {
     const actor = requireAdmin(ctx);
     const fields = validateInvitationInput(ctx.request.body || {});
     const sendEmail = ctx.request.body?.sendEmail !== false && ctx.request.body?.sendEmail !== 'false';
+    const pricing = await readPricing();
     const invitation = {
       id: makeId('inv'),
       status: 'created',
       ...fields,
-      ...invitationPricingSnapshot(),
+      ...invitationPricingSnapshot(pricing),
       createdAt: nowIso(),
       updatedAt: nowIso(),
     };

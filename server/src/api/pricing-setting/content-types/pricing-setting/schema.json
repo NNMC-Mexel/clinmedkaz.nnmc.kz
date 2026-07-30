@@ -1,0 +1,30 @@
+{
+  "kind": "singleType",
+  "collectionName": "payment_pricing_setting",
+  "info": {
+    "singularName": "pricing-setting",
+    "pluralName": "pricing-settings",
+    "displayName": "Publication pricing",
+    "description": "Editable publication fee. KZT is the base currency, USD is derived from the rate."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "residentKztAmount": {
+      "type": "decimal",
+      "required": true
+    },
+    "usdToKztRate": {
+      "type": "decimal",
+      "required": true
+    },
+    "updatedByAdmin": {
+      "type": "string"
+    },
+    "pricingUpdatedAt": {
+      "type": "datetime"
+    }
+  }
+}
