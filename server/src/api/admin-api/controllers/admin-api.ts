@@ -2,7 +2,8 @@ import { requireAdmin } from '../../../lib/auth';
 import { refundOutcome, sanitizeOrderPatch } from '../../../lib/domain';
 import { logger } from '../../../lib/logger';
 import { readPricing, savePricing } from '../../../lib/pricing';
-import { readStore, updateStore } from '../../../lib/store';
+import { reconcileActiveOrders } from '../../../lib/reconciliation';
+import { readOrdersPage, readStore, updateStore } from '../../../lib/store';
 
 function nowIso() {
   return new Date().toISOString();
@@ -49,20 +50,32 @@ function csvCell(value: unknown) {
 
 export default {
   async session(ctx: any) {
+    requireAdmin(ctx);
     const user = ctx.state?.user;
     ctx.body = { authenticated: true, username: user?.username || user?.email || null, id: user?.id || null };
   },
 
   async orders(ctx: any) {
     requireAdmin(ctx);
-    const [store, pricing] = await Promise.all([readStore(), readPricing()]);
+    const [page, pricing] = await Promise.all([
+      readOrdersPage({
+        page: ctx.query?.page,
+        pageSize: ctx.query?.pageSize,
+        query: ctx.query?.query,
+        status: ctx.query?.status,
+      }),
+      readPricing(),
+    ]);
     ctx.body = {
-      invitations: store.invitations,
-      callbacks: store.callbacks || [],
-      auditLog: [],
-      orders: store.orders.map(orderSummary),
+      orders: page.orders.map(orderSummary),
+      pagination: page.pagination,
       pricing,
     };
+  },
+
+  async reconcile(ctx: any) {
+    requireAdmin(ctx);
+    ctx.body = { reconciliation: await reconcileActiveOrders() };
   },
 
   async updatePricing(ctx: any) {
@@ -79,22 +92,20 @@ export default {
   async updateOrder(ctx: any) {
     const actor = requireAdmin(ctx);
     const patch = sanitizeOrderPatch(ctx.request.body || {});
-    let updated: Record<string, any> | null = null;
-    let refundApplied = false;
-    await updateStore((store) => {
+    const transition = await updateStore((store) => {
       const order = store.orders.find((item) => item.id === ctx.params.id);
-      if (!order) return;
+      if (!order) return { updated: null, refundApplied: false };
       if (patch.publishedAt === true) patch.publishedAt = order.publishedAt || nowIso();
       const newStatus = refundOutcome(order, patch);
       Object.assign(order, patch);
       if (newStatus) {
         order.status = newStatus;
         order.refundedAt = nowIso();
-        refundApplied = true;
       }
       order.updatedAt = nowIso();
-      updated = order;
+      return { updated: { ...order }, refundApplied: Boolean(newStatus) };
     });
+    const { updated, refundApplied } = transition;
     if (!updated) ctx.throw(404, 'Order not found');
     logger.info('Order updated by admin', { orderId: updated.id, by: actor, fields: Object.keys(patch), refundApplied });
     ctx.body = { order: updated };

@@ -3,6 +3,7 @@ import { config } from './config';
 
 const scope = 'webapi usermanagement email_send verification statement statistics payment';
 export const POSTLINK_PATH = '/api/halyk/postlink';
+let statusTokenCache: { token: string; expiresAt: number } | null = null;
 
 export function makeSecretHash() {
   return crypto.randomBytes(24).toString('base64url');
@@ -15,9 +16,7 @@ export function makeInvoiceId() {
 }
 
 export function postLinkUrl() {
-  const url = new URL(POSTLINK_PATH, config.backendUrl);
-  if (config.halyk.postLinkSecret) url.searchParams.set('key', config.halyk.postLinkSecret);
-  return url.toString();
+  return new URL(POSTLINK_PATH, config.backendUrl).toString();
 }
 
 export async function getPaymentToken({ invoiceId, secretHash, amount, currency, postLink, failurePostLink }) {
@@ -47,6 +46,42 @@ export async function getPaymentToken({ invoiceId, secretHash, amount, currency,
     throw new Error(`Halyk token request failed: ${reason}`);
   }
 
+  return payload;
+}
+
+async function getStatusToken() {
+  if (statusTokenCache && statusTokenCache.expiresAt > Date.now() + 30_000) return statusTokenCache.token;
+  const body = new URLSearchParams({
+    grant_type: 'client_credentials',
+    scope,
+    client_id: config.halyk.clientId,
+    client_secret: config.halyk.clientSecret,
+    terminal: config.halyk.terminalId,
+  });
+  const response = await fetch(config.halyk.oauthUrl, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body,
+  });
+  const payload: any = await response.json().catch(() => ({}));
+  if (!response.ok || !payload.access_token) {
+    const reason = payload.error_description || payload.error || response.statusText;
+    throw new Error(`Halyk status token request failed: ${reason}`);
+  }
+  statusTokenCache = {
+    token: payload.access_token,
+    expiresAt: Date.now() + Math.max(60, Number(payload.expires_in || 300)) * 1000,
+  };
+  return statusTokenCache.token;
+}
+
+export async function getHalykTransactionStatus(invoiceId: string) {
+  const token = await getStatusToken();
+  const response = await fetch(`${config.halyk.statusUrl}/${encodeURIComponent(invoiceId)}`, {
+    headers: { authorization: `Bearer ${token}`, accept: 'application/json' },
+  });
+  const payload: any = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(`Halyk status request failed: ${response.status} ${response.statusText}`);
   return payload;
 }
 

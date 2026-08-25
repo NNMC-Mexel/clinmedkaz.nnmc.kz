@@ -12,5 +12,11 @@ export default {
       handler: 'payments.paymentObject',
       config: { auth: false },
     },
+    {
+      method: 'POST',
+      path: '/payments/:id/reconcile',
+      handler: 'payments.reconcile',
+      config: { auth: false },
+    },
   ],
 };

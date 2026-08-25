@@ -25,6 +25,12 @@ export default {
       config: { auth: { scope: ['api::admin-api.admin-api.updatePricing'] } },
     },
     {
+      method: 'POST',
+      path: '/admin/reconcile',
+      handler: 'admin-api.reconcile',
+      config: { auth: { scope: ['api::admin-api.admin-api.reconcile'] } },
+    },
+    {
       method: 'GET',
       path: '/admin/orders/export.csv',
       handler: 'admin-api.exportCsv',

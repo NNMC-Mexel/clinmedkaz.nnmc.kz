@@ -16,7 +16,9 @@ function corsOrigins(env: Core.Config.Shared.ConfigParams['env']) {
 
 const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Middlewares => [
   'strapi::logger',
+  'global::request-context',
   'strapi::errors',
+  'global::payment-rate-limit',
   'strapi::security',
   {
     name: 'strapi::cors',
@@ -33,7 +35,6 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Middlewar
       headers: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Admin-Token', 'X-Payment-Service-Token'],
     },
   },
-  'strapi::poweredBy',
   'strapi::query',
   'strapi::body',
   'strapi::session',

@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { errors } from '@strapi/utils';
 
 export const SUPPORTED_LANGUAGES = ['ru', 'kk', 'en'];
 export const ORDER_ACTIVE_STATUSES = ['created', 'token_issued'];
@@ -17,10 +18,8 @@ export function cleanText(value: unknown, max = 500) {
   return String(value || '').trim().slice(0, max);
 }
 
-export function fail(message: string, status = 400) {
-  const error = new Error(message) as Error & { status?: number };
-  error.status = status;
-  return error;
+export function fail(message: string) {
+  return new errors.ValidationError(message);
 }
 
 export function timingSafeEqualText(a: unknown, b: unknown) {
@@ -111,23 +110,71 @@ export function paidOrderForInvitation(store: Record<string, any>, invitationId:
 
 export function amountMatches(order: Record<string, any>, payload: Record<string, any>) {
   if (payload.amount === undefined || payload.amount === null || payload.amount === '') {
-    return { checked: false, ok: true };
+    return { checked: false, ok: false };
   }
   if (Number(payload.amount) !== Number(order.amount)) return { checked: true, ok: false };
-  if (payload.currency && String(payload.currency).toUpperCase() !== String(order.currency).toUpperCase()) {
+  if (!payload.currency || String(payload.currency).toUpperCase() !== String(order.currency).toUpperCase()) {
     return { checked: true, ok: false };
   }
   return { checked: true, ok: true };
 }
 
-export function evaluatePostlink(order: Record<string, any> | null, payload: Record<string, any>) {
+function terminalFromPayload(payload: Record<string, any>) {
+  return cleanText(payload.terminalID || payload.terminalId || payload.terminal, 160);
+}
+
+export function sanitizePostlinkPayload(payload: Record<string, any>) {
+  const sanitized = {
+    invoiceId: cleanText(payload.invoiceId || payload.invoiceID, 80),
+    amount: payload.amount === undefined ? null : Number(payload.amount),
+    currency: cleanText(payload.currency, 8).toUpperCase(),
+    terminalID: terminalFromPayload(payload),
+    code: cleanText(payload.code, 40),
+    reference: cleanText(payload.reference, 160),
+    reason: cleanText(payload.reason, 300),
+    cardMask: cleanText(payload.cardMask, 32),
+  };
+  return Object.fromEntries(
+    Object.entries(sanitized).filter(([, value]) => value !== '' && value !== null && !(typeof value === 'number' && !Number.isFinite(value)))
+  );
+}
+
+export function evaluatePostlink(order: Record<string, any> | null, payload: Record<string, any>, expectedTerminalId = '') {
   if (!order) return { action: 'no_order', secretMatches: false, amount: { checked: false, ok: false } };
   const secretMatches = Boolean(payload.secret_hash) && timingSafeEqualText(payload.secret_hash, order.secretHash);
   const amount = amountMatches(order, payload);
+  const terminalMatches = !expectedTerminalId || timingSafeEqualText(terminalFromPayload(payload), expectedTerminalId);
   if (order.status === 'paid') return { action: 'already_paid', secretMatches, amount };
   if (!secretMatches) return { action: 'reject_secret', secretMatches: false, amount };
+  if (!terminalMatches) return { action: 'reject_terminal', secretMatches: true, amount };
   if (!amount.ok) return { action: 'reject_amount', secretMatches: true, amount };
   return { action: String(payload.code) === 'ok' ? 'paid' : 'failed', secretMatches: true, amount };
+}
+
+export function evaluateHalykTransaction(
+  order: Record<string, any>,
+  response: Record<string, any>,
+  expectedTerminalId: string
+) {
+  const transaction = response?.transaction;
+  if (String(response?.resultCode || '') !== '100' || !transaction) {
+    return { action: 'pending', reason: cleanText(response?.resultMessage || 'not_found', 200) };
+  }
+
+  const invoiceId = cleanText(transaction.invoiceID || transaction.invoiceId, 80);
+  if (invoiceId !== String(order.invoiceId)) return { action: 'reject', reason: 'invoice_mismatch' };
+  if (!amountMatches(order, transaction).ok) return { action: 'reject', reason: 'amount_or_currency_mismatch' };
+  if (expectedTerminalId && !timingSafeEqualText(terminalFromPayload(transaction), expectedTerminalId)) {
+    return { action: 'reject', reason: 'terminal_mismatch' };
+  }
+
+  const statusName = cleanText(transaction.statusName || transaction.status, 40).toUpperCase();
+  if (statusName === 'CHARGE') return { action: 'paid', reason: '' };
+  if (statusName === 'REFUND') return { action: 'refunded', reason: 'bank_refund' };
+  if (['FAILED', 'REJECT', 'CANCEL', 'CANCEL_OLD', '3D'].includes(statusName)) {
+    return { action: 'failed', reason: cleanText(transaction.reason || statusName, 200) };
+  }
+  return { action: 'pending', reason: statusName || 'in_progress' };
 }
 
 const ORDER_FIELD_ENUMS = {

@@ -19,6 +19,7 @@
 | 07 | [Реализованные изменения](07-changelog.md) | Что уже исправлено (P0/P1 целиком, большая часть P2/P3) |
 | 08 | [Вход через Strapi (JWT)](08-strapi-admin-auth.md) | Аккаунты админов в Strapi + запасной env-вход |
 | 09 | [Отчёт бизнес-аналитика](09-ba-report.md) | Аудит бизнес-логики: правила, риски, пробелы, рекомендации |
+| 10 | [Production runbook](PRODUCTION-RUNBOOK.md) | Релиз, health/readiness, мониторинг, backup, rollback и go/no-go |
 
 Дополнительно: [admin-strapi.md](admin-strapi.md) — заметка по запуску Strapi-бэкофиса (legacy, будет
 переработана в рамках дорожной карты).
@@ -26,9 +27,9 @@
 ## TL;DR для нового разработчика
 
 ```bash
-cp .env.example .env          # заполнить ADMIN_*, HALYK_*, SMTP_* (или оставить SMTP пустым — письма в консоль)
-npm install --prefix server
-npm install --prefix client
+cp .env.example .env          # заполнить PAYMENT_ADMIN_*, HALYK_*, SMTP_* и Strapi secrets
+npm ci --prefix server
+npm ci --prefix client
 npm run dev                   # Strapi на http://localhost:1337, React client на http://localhost:5173
 ```
 
@@ -38,6 +39,8 @@ npm run dev                   # Strapi на http://localhost:1337, React client 
 - Production frontend: `https://clinmedkaz.nnmc.kz`.
 - Production backend/API: `https://clinmedkazserver.nnmc.kz/api/*`.
 - Колбэки Halyk: `POST /api/halyk/postlink`.
+- Liveness/readiness: `GET /api/health`, `GET /api/ready`.
+- Полная проверка backend (build + unit + API E2E): `npm test --prefix server`.
 
 > Все суммы и реквизиты — боевые юридические данные НИИ. Halyk-ключи нужно держать
 > только в локальном `.env`; перед продакшеном замените их на боевые и **не коммитьте секреты**

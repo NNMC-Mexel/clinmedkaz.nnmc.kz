@@ -12,3 +12,4 @@ server/exports/
 data/
 .env
 *.log
+qa-artifacts/

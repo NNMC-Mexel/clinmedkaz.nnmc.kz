@@ -1,4 +1,5 @@
 import type { Core } from '@strapi/strapi';
+import cronTasks from './cron-tasks';
 
 const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Server => ({
   host: env('HOST', '0.0.0.0'),
@@ -7,6 +8,10 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Server =>
   url: env('BACKEND_URL', env('STRAPI_URL', env('NODE_ENV') === 'production' ? 'https://clinmedkazserver.nnmc.kz' : 'http://localhost:1337')),
   app: {
     keys: env.array('APP_KEYS'),
+  },
+  cron: {
+    enabled: env.bool('CRON_ENABLED', true),
+    tasks: cronTasks,
   },
 });
 

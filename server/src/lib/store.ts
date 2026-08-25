@@ -167,15 +167,67 @@ function callbackToStrapi(callback: Record<string, any>) {
   };
 }
 
-async function upsert(uid: typeof orderUid | typeof invitationUid | typeof callbackUid, externalId: string, data: Record<string, any>) {
-  if (!externalId) return;
+class ConcurrentStoreUpdateError extends Error {
+  constructor() {
+    super('Concurrent payment store update detected.');
+    this.name = 'ConcurrentStoreUpdateError';
+  }
+}
+
+function isRetryableStoreError(error: unknown) {
+  if (error instanceof ConcurrentStoreUpdateError) return true;
+  const code = String((error as { code?: unknown })?.code || '');
+  return ['SQLITE_BUSY', '40001', '40P01'].includes(code);
+}
+
+function changed(before: Record<string, any> | undefined, after: Record<string, any>) {
+  return !before || JSON.stringify(before) !== JSON.stringify(after);
+}
+
+async function persistVersioned(
+  uid: typeof orderUid | typeof invitationUid,
+  externalId: string,
+  data: Record<string, any>,
+  before: Record<string, any> | undefined,
+  versionField: 'paymentUpdatedAt' | 'invitationUpdatedAt'
+) {
   const query = strapi.db.query(uid);
-  const existing = await query.findOne({ where: { externalId } });
-  if (existing) {
-    await query.update({ where: { id: existing.id }, data });
+  if (!before) {
+    await query.create({ data });
     return;
   }
-  await query.create({ data });
+  const version = before.updatedAt;
+  const updated = await query.update({ where: { externalId, [versionField]: version }, data });
+  if (!updated) throw new ConcurrentStoreUpdateError();
+}
+
+async function persistStoreDiff(before: PaymentStore, after: PaymentStore) {
+  const invitationsBefore = new Map(before.invitations.map((item) => [item.id, item]));
+  const ordersBefore = new Map(before.orders.map((item) => [item.id, item]));
+  const callbacksBefore = new Set(before.callbacks.map((item) => item.id));
+
+  // Invitations are persisted first. A concurrent payment creation changes the invitation
+  // version, so the whole transaction retries before a second order can be inserted.
+  for (const invitation of after.invitations) {
+    const previous = invitationsBefore.get(invitation.id);
+    if (!changed(previous, invitation)) continue;
+    await persistVersioned(
+      invitationUid,
+      invitation.id,
+      invitationToStrapi(invitation),
+      previous,
+      'invitationUpdatedAt'
+    );
+  }
+  for (const order of after.orders) {
+    const previous = ordersBefore.get(order.id);
+    if (!changed(previous, order)) continue;
+    await persistVersioned(orderUid, order.id, orderToStrapi(order), previous, 'paymentUpdatedAt');
+  }
+  for (const callback of after.callbacks) {
+    if (callbacksBefore.has(callback.id)) continue;
+    await strapi.db.query(callbackUid).create({ data: callbackToStrapi(callback) });
+  }
 }
 
 export async function readStore(): Promise<PaymentStore> {
@@ -193,34 +245,58 @@ export async function readStore(): Promise<PaymentStore> {
   };
 }
 
-export async function writeStore(store: PaymentStore) {
-  for (const invitation of Array.isArray(store.invitations) ? store.invitations : []) {
-    const data = invitationToStrapi(invitation);
-    await upsert(invitationUid, data.externalId, data);
+export async function readOrdersPage(options: { page?: number; pageSize?: number; query?: string; status?: string } = {}) {
+  const page = Math.max(1, Math.floor(Number(options.page) || 1));
+  const pageSize = Math.min(100, Math.max(1, Math.floor(Number(options.pageSize) || 20)));
+  const query = cleanString(options.query).slice(0, 120);
+  const status = cleanString(options.status);
+  const where: Record<string, any> = {};
+  if (status && status !== 'all') where.status = status;
+  if (query) {
+    where.$or = ['invoiceId', 'fullName', 'email', 'articleTitle'].map((field) => ({
+      [field]: { $containsi: query },
+    }));
   }
-  for (const order of Array.isArray(store.orders) ? store.orders : []) {
-    const data = orderToStrapi(order);
-    await upsert(orderUid, data.externalId, data);
-  }
-  for (const callback of Array.isArray(store.callbacks) ? store.callbacks : []) {
-    const data = callbackToStrapi(callback);
-    await upsert(callbackUid, data.externalId, data);
-  }
+  const orderQuery = strapi.db.query(orderUid);
+  const [rows, total] = await Promise.all([
+    orderQuery.findMany({
+      where,
+      orderBy: { paymentCreatedAt: 'desc' },
+      offset: (page - 1) * pageSize,
+      limit: pageSize,
+    }),
+    orderQuery.count({ where }),
+  ]);
+  return {
+    orders: rows.map(orderToStore),
+    pagination: { page, pageSize, total, pageCount: Math.max(1, Math.ceil(total / pageSize)) },
+  };
 }
 
-let writeChain = Promise.resolve();
+export async function readActiveOrderIds(statuses: string[], limit = 100) {
+  const rows = await strapi.db.query(orderUid).findMany({
+    select: ['externalId'],
+    where: { status: { $in: statuses } },
+    orderBy: { paymentUpdatedAt: 'asc' },
+    limit: Math.min(500, Math.max(1, limit)),
+  });
+  return rows.map((row: Record<string, any>) => row.externalId).filter(Boolean);
+}
 
-export function updateStore(mutator: (store: PaymentStore) => unknown | Promise<unknown>) {
-  const run = async () => {
-    const store = await readStore();
-    const result = await mutator(store);
-    await writeStore(store);
-    return result;
-  };
-  const next = writeChain.then(run, run);
-  writeChain = next.then(
-    () => undefined,
-    () => undefined
-  );
-  return next;
+export async function updateStore<T>(mutator: (store: PaymentStore) => T | Promise<T>): Promise<T> {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      return await strapi.db.transaction(async () => {
+        const before = await readStore();
+        const store = structuredClone(before);
+        const result = await mutator(store);
+        await persistStoreDiff(before, store);
+        return result;
+      });
+    } catch (error) {
+      if (!isRetryableStoreError(error) || attempt === 4) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 10 * (attempt + 1)));
+    }
+  }
+  throw new ConcurrentStoreUpdateError();
 }

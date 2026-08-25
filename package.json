@@ -10,6 +10,7 @@
     "build": "npm run build:server && npm run build:client",
     "build:client": "npm run build --prefix client",
     "build:server": "npm run build --prefix server",
+    "test": "npm run test --prefix server && npm run build:client",
     "start:server": "npm run start --prefix server",
     "start": "npm run start:server",
     "dev:cms": "npm run develop --prefix server",
@@ -17,6 +18,6 @@
     "build:cms": "npm run build --prefix server"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.13.0 <=26.x.x"
   }
 }

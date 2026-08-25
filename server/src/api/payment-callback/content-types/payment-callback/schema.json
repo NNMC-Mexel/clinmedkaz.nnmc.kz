@@ -5,7 +5,7 @@
     "singularName": "payment-callback",
     "pluralName": "payment-callbacks",
     "displayName": "Payment callback",
-    "description": "Raw Halyk ePay callback audit record"
+    "description": "Sanitized Halyk ePay callback audit record"
   },
   "options": {
     "draftAndPublish": false

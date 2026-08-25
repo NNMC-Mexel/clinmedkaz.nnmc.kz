@@ -40,6 +40,43 @@ function errorMessage(payload, fallback) {
   return fallback;
 }
 
+const apiErrorI18n = {
+  ru: {
+    "Full name is required.": "Укажите ФИО.",
+    "Valid email is required.": "Укажите корректный Email.",
+    "Phone number is required.": "Укажите номер телефона.",
+    "Article title is required.": "Укажите название статьи.",
+    "Payment link is invalid or cancelled.": "Ссылка на оплату недействительна или отменена.",
+    "This article publication has already been paid.": "Публикация этой статьи уже оплачена.",
+    "This article has already been paid through another link.": "Эта статья уже оплачена по другой ссылке.",
+    "Payment provider is temporarily unavailable.": "Платёжный сервис временно недоступен. Попробуйте позже.",
+    "Cannot resend a cancelled invitation.": "Нельзя повторно отправить отменённую ссылку.",
+  },
+  kk: {
+    "Full name is required.": "Т.А.Ә. енгізіңіз.",
+    "Valid email is required.": "Дұрыс Email енгізіңіз.",
+    "Phone number is required.": "Телефон нөмірін енгізіңіз.",
+    "Article title is required.": "Мақала атауын енгізіңіз.",
+    "Payment link is invalid or cancelled.": "Төлем сілтемесі жарамсыз немесе жойылған.",
+    "This article publication has already been paid.": "Бұл мақаланы жариялау ақысы төленген.",
+    "This article has already been paid through another link.": "Бұл мақала басқа сілтеме арқылы төленген.",
+    "Payment provider is temporarily unavailable.": "Төлем сервисі уақытша қолжетімсіз. Кейінірек қайталаңыз.",
+    "Cannot resend a cancelled invitation.": "Жойылған сілтемені қайта жіберуге болмайды.",
+  },
+  en: {},
+};
+
+function localizedErrorMessage(payload, lang, fallback) {
+  const message = errorMessage(payload, fallback);
+  return apiErrorI18n[lang]?.[message] || message;
+}
+
+const ariaI18n = {
+  ru: { menu: "Меню", legal: "Правовые документы", adminSections: "Разделы администрирования" },
+  kk: { menu: "Мәзір", legal: "Құқықтық құжаттар", adminSections: "Басқару бөлімдері" },
+  en: { menu: "Menu", legal: "Legal documents", adminSections: "Administration sections" },
+};
+
 const paymentLogos = [
   { name: "epay-halyk.png", label: "Halyk ePay", className: "payment-logo-epay payment-logo-dark" },
   { name: "halyk-bank.png", label: "Halyk Bank", className: "payment-logo-bank" },
@@ -73,8 +110,8 @@ const i18n = {
       steps: ["Автор заполняет данные.", "Система открывает Halyk ePay.", "После оплаты администратор получает уведомление.", "Статья публикуется после подтверждения оплаты."],
     },
     pay: { title: "Открываем Halyk ePay", button: "Открыть форму оплаты", token: "Запрашиваем платежный токен...", error: "Не удалось начать оплату." },
-    result: { ok: "Оплата получена", fail: "Оплата не прошла", back: "Вернуться к форме оплаты" },
-    admin: { title: "Администрирование оплат", login: "Вход в панель управления", loginTitle: "Панель управления оплатами", loginLead: "Авторизуйтесь, чтобы создавать платежные ссылки и просматривать транзакции.", username: "Логин", password: "Пароль", signIn: "Войти", logout: "Выйти", create: "Создать ссылку", creating: "Создаём ссылку…", createLead: "Заполните данные автора, выберите язык письма и отправьте персональную ссылку на оплату.", orders: "История транзакций", ordersLead: "Отслеживайте статусы оплат, автора и сумму без отвлечения на форму создания ссылки.", refresh: "Обновить", noAccess: "У этой учетной записи нет доступа к управлению оплатами.", sessionExpired: "Сессия истекла. Войдите снова.", invalidCredentials: "Неверный логин или пароль.", loginRequired: "Введите логин и пароль.", authError: "Не удалось выполнить вход. Проверьте данные и повторите попытку.", loadError: "Не удалось загрузить панель управления.", email: "Email", fullName: "ФИО", phone: "Телефон", article: "Статья", lang: "Язык", sendEmail: "Отправить ссылку на Email", createdLink: "Ссылка создана", status: "Статус", invoice: "Инвойс", author: "Автор", amount: "Сумма", createdAt: "Создано", search: "Поиск по автору, email, статье или инвойсу", allStatuses: "Все статусы", emptyOrders: "Транзакций пока нет.", open: "Открыть", transactions: "Транзакции", pricing: "Цена", pricingLead: "Стоимость публикации задаётся в тенге — именно эта сумма списывается через Halyk ePay. Цена в USD рассчитывается по курсу и показывается справочно для нерезидентов.", priceKzt: "Стоимость публикации, ₸", rate: "Курс, ₸ за 1 USD", pricingPreview: "Так цена будет показана на сайте", pricingSave: "Сохранить цену", pricingSaving: "Сохраняем…", pricingSaved: "Цена обновлена. Новые ссылки будут создаваться с этой суммой.", pricingInvalid: "Укажите цену в тенге и курс числами больше нуля.", pricingFrozen: "Уже отправленные ссылки на оплату сохраняют сумму, с которой были созданы, — изменение цены их не затронет.", pricingFromEnv: "Сейчас действует значение по умолчанию из настроек сервера.", pricingUpdatedBy: "Изменено" },
+    result: { ok: "Оплата получена", fail: "Оплата не прошла", pending: "Проверяем оплату", checking: "Сверяем статус с Halyk ePay…", pendingHelp: "Банк ещё не подтвердил итоговый статус. Обновите страницу через несколько секунд.", back: "Вернуться к форме оплаты" },
+    admin: { title: "Администрирование оплат", login: "Вход в панель управления", loginTitle: "Панель управления оплатами", loginLead: "Авторизуйтесь, чтобы создавать платежные ссылки и просматривать транзакции.", username: "Логин", password: "Пароль", signIn: "Войти", logout: "Выйти", create: "Создать ссылку", creating: "Создаём ссылку…", createLead: "Заполните данные автора, выберите язык письма и отправьте персональную ссылку на оплату.", orders: "История транзакций", ordersLead: "Отслеживайте статусы оплат, автора и сумму без отвлечения на форму создания ссылки.", refresh: "Обновить", syncing: "Сверяем с Halyk…", syncWarning: "История загружена, но Halyk временно не ответил. Показаны последние сохранённые статусы.", noAccess: "У этой учетной записи нет доступа к управлению оплатами.", sessionExpired: "Сессия истекла. Войдите снова.", invalidCredentials: "Неверный логин или пароль.", loginRequired: "Введите логин и пароль.", authError: "Не удалось выполнить вход. Проверьте данные и повторите попытку.", loadError: "Не удалось загрузить панель управления.", email: "Email", fullName: "ФИО", phone: "Телефон", article: "Статья", lang: "Язык", sendEmail: "Отправить ссылку на Email", createdLink: "Ссылка создана", status: "Статус", invoice: "Инвойс", author: "Автор", amount: "Сумма", createdAt: "Создано", search: "Поиск по автору, email, статье или инвойсу", allStatuses: "Все статусы", emptyOrders: "Транзакций пока нет.", open: "Открыть", transactions: "Транзакции", pricing: "Цена", pricingLead: "Стоимость публикации задаётся в тенге — именно эта сумма списывается через Halyk ePay. Цена в USD рассчитывается по курсу и показывается справочно для нерезидентов.", priceKzt: "Стоимость публикации, ₸", rate: "Курс, ₸ за 1 USD", pricingPreview: "Так цена будет показана на сайте", pricingSave: "Сохранить цену", pricingSaving: "Сохраняем…", pricingSaved: "Цена обновлена. Новые ссылки будут создаваться с этой суммой.", pricingInvalid: "Укажите цену в тенге и курс числами больше нуля.", pricingFrozen: "Уже отправленные ссылки на оплату сохраняют сумму, с которой были созданы, — изменение цены их не затронет.", pricingFromEnv: "Сейчас действует значение по умолчанию из настроек сервера.", pricingUpdatedBy: "Изменено" },
     legal: { service: "Описание услуги", terms: "Публичная оферта", privacy: "Политика конфиденциальности", refunds: "Правила возврата", contacts: "Контакты" },
   },
   kk: {
@@ -100,7 +137,7 @@ const i18n = {
       steps: ["Автор деректерді толтырады.", "Жүйе Halyk ePay ашады.", "Төлемнен кейін әкімші хабарлама алады.", "Мақала төлем расталғаннан кейін жарияланады."],
     },
     pay: { title: "Halyk ePay ашылуда", button: "Төлем формасын ашу", token: "Төлем токені сұралуда...", error: "Төлемді бастау мүмкін болмады." },
-    result: { ok: "Төлем қабылданды", fail: "Төлем өтпеді", back: "Төлем формасына оралу" },
+    result: { ok: "Төлем қабылданды", fail: "Төлем өтпеді", pending: "Төлем тексерілуде", checking: "Halyk ePay мәртебесі тексерілуде…", pendingHelp: "Банк соңғы мәртебені әлі растаған жоқ. Бірнеше секундтан кейін бетті жаңартыңыз.", back: "Төлем формасына оралу" },
     admin: { title: "Төлемдерді басқару", login: "Басқару панеліне кіру", loginTitle: "Төлемдерді басқару панелі", loginLead: "Төлем сілтемелерін жасау және транзакцияларды қарау үшін авторизациядан өтіңіз.", username: "Логин", password: "Құпиясөз", signIn: "Кіру", logout: "Шығу", create: "Сілтеме жасау", creating: "Сілтеме жасалуда…", createLead: "Автор деректерін енгізіп, хат тілін таңдаңыз және жеке төлем сілтемесін жіберіңіз.", orders: "Транзакциялар тарихы", ordersLead: "Төлем мәртебесін, авторды және соманы сілтеме жасау формасынан бөлек бақылаңыз.", refresh: "Жаңарту", noAccess: "Бұл есептік жазбада төлемдерді басқаруға рұқсат жоқ.", sessionExpired: "Сессия мерзімі аяқталды. Қайта кіріңіз.", invalidCredentials: "Логин немесе құпиясөз дұрыс емес.", loginRequired: "Логин мен құпиясөзді енгізіңіз.", authError: "Кіру мүмкін болмады. Деректерді тексеріп, қайталап көріңіз.", loadError: "Басқару панелін жүктеу мүмкін болмады.", email: "Email", fullName: "Т.А.Ә.", phone: "Телефон", article: "Мақала", lang: "Тіл", sendEmail: "Сілтемені Email арқылы жіберу", createdLink: "Сілтеме жасалды", status: "Мәртебе", invoice: "Инвойс", author: "Автор", amount: "Сома", createdAt: "Жасалды", search: "Автор, email, мақала немесе инвойс бойынша іздеу", allStatuses: "Барлық мәртебелер", emptyOrders: "Транзакциялар әлі жоқ.", open: "Ашу", transactions: "Транзакциялар", pricing: "Баға", pricingLead: "Жариялау құны теңгемен белгіленеді — Halyk ePay арқылы дәл осы сома алынады. USD бағасы бағам бойынша есептеледі және резидент еместер үшін анықтама ретінде көрсетіледі.", priceKzt: "Жариялау құны, ₸", rate: "Бағам, 1 USD үшін ₸", pricingPreview: "Баға сайтта осылай көрсетіледі", pricingSave: "Бағаны сақтау", pricingSaving: "Сақталуда…", pricingSaved: "Баға жаңартылды. Жаңа сілтемелер осы сомамен жасалады.", pricingInvalid: "Теңгемен бағаны және бағамды нөлден үлкен сан ретінде көрсетіңіз.", pricingFrozen: "Жіберілген төлем сілтемелері жасалған кездегі сомасын сақтайды — баға өзгерісі оларға әсер етпейді.", pricingFromEnv: "Қазір сервер параметрлеріндегі әдепкі мән қолданылады.", pricingUpdatedBy: "Өзгертілді" },
     legal: { service: "Қызмет сипаттамасы", terms: "Жария оферта", privacy: "Құпиялылық саясаты", refunds: "Қайтару ережелері", contacts: "Байланыс" },
   },
@@ -127,7 +164,7 @@ const i18n = {
       steps: ["Author fills in payment details.", "The system opens Halyk ePay.", "The administrator receives notification.", "The article is published after payment confirmation."],
     },
     pay: { title: "Opening Halyk ePay", button: "Open payment form", token: "Requesting payment token...", error: "Could not start payment." },
-    result: { ok: "Payment received", fail: "Payment failed", back: "Back to payment form" },
+    result: { ok: "Payment received", fail: "Payment failed", pending: "Checking payment", checking: "Checking the status with Halyk ePay…", pendingHelp: "The bank has not confirmed the final status yet. Refresh the page in a few seconds.", back: "Back to payment form" },
     admin: { title: "Payment administration", login: "Management portal sign in", loginTitle: "Payment management portal", loginLead: "Sign in to create payment links and review transaction history.", username: "Username", password: "Password", signIn: "Sign in", logout: "Logout", create: "Create link", creating: "Creating link…", createLead: "Enter author details, choose the email language and send a personal payment link.", orders: "Transaction history", ordersLead: "Track payment status, author and amount separately from the link creation workflow.", refresh: "Refresh", noAccess: "This account does not have access to payment administration.", sessionExpired: "Session expired. Sign in again.", invalidCredentials: "Invalid username or password.", loginRequired: "Enter username and password.", authError: "Could not sign in. Check the details and try again.", loadError: "Could not load the management portal.", email: "Email", fullName: "Full name", phone: "Phone", article: "Article", lang: "Language", sendEmail: "Send link by email", createdLink: "Link created", status: "Status", invoice: "Invoice", author: "Author", amount: "Amount", createdAt: "Created", search: "Search author, email, article or invoice", allStatuses: "All statuses", emptyOrders: "No transactions yet.", open: "Open", transactions: "Transactions", pricing: "Price", pricingLead: "The publication fee is set in tenge — this is the amount Halyk ePay actually charges. The USD figure is derived from the rate and shown for reference to non-residents.", priceKzt: "Publication fee, ₸", rate: "Rate, ₸ per 1 USD", pricingPreview: "How the price will appear on the site", pricingSave: "Save price", pricingSaving: "Saving…", pricingSaved: "Price updated. New links will be created with this amount.", pricingInvalid: "Enter the tenge price and the rate as numbers greater than zero.", pricingFrozen: "Payment links already sent keep the amount they were created with — a price change does not affect them.", pricingFromEnv: "The server default is currently in effect.", pricingUpdatedBy: "Updated" },
     legal: { service: "Service description", terms: "Public offer", privacy: "Privacy policy", refunds: "Refund policy", contacts: "Contacts" },
   },
@@ -196,6 +233,18 @@ const adminUiI18n = {
   },
 };
 
+const adminSyncI18n = {
+  ru: { syncing: "Сверяем с Halyk…", warning: "История загружена, но Halyk временно не ответил. Показаны последние сохранённые статусы." },
+  kk: { syncing: "Halyk-пен салыстырылуда…", warning: "Тарих жүктелді, бірақ Halyk уақытша жауап бермеді. Соңғы сақталған мәртебелер көрсетілді." },
+  en: { syncing: "Checking with Halyk…", warning: "The history loaded, but Halyk did not respond. The latest saved statuses are shown." },
+};
+
+const adminPaginationI18n = {
+  ru: { search: "Найти", previous: "Назад", next: "Далее", page: (current, count) => `Страница ${current} из ${count}` },
+  kk: { search: "Іздеу", previous: "Артқа", next: "Келесі", page: (current, count) => `${current} / ${count} бет` },
+  en: { search: "Search", previous: "Previous", next: "Next", page: (current, count) => `Page ${current} of ${count}` },
+};
+
 const dateLocales = { ru: "ru-RU", kk: "kk-KZ", en: "en-US" };
 
 function adminStatusLabel(status, lang) {
@@ -251,7 +300,7 @@ function Nav({ lang, path, search, onNavigate, onChangeLang }) {
     <nav className={`top-nav${menuOpen ? " menu-open" : ""}`}>
       <div className="top-nav-inner">
         <a className="brand" href={localizedPath("/", lang)} onClick={(event) => go(event, "/", "")}><span className="brand-mark">CM</span><span>ClinMedKaz</span></a>
-        <button className="menu-toggle" type="button" aria-controls="primary-menu" aria-expanded={menuOpen} aria-label="Menu" onClick={() => setMenuOpen((value) => !value)}><span /><span /><span /></button>
+        <button className="menu-toggle" type="button" aria-controls="primary-menu" aria-expanded={menuOpen} aria-label={ariaI18n[lang].menu} onClick={() => setMenuOpen((value) => !value)}><span /><span /><span /></button>
         <div className="nav-links" id="primary-menu">
           {links.map(([base, hash], index) => <a key={index} href={localizedPath(base, lang)} onClick={(event) => go(event, base, hash)}>{t.nav[index]}</a>)}
           <a className="nav-pay-link" href={localizedPath("/payment", lang)} onClick={(event) => go(event, "/payment", "")}>{t.navPayment}</a>
@@ -283,7 +332,7 @@ function Footer({ ctx, lang, onNavigate }) {
           ))}
         </div>
       </div>
-      <nav className="footer-legal" aria-label="Legal">
+      <nav className="footer-legal" aria-label={ariaI18n[lang].legal}>
         {legalLinks.map(([href, label]) => (
           <a key={href} href={localizedPath(href, lang)} onClick={(event) => go(event, href)}>{label}</a>
         ))}
@@ -428,15 +477,14 @@ function Landing({ ctx, lang, onNavigate }) {
           ))}
         </div>
         <div className="contact-main">
-          <div className="contact-map-widget">
-            <iframe
-              src={c.contact.map.widgetSrc}
-              title={c.contact.map.title}
-              loading="lazy"
-              allowFullScreen
-            />
+          <div className="contact-map-widget" aria-label={c.contact.map.title}>
+            <div className="map-surface" aria-hidden="true"><span className="map-road map-road-one" /><span className="map-road map-road-two" /></div>
+            <div className="map-location">
+              <span className="map-pin"><ContactIcon type="pin" /></span>
+              <div><strong>{c.contact.map.title}</strong><span>{c.contact.map.address}</span></div>
+            </div>
+            <a className="map-action" href={c.contact.map.url} target="_blank" rel="noreferrer">{c.contact.map.action}</a>
           </div>
-          <a className="map-action" href={c.contact.map.url} target="_blank" rel="noreferrer">{c.contact.map.action}</a>
           <aside className="contact-quick">
             <h3>{c.contact.quick.title}</h3>
             <p>{c.contact.quick.text}</p>
@@ -467,7 +515,7 @@ function PaymentForm({ ctx, lang }) {
     const response = await apiFetch("/payments", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setStatus(errorMessage(payload, "Payment could not be created."));
+      setStatus(localizedErrorMessage(payload, lang, i18n[lang].pay.error));
       return;
     }
     window.location.href = payload.payUrl;
@@ -513,7 +561,7 @@ function PayPage({ ctx, lang }) {
     const response = await apiFetch(`/payments/${encodeURIComponent(ctx.order.id)}/payment-object`);
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setStatus(errorMessage(payload, t.error));
+      setStatus(localizedErrorMessage(payload, lang, t.error));
       return;
     }
     if (!window.halyk?.pay) {
@@ -530,10 +578,26 @@ function PayPage({ ctx, lang }) {
   return <section className="center-panel"><div className="panel"><p className="eyebrow">{ctx.order?.invoiceId}</p><h1>{t.title}</h1><button className="primary-btn" onClick={openPayment}>{t.button}</button><p className="status-text">{status}</p></div></section>;
 }
 
-function ResultPage({ ctx, lang, ok }) {
+function ResultPage({ ctx, lang, onRefresh }) {
   const t = i18n[lang].result;
+  const [checking, setChecking] = useState(false);
+  const status = ctx.order?.status || "";
+  const paid = status === "paid";
+  const failed = !ctx.order || ["failed", "postlink_rejected", "cancelled", "refunded"].includes(status);
+  const pending = !paid && !failed;
   const href = ctx.order?.invitationId ? `/?invite=${encodeURIComponent(ctx.order.invitationId)}&lang=${lang}` : `/?lang=${lang}`;
-  return <section className="center-panel"><div className={`panel ${ok ? "success" : "danger"}`}><h1>{ok ? t.ok : t.fail}</h1>{ctx.order && <p className="muted">{ctx.order.invoiceId}<br />{ctx.order.articleTitle}</p>}<a className="secondary-btn" href={href}>{t.back}</a></div></section>;
+  useEffect(() => {
+    if (!ctx.order?.id || !pending) return;
+    let active = true;
+    setChecking(true);
+    apiFetch(`/payments/${encodeURIComponent(ctx.order.id)}/reconcile`, { method: "POST" })
+      .then(() => active && onRefresh?.())
+      .catch(() => {})
+      .finally(() => active && setChecking(false));
+    return () => { active = false; };
+  }, [ctx.order?.id]);
+  const title = paid ? t.ok : failed ? t.fail : t.pending;
+  return <section className="center-panel"><div className={`panel ${paid ? "success" : failed ? "danger" : "quiet"}`}><h1>{title}</h1>{ctx.order && <p className="muted">{ctx.order.invoiceId}<br />{ctx.order.articleTitle}</p>}{pending && <p className="status-text" role="status">{checking ? t.checking : t.pendingHelp}</p>}<a className="secondary-btn" href={href}>{t.back}</a></div></section>;
 }
 
 function AdminLogin({ lang, onNavigate }) {
@@ -622,7 +686,7 @@ function AdminCreatePage({ lang, onCreated }) {
         onCreated();
         return;
       }
-      setStatus(response.status === 403 ? t.noAccess : errorMessage(payload, t.loadError));
+      setStatus(response.status === 403 ? t.noAccess : localizedErrorMessage(payload, lang, t.loadError));
     } finally {
       setSubmitting(false);
     }
@@ -714,7 +778,7 @@ function AdminPricingPage({ lang, pricing, onSaved, onAuthLost }) {
         onSaved(payload.pricing);
         return;
       }
-      setStatus(response.status === 403 ? t.noAccess : errorMessage(payload, t.loadError));
+      setStatus(response.status === 403 ? t.noAccess : localizedErrorMessage(payload, lang, t.loadError));
     } catch {
       setStatus(t.loadError);
     } finally {
@@ -754,41 +818,38 @@ function AdminPricingPage({ lang, pricing, onSaved, onAuthLost }) {
   );
 }
 
-function AdminTransactionsPage({ data, status, lang, onRefresh }) {
+function AdminTransactionsPage({ data, status, lang, onRefresh, syncing, filters, onFiltersChange }) {
   const t = i18n[lang].admin;
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const paginationT = adminPaginationI18n[lang] || adminPaginationI18n.ru;
+  const [query, setQuery] = useState(filters.query);
+  const [statusFilter, setStatusFilter] = useState(filters.status);
   const orders = data.orders || [];
-  const statuses = useMemo(
-    () => Array.from(new Set(orders.map((order) => order.status).filter(Boolean))).sort((left, right) => adminStatusLabel(left, lang).localeCompare(adminStatusLabel(right, lang), dateLocales[lang] || dateLocales.ru)),
-    [orders, lang]
-  );
-  const filteredOrders = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    return orders.filter((order) => {
-      const matchesStatus = statusFilter === "all" || order.status === statusFilter;
-      const haystack = [order.invoiceId, order.fullName, order.email, order.articleTitle, order.amount, order.currency].join(" ").toLowerCase();
-      return matchesStatus && (!needle || haystack.includes(needle));
-    });
-  }, [orders, query, statusFilter]);
+  const statuses = useMemo(() => Object.keys(adminUiI18n[lang]?.statuses || adminUiI18n.ru.statuses), [lang]);
+  const pagination = data.pagination || { page: 1, pageCount: 1, total: orders.length };
+
+  function applyFilters(event) {
+    event.preventDefault();
+    onFiltersChange({ query: query.trim(), status: statusFilter, page: 1 });
+  }
 
   return (
     <section className="panel transactions-panel">
       <div className="table-header">
         <div className="section-heading"><h2>{t.orders}</h2><p>{t.ordersLead}</p></div>
-        <button className="secondary-btn" type="button" onClick={onRefresh}>{t.refresh}</button>
+        <button className="secondary-btn" type="button" onClick={onRefresh} disabled={syncing}>{syncing ? adminSyncI18n[lang].syncing : t.refresh}</button>
       </div>
-      <div className="admin-toolbar">
+      <form className="admin-toolbar" onSubmit={applyFilters}>
         <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.search} />
         <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
           <option value="all">{t.allStatuses}</option>
           {statuses.map((item) => <option key={item} value={item}>{adminStatusLabel(item, lang)}</option>)}
         </select>
-      </div>
+        <button className="secondary-btn" type="submit">{paginationT.search}</button>
+      </form>
       {status && <p className="status-text danger-text">{status}</p>}
-      {filteredOrders.length === 0 ? <p className="empty-state">{t.emptyOrders}</p> : (
+      {orders.length === 0 ? <p className="empty-state">{t.emptyOrders}</p> : (
         <div className="transaction-list">
-          {filteredOrders.map((order) => (
+          {orders.map((order) => (
             <article className="transaction-card" key={order.id}>
               <div className="transaction-main">
                 <span className={`badge badge-${order.status}`}>{adminStatusLabel(order.status, lang)}</span>
@@ -802,28 +863,55 @@ function AdminTransactionsPage({ data, status, lang, onRefresh }) {
           ))}
         </div>
       )}
+      {pagination.pageCount > 1 && (
+        <nav className="admin-pagination" aria-label={paginationT.page(pagination.page, pagination.pageCount)}>
+          <button className="secondary-btn" type="button" disabled={pagination.page <= 1 || syncing} onClick={() => onFiltersChange({ ...filters, page: pagination.page - 1 })}>{paginationT.previous}</button>
+          <span>{paginationT.page(pagination.page, pagination.pageCount)}</span>
+          <button className="secondary-btn" type="button" disabled={pagination.page >= pagination.pageCount || syncing} onClick={() => onFiltersChange({ ...filters, page: pagination.page + 1 })}>{paginationT.next}</button>
+        </nav>
+      )}
     </section>
   );
 }
 
 function AdminPage({ lang, path, onNavigate }) {
   const t = i18n[lang].admin;
-  const [data, setData] = useState({ orders: [], invitations: [], pricing: null });
+  const [data, setData] = useState({ orders: [], pagination: { page: 1, pageCount: 1, total: 0 }, pricing: null });
+  const [filters, setFilters] = useState({ query: "", status: "all", page: 1 });
   const [status, setStatus] = useState("");
+  const [syncing, setSyncing] = useState(false);
   const view = path === "/admin/transactions" ? "transactions" : path === "/admin/pricing" ? "pricing" : "create";
-  async function load() {
+  async function load({ reconcile = true, nextFilters = filters } = {}) {
     try {
-      const response = await apiFetch("/admin/orders");
+      let syncWarning = false;
+      if (reconcile) {
+        setSyncing(true);
+        const syncResponse = await apiFetch("/admin/reconcile", { method: "POST" });
+        if (syncResponse.status === 401) { clearAdminJwt(); onNavigate("/admin/login"); return; }
+        if (syncResponse.status === 403) { setStatus(t.noAccess); return; }
+        syncWarning = !syncResponse.ok;
+      }
+      const params = new URLSearchParams({ page: String(nextFilters.page), pageSize: "20" });
+      if (nextFilters.query) params.set("query", nextFilters.query);
+      if (nextFilters.status !== "all") params.set("status", nextFilters.status);
+      const response = await apiFetch(`/admin/orders?${params.toString()}`);
       if (response.status === 401) { clearAdminJwt(); onNavigate("/admin/login"); return; }
       if (response.status === 403) { setStatus(t.noAccess); return; }
       if (!response.ok) { setStatus(t.loadError); return; }
-      setStatus("");
+      setStatus(syncWarning ? adminSyncI18n[lang].warning : "");
       setData(await response.json());
     } catch {
       setStatus(t.loadError);
+    } finally {
+      setSyncing(false);
     }
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    if (view !== "transactions") return undefined;
+    const timer = window.setInterval(() => load(), 60_000);
+    return () => window.clearInterval(timer);
+  }, [view, lang, filters.query, filters.status, filters.page]);
 
   return (
     <section className="admin-shell">
@@ -831,13 +919,13 @@ function AdminPage({ lang, path, onNavigate }) {
         <div><p className="eyebrow">ClinMedKaz Pay</p><h1>{t.title}</h1></div>
         <button className="secondary-btn" type="button" onClick={() => { clearAdminJwt(); onNavigate("/admin/login"); }}>{t.logout}</button>
       </header>
-      <nav className="admin-tabs" aria-label="Admin sections">
+      <nav className="admin-tabs" aria-label={ariaI18n[lang].adminSections}>
         <a className={view === "create" ? "active" : ""} href={localizedPath("/admin/create", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/create"); }}>{t.create}</a>
         <a className={view === "transactions" ? "active" : ""} href={localizedPath("/admin/transactions", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/transactions"); }}>{t.transactions}</a>
         <a className={view === "pricing" ? "active" : ""} href={localizedPath("/admin/pricing", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/pricing"); }}>{t.pricing}</a>
       </nav>
-      {view === "create" && <AdminCreatePage lang={lang} onCreated={(reason) => reason === "auth" ? onNavigate("/admin/login") : load()} />}
-      {view === "transactions" && <AdminTransactionsPage data={data} status={status} lang={lang} onRefresh={load} />}
+      {view === "create" && <AdminCreatePage lang={lang} onCreated={(reason) => reason === "auth" ? onNavigate("/admin/login") : load({ reconcile: false })} />}
+      {view === "transactions" && <AdminTransactionsPage data={data} status={status} lang={lang} onRefresh={() => load()} syncing={syncing} filters={filters} onFiltersChange={setFilters} />}
       {view === "pricing" && (
         <AdminPricingPage
           lang={lang}
@@ -912,14 +1000,18 @@ function App() {
     return () => window.removeEventListener("popstate", syncLocation);
   }, []);
 
-  useEffect(() => {
+  function loadContext() {
     const params = new URLSearchParams(location.search);
     params.set("path", location.path);
     setError("");
-    apiFetch(`/public/context?${params.toString()}`)
+    return apiFetch(`/public/context?${params.toString()}`)
       .then((response) => response.ok ? response.json() : Promise.reject(new Error("Could not load page")))
       .then(setCtx)
       .catch((err) => setError(err.message));
+  }
+
+  useEffect(() => {
+    loadContext();
   }, [location]);
   const lang = useMemo(() => supportedLanguages.includes(ctx?.lang) ? ctx.lang : requestedLang, [ctx, requestedLang]);
   if (error) return <main className="center-panel"><div className="panel danger"><h1>{error}</h1></div></main>;
@@ -930,12 +1022,12 @@ function App() {
   else if (path === "/payment") page = <PaymentForm ctx={ctx} lang={lang} />;
   else if (path.startsWith("/pay/")) {
     const closedStatuses = ["failed", "postlink_rejected", "cancelled", "refunded"];
-    if (!ctx.order || closedStatuses.includes(ctx.order.status)) page = <ResultPage ctx={ctx} lang={lang} ok={false} />;
-    else if (ctx.order.status === "paid") page = <ResultPage ctx={ctx} lang={lang} ok />;
+    if (!ctx.order || closedStatuses.includes(ctx.order.status)) page = <ResultPage ctx={ctx} lang={lang} onRefresh={loadContext} />;
+    else if (ctx.order.status === "paid") page = <ResultPage ctx={ctx} lang={lang} onRefresh={loadContext} />;
     else page = <PayPage ctx={ctx} lang={lang} />;
   }
-  else if (path.startsWith("/payment/success/")) page = <ResultPage ctx={ctx} lang={lang} ok />;
-  else if (path.startsWith("/payment/failure/")) page = <ResultPage ctx={ctx} lang={lang} ok={false} />;
+  else if (path.startsWith("/payment/success/")) page = <ResultPage ctx={ctx} lang={lang} onRefresh={loadContext} />;
+  else if (path.startsWith("/payment/failure/")) page = <ResultPage ctx={ctx} lang={lang} onRefresh={loadContext} />;
   else if (path === "/admin/login") page = <AdminLogin lang={lang} onNavigate={navigate} />;
   else if (["/admin", "/admin/create", "/admin/transactions", "/admin/pricing"].includes(path)) page = adminJwt() ? <AdminPage lang={lang} path={path} onNavigate={navigate} /> : <AdminLogin lang={lang} onNavigate={navigate} />;
   else page = <LegalPage ctx={ctx} lang={lang} kind={path.slice(1)} />;

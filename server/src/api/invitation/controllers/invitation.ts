@@ -47,10 +47,10 @@ export default {
       updatedAt: nowIso(),
     };
 
-    let duplicates = { paid: false, activeLinks: 0 };
-    await updateStore((store) => {
-      duplicates = findArticleDuplicates(store, invitation.articleTitle);
+    const duplicates = await updateStore((store) => {
+      const currentDuplicates = findArticleDuplicates(store, invitation.articleTitle);
       store.invitations.unshift(invitation);
+      return currentDuplicates;
     });
     logger.info('Invitation created', { invitationId: invitation.id, by: actor });
 
@@ -69,7 +69,7 @@ export default {
     const store = await readStore();
     const invitation = store.invitations.find((item) => item.id === ctx.params.id);
     if (!invitation) ctx.throw(404, 'Invitation not found');
-    if (invitation.status === 'cancelled') throw new Error('Cannot resend a cancelled invitation.');
+    if (invitation.status === 'cancelled') ctx.throw(409, 'Cannot resend a cancelled invitation.');
     const result = await sendInvitationEmail(invitation);
     logger.info('Invitation email resent', { invitationId: invitation.id, by: actor, delivered: result.delivered });
     ctx.body = { emailDelivered: Boolean(result.delivered), link: invitationLink(invitation) };
@@ -77,26 +77,23 @@ export default {
 
   async cancel(ctx: any) {
     const actor = requireAdmin(ctx);
-    let updated: Record<string, any> | null = null;
-    await updateStore((store) => {
+    const outcome = await updateStore((store) => {
       const invitation = store.invitations.find((item) => item.id === ctx.params.id);
-      if (!invitation) return;
-      if (invitation.status === 'paid') {
-        const error = new Error('Cannot cancel a paid invitation.') as Error & { status?: number };
-        error.status = 409;
-        throw error;
-      }
+      if (!invitation) return { kind: 'missing' as const };
+      if (invitation.status === 'paid') return { kind: 'paid' as const };
       invitation.status = 'cancelled';
       invitation.updatedAt = nowIso();
-      updated = invitation;
       for (const order of store.orders) {
         if (order.invitationId === invitation.id && ['created', 'token_issued'].includes(order.status)) {
           order.status = 'cancelled';
           order.updatedAt = nowIso();
         }
       }
+      return { kind: 'updated' as const, invitation: { ...invitation } };
     });
-    if (!updated) ctx.throw(404, 'Invitation not found');
+    if (outcome.kind === 'missing') ctx.throw(404, 'Invitation not found');
+    if (outcome.kind === 'paid') ctx.throw(409, 'Cannot cancel a paid invitation.');
+    const updated = outcome.invitation;
     logger.info('Invitation cancelled', { invitationId: updated.id, by: actor });
     ctx.body = { invitation: updated };
   },

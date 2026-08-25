@@ -17,11 +17,6 @@ export function getLandingContent(lang, config) {
   const workHoursKk = "Дс-Жм: 09:00-18:00";
   const workHoursEn = b.workHours || "Mon-Fri 09:00-18:00";
   const mapUrl = "https://2gis.kz/astana/search/%D0%BD%D0%BD%D0%BC%D1%86/firm/70000001018106739/71.495078%2C51.149008?m=71.443112%2C51.130396%2F11";
-  const mapWidgetSrc = `https://widgets.2gis.com/widget?type=firmsonmap&options=${encodeURIComponent(JSON.stringify({
-    pos: { lat: 51.149008, lon: 71.495078, zoom: 16 },
-    opt: { city: "astana" },
-    org: "70000001018106739",
-  }))}`;
 
   const ru = {
     hero: {
@@ -110,7 +105,6 @@ export function getLandingContent(lang, config) {
         rating: "4,1",
         action: "Открыть в 2GIS",
         url: mapUrl,
-        widgetSrc: `${mapWidgetSrc}&lang=ru`,
       },
       quick: {
         title: "Нужна помощь с оплатой?",
@@ -208,7 +202,6 @@ export function getLandingContent(lang, config) {
         rating: "4,1",
         action: "2GIS-те ашу",
         url: mapUrl,
-        widgetSrc: `${mapWidgetSrc}&lang=ru`,
       },
       quick: {
         title: "Төлем бойынша көмек керек пе?",
@@ -306,7 +299,6 @@ export function getLandingContent(lang, config) {
         rating: "4.1",
         action: "Open in 2GIS",
         url: mapUrl,
-        widgetSrc: `${mapWidgetSrc}&lang=en`,
       },
       quick: {
         title: "Need help with payment?",
