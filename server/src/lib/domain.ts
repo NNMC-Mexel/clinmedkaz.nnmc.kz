@@ -90,7 +90,8 @@ export function validateOrderInput(input: Record<string, any>) {
 export function validateInvitationInput(input: Record<string, any>) {
   const email = cleanText(input.email, 160).toLowerCase();
   const fullName = cleanText(input.fullName, 160);
-  const phone = cleanText(input.phone, 80);
+  // Phone is optional for an invitation, but when supplied it is stored as digits only.
+  const phone = cleanText(input.phone, 80).replace(/\D/g, '');
   const articleTitle = cleanText(input.articleTitle, 500);
   const lang = normalizeLanguage(cleanText(input.lang, 8));
 

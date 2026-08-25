@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { config } from '../../../lib/config';
 import { requireAdmin } from '../../../lib/auth';
 import { findArticleDuplicates, invitationPricingSnapshot, validateInvitationInput } from '../../../lib/domain';
+import { buildInvitationEmail } from '../../../lib/email-templates';
 import { logger } from '../../../lib/logger';
 import { sendMail } from '../../../lib/mailer';
 import { readPricing } from '../../../lib/pricing';
@@ -24,11 +25,10 @@ function invitationLink(invitation: Record<string, any>) {
 
 async function sendInvitationEmail(invitation: Record<string, any>) {
   const link = invitationLink(invitation);
+  const email = buildInvitationEmail(invitation, link);
   return sendMail({
     to: invitation.email,
-    subject: 'ClinMedKaz article publication payment',
-    text: `Your article has been accepted. Please complete publication payment here: ${link}`,
-    html: `<p>Your article has been accepted.</p><p><strong>Article:</strong> ${invitation.articleTitle}</p><p><a href="${link}">${link}</a></p>`,
+    ...email,
   });
 }
 

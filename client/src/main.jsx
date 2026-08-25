@@ -133,8 +133,88 @@ const i18n = {
   },
 };
 
-function money(amount, currency) {
-  return `${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: currency === "KZT" ? 0 : 2 }).format(Number(amount || 0))} ${currency}`;
+const adminUiI18n = {
+  ru: {
+    required: "Обязательное поле",
+    optional: "Необязательно",
+    digitsOnly: "Только цифры",
+    unknownStatus: "Неизвестный статус",
+    warnings: {
+      alreadyPaid: "Эта статья уже была оплачена.",
+      activeLinkExists: "Для этой статьи уже существует активная ссылка на оплату.",
+    },
+    statuses: {
+      created: "Создан",
+      token_issued: "Ожидает оплаты",
+      payment_started: "Оплата начата",
+      paid: "Оплачен",
+      failed: "Оплата не прошла",
+      postlink_rejected: "Подтверждение отклонено",
+      cancelled: "Отменён",
+      refunded: "Возврат выполнен",
+    },
+  },
+  kk: {
+    required: "Міндетті өріс",
+    optional: "Міндетті емес",
+    digitsOnly: "Тек сандар",
+    unknownStatus: "Белгісіз мәртебе",
+    warnings: {
+      alreadyPaid: "Бұл мақаланың ақысы төленген.",
+      activeLinkExists: "Бұл мақала үшін белсенді төлем сілтемесі бұрыннан бар.",
+    },
+    statuses: {
+      created: "Жасалды",
+      token_issued: "Төлем күтілуде",
+      payment_started: "Төлем басталды",
+      paid: "Төленді",
+      failed: "Төлем өтпеді",
+      postlink_rejected: "Растау қабылданбады",
+      cancelled: "Бас тартылды",
+      refunded: "Қаражат қайтарылды",
+    },
+  },
+  en: {
+    required: "Required field",
+    optional: "Optional",
+    digitsOnly: "Digits only",
+    unknownStatus: "Unknown status",
+    warnings: {
+      alreadyPaid: "This article has already been paid for.",
+      activeLinkExists: "An active payment link already exists for this article.",
+    },
+    statuses: {
+      created: "Created",
+      token_issued: "Awaiting payment",
+      payment_started: "Payment started",
+      paid: "Paid",
+      failed: "Payment failed",
+      postlink_rejected: "Confirmation rejected",
+      cancelled: "Cancelled",
+      refunded: "Refunded",
+    },
+  },
+};
+
+const dateLocales = { ru: "ru-RU", kk: "kk-KZ", en: "en-US" };
+
+function adminStatusLabel(status, lang) {
+  const ui = adminUiI18n[lang] || adminUiI18n.ru;
+  return ui.statuses[status] || ui.unknownStatus;
+}
+
+function AdminFieldLabel({ children, lang, optional = false }) {
+  const ui = adminUiI18n[lang] || adminUiI18n.ru;
+  return (
+    <span className="field-label">
+      <span>{children}{!optional && <span className="field-required" aria-hidden="true">*</span>}</span>
+      {optional && <span className="field-optional">{ui.optional}</span>}
+    </span>
+  );
+}
+
+function money(amount, currency, lang = "ru") {
+  return `${new Intl.NumberFormat(dateLocales[lang] || dateLocales.ru, { maximumFractionDigits: currency === "KZT" ? 0 : 2 }).format(Number(amount || 0))} ${currency}`;
 }
 
 function localizedPath(path, lang, search = "") {
@@ -144,9 +224,9 @@ function localizedPath(path, lang, search = "") {
   return `${path}${query ? `?${query}` : ""}`;
 }
 
-function formatDate(value) {
+function formatDate(value, lang = "ru") {
   if (!value) return "-";
-  return new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+  return new Intl.DateTimeFormat(dateLocales[lang] || dateLocales.ru, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
 function Nav({ lang, path, search, onNavigate, onChangeLang }) {
@@ -375,8 +455,8 @@ function PaymentForm({ ctx, lang }) {
   const t = i18n[lang].payment;
   const invitation = ctx.invitation || {};
   const disabled = !invitation.id || ["cancelled", "paid"].includes(invitation.status);
-  const resident = money(ctx.config.pricing.residentKztAmount, "KZT");
-  const nonResident = money(ctx.config.pricing.nonResidentAmount, "USD");
+  const resident = money(ctx.config.pricing.residentKztAmount, "KZT", lang);
+  const nonResident = money(ctx.config.pricing.nonResidentAmount, "USD", lang);
   const [status, setStatus] = useState("");
   const [residency, setResidency] = useState("resident_kz");
 
@@ -519,6 +599,7 @@ function AdminLogin({ lang, onNavigate }) {
 
 function AdminCreatePage({ lang, onCreated }) {
   const t = i18n[lang].admin;
+  const ui = adminUiI18n[lang] || adminUiI18n.ru;
   const [status, setStatus] = useState("");
   const [createdLink, setCreatedLink] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -530,12 +611,13 @@ function AdminCreatePage({ lang, onCreated }) {
     setSubmitting(true);
     try {
       const raw = Object.fromEntries(new FormData(form).entries());
-      const response = await apiFetch("/invitations", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...raw, sendEmail: raw.sendEmail === "on" }) });
+      const phone = String(raw.phone || "").replace(/\D/g, "");
+      const response = await apiFetch("/invitations", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...raw, phone, sendEmail: raw.sendEmail === "on" }) });
       const payload = await response.json().catch(() => ({}));
       if (response.status === 401) { clearAdminJwt(); onCreated("auth"); return; }
       if (response.ok) {
         setCreatedLink(payload.link);
-        setStatus(payload.duplicateWarning ? payload.duplicateWarning : t.createdLink);
+        setStatus(payload.duplicateWarning || "createdLink");
         form.reset();
         onCreated();
         return;
@@ -545,15 +627,29 @@ function AdminCreatePage({ lang, onCreated }) {
       setSubmitting(false);
     }
   }
+  const statusText = status === "createdLink" ? t.createdLink : ui.warnings[status] || status;
   return (
     <form className="panel admin-form" onSubmit={create} aria-busy={submitting}>
       <div className="section-heading"><h2>{t.create}</h2><p>{t.createLead}</p></div>
+      <p className="form-field-legend"><span className="field-required" aria-hidden="true">*</span> {ui.required}</p>
       <fieldset className="admin-form-grid" disabled={submitting}>
-        <label>{t.email}<input name="email" type="email" autoComplete="email" required /></label>
-        <label>{t.fullName}<input name="fullName" autoComplete="name" /></label>
-        <label>{t.phone}<input name="phone" autoComplete="tel" /></label>
-        <label>{t.lang}<select name="lang" defaultValue={lang}><option value="ru">Русский</option><option value="kk">Қазақша</option><option value="en">English</option></select></label>
-        <label className="admin-form-wide">{t.article}<textarea name="articleTitle" required /></label>
+        <label><AdminFieldLabel lang={lang}>{t.email}</AdminFieldLabel><input name="email" type="email" autoComplete="email" required /></label>
+        <label><AdminFieldLabel lang={lang} optional>{t.fullName}</AdminFieldLabel><input name="fullName" autoComplete="name" /></label>
+        <label>
+          <AdminFieldLabel lang={lang} optional>{t.phone}</AdminFieldLabel>
+          <input
+            name="phone"
+            type="tel"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="tel"
+            aria-describedby="admin-phone-hint"
+            onInput={(event) => { event.currentTarget.value = event.currentTarget.value.replace(/\D/g, ""); }}
+          />
+          <span className="field-hint" id="admin-phone-hint">{ui.digitsOnly}</span>
+        </label>
+        <label><AdminFieldLabel lang={lang}>{t.lang}</AdminFieldLabel><select name="lang" defaultValue={lang} required><option value="ru">Русский</option><option value="kk">Қазақша</option><option value="en">English</option></select></label>
+        <label className="admin-form-wide"><AdminFieldLabel lang={lang}>{t.article}</AdminFieldLabel><textarea name="articleTitle" required /></label>
       </fieldset>
       <label className="checkline"><input name="sendEmail" type="checkbox" defaultChecked disabled={submitting} /><span>{t.sendEmail}</span></label>
       <div className="form-actions">
@@ -564,13 +660,14 @@ function AdminCreatePage({ lang, onCreated }) {
         {createdLink && <a className="secondary-btn" href={createdLink} target="_blank" rel="noreferrer">{t.open}</a>}
       </div>
       {createdLink && <p className="created-link"><span>{t.createdLink}</span><a href={createdLink} target="_blank" rel="noreferrer">{createdLink}</a></p>}
-      <p className="status-text">{status}</p>
+      <p className="status-text">{statusText}</p>
     </form>
   );
 }
 
 function AdminPricingPage({ lang, pricing, onSaved, onAuthLost }) {
   const t = i18n[lang].admin;
+  const ui = adminUiI18n[lang] || adminUiI18n.ru;
   const [kzt, setKzt] = useState("");
   const [rate, setRate] = useState("");
   const [status, setStatus] = useState("");
@@ -589,10 +686,10 @@ function AdminPricingPage({ lang, pricing, onSaved, onAuthLost }) {
     const usdRate = Number(rate);
     if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(usdRate) || usdRate <= 0) return null;
     return {
-      kzt: money(Math.round(amount), "KZT"),
-      usd: money(Math.round((amount / usdRate) * 100) / 100, "USD"),
+      kzt: money(Math.round(amount), "KZT", lang),
+      usd: money(Math.round((amount / usdRate) * 100) / 100, "USD", lang),
     };
-  }, [kzt, rate]);
+  }, [kzt, rate, lang]);
 
   async function save(event) {
     event.preventDefault();
@@ -628,9 +725,10 @@ function AdminPricingPage({ lang, pricing, onSaved, onAuthLost }) {
   return (
     <form className="panel admin-form" onSubmit={save} aria-busy={saving}>
       <div className="section-heading"><h2>{t.pricing}</h2><p>{t.pricingLead}</p></div>
+      <p className="form-field-legend"><span className="field-required" aria-hidden="true">*</span> {ui.required}</p>
       <fieldset className="admin-form-grid" disabled={saving || !pricing}>
-        <label>{t.priceKzt}<input name="residentKztAmount" type="number" min="1" step="1" inputMode="numeric" value={kzt} onChange={(event) => setKzt(event.target.value)} required /></label>
-        <label>{t.rate}<input name="usdToKztRate" type="number" min="1" step="0.01" inputMode="decimal" value={rate} onChange={(event) => setRate(event.target.value)} required /></label>
+        <label><AdminFieldLabel lang={lang}>{t.priceKzt}</AdminFieldLabel><input name="residentKztAmount" type="number" min="1" step="1" inputMode="numeric" value={kzt} onChange={(event) => setKzt(event.target.value)} required /></label>
+        <label><AdminFieldLabel lang={lang}>{t.rate}</AdminFieldLabel><input name="usdToKztRate" type="number" min="1" step="0.01" inputMode="decimal" value={rate} onChange={(event) => setRate(event.target.value)} required /></label>
       </fieldset>
       <div className="price-preview">
         <span>{t.pricingPreview}</span>
@@ -647,7 +745,7 @@ function AdminPricingPage({ lang, pricing, onSaved, onAuthLost }) {
       {pricing && (
         <p className="muted pricing-meta">
           {pricing.source === "db" && pricing.updatedAt
-            ? `${t.pricingUpdatedBy}: ${formatDate(pricing.updatedAt)}${pricing.updatedBy ? ` · ${pricing.updatedBy}` : ""}`
+            ? `${t.pricingUpdatedBy}: ${formatDate(pricing.updatedAt, lang)}${pricing.updatedBy ? ` · ${pricing.updatedBy}` : ""}`
             : t.pricingFromEnv}
         </p>
       )}
@@ -661,7 +759,10 @@ function AdminTransactionsPage({ data, status, lang, onRefresh }) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const orders = data.orders || [];
-  const statuses = useMemo(() => Array.from(new Set(orders.map((order) => order.status).filter(Boolean))).sort(), [orders]);
+  const statuses = useMemo(
+    () => Array.from(new Set(orders.map((order) => order.status).filter(Boolean))).sort((left, right) => adminStatusLabel(left, lang).localeCompare(adminStatusLabel(right, lang), dateLocales[lang] || dateLocales.ru)),
+    [orders, lang]
+  );
   const filteredOrders = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return orders.filter((order) => {
@@ -681,7 +782,7 @@ function AdminTransactionsPage({ data, status, lang, onRefresh }) {
         <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.search} />
         <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
           <option value="all">{t.allStatuses}</option>
-          {statuses.map((item) => <option key={item} value={item}>{item}</option>)}
+          {statuses.map((item) => <option key={item} value={item}>{adminStatusLabel(item, lang)}</option>)}
         </select>
       </div>
       {status && <p className="status-text danger-text">{status}</p>}
@@ -690,13 +791,13 @@ function AdminTransactionsPage({ data, status, lang, onRefresh }) {
           {filteredOrders.map((order) => (
             <article className="transaction-card" key={order.id}>
               <div className="transaction-main">
-                <span className={`badge badge-${order.status}`}>{order.status}</span>
+                <span className={`badge badge-${order.status}`}>{adminStatusLabel(order.status, lang)}</span>
                 <strong>{order.invoiceId || order.id}</strong>
-                <small>{formatDate(order.createdAt)}</small>
+                <small>{formatDate(order.createdAt, lang)}</small>
               </div>
               <div className="transaction-detail"><span>{t.author}</span><strong>{order.fullName || "-"}</strong><small>{order.email}</small></div>
               <div className="transaction-detail transaction-article"><span>{t.article}</span><strong>{order.articleTitle || "-"}</strong></div>
-              <div className="transaction-detail transaction-amount"><span>{t.amount}</span><strong>{order.amount} {order.currency}</strong></div>
+              <div className="transaction-detail transaction-amount"><span>{t.amount}</span><strong>{money(order.amount, order.currency, lang)}</strong></div>
             </article>
           ))}
         </div>
