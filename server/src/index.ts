@@ -16,6 +16,10 @@ const PAYMENT_ADMIN_ACTIONS = [
 async function securePaymentAdministration(strapi: Core.Strapi) {
   assertProductionSecurityConfig();
 
+  if (!config.payments.enabled) {
+    strapi.log.warn('[payments] degraded mode is active; Halyk requests and new payment links are disabled');
+  }
+
   const settingsStore = strapi.store({ type: 'plugin', name: 'users-permissions' });
   const advanced = ((await settingsStore.get({ key: 'advanced' })) || {}) as Record<string, any>;
   if (advanced.allow_register !== false) {

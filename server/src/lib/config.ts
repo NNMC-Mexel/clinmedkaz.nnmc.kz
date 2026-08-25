@@ -5,6 +5,9 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
 
 const isProduction = process.env.NODE_ENV === 'production';
+const paymentsEnabled = process.env.PAYMENTS_ENABLED === undefined
+  ? true
+  : process.env.PAYMENTS_ENABLED === 'true';
 const halykEnv = process.env.HALYK_ENV === 'prod' ? 'prod' : 'test';
 const usdToKztRate = Number(process.env.USD_TO_KZT_RATE || 485.4);
 // KZT is the base currency: it is the amount actually charged through Halyk ePay.
@@ -53,6 +56,9 @@ export const config = {
     usernames: csvEnv('PAYMENT_ADMIN_USERS', env('ADMIN_USERS', env('ADMIN_USERNAME'))),
     emails: csvEnv('PAYMENT_ADMIN_EMAILS'),
   },
+  payments: {
+    enabled: paymentsEnabled,
+  },
   // Fallback used until an admin saves a price (see lib/pricing.ts).
   pricingDefaults: {
     residentKztAmount,
@@ -77,11 +83,11 @@ export const config = {
         : 'https://test-epay-api.epayment.kz/check-status/payment/transaction',
     statusSyncEnabled:
       process.env.HALYK_STATUS_SYNC_ENABLED === undefined
-        ? isProduction
+        ? isProduction && paymentsEnabled
         : process.env.HALYK_STATUS_SYNC_ENABLED === 'true',
     reconciliationCronEnabled:
       process.env.PAYMENT_RECONCILIATION_CRON_ENABLED === undefined
-        ? isProduction
+        ? isProduction && paymentsEnabled
         : process.env.PAYMENT_RECONCILIATION_CRON_ENABLED === 'true',
   },
   smtp: {
@@ -130,12 +136,16 @@ export function halykCredentialsConfigured() {
 
 export function productionConfigurationErrors(candidate: typeof config = config) {
   const errors: string[] = [];
-  if (candidate.halyk.env !== 'prod') errors.push('HALYK_ENV must be prod.');
-  if (![candidate.halyk.clientId, candidate.halyk.clientSecret, candidate.halyk.terminalId].every(isConfiguredSecret)) {
-    errors.push('HALYK client credentials and terminal ID must be configured.');
+  if (candidate.payments.enabled) {
+    if (candidate.halyk.env !== 'prod') errors.push('HALYK_ENV must be prod when payments are enabled.');
+    if (![candidate.halyk.clientId, candidate.halyk.clientSecret, candidate.halyk.terminalId].every(isConfiguredSecret)) {
+      errors.push('HALYK client credentials and terminal ID must be configured when payments are enabled.');
+    }
+    if (!candidate.halyk.statusSyncEnabled) errors.push('HALYK_STATUS_SYNC_ENABLED must be true when payments are enabled.');
+    if (!candidate.halyk.reconciliationCronEnabled) {
+      errors.push('PAYMENT_RECONCILIATION_CRON_ENABLED must be true when payments are enabled.');
+    }
   }
-  if (!candidate.halyk.statusSyncEnabled) errors.push('HALYK_STATUS_SYNC_ENABLED must be true.');
-  if (!candidate.halyk.reconciliationCronEnabled) errors.push('PAYMENT_RECONCILIATION_CRON_ENABLED must be true.');
   if (!isHttpsUrl(candidate.baseUrl)) errors.push('FRONTEND_URL/BASE_URL must use HTTPS.');
   if (!isHttpsUrl(candidate.backendUrl)) errors.push('BACKEND_URL/STRAPI_URL must use HTTPS.');
   if (candidate.runtime.databaseClient !== 'postgres' || !candidate.runtime.databaseConfigured) {
@@ -144,7 +154,7 @@ export function productionConfigurationErrors(candidate: typeof config = config)
   if (!candidate.smtp.host || !candidate.smtp.user || !candidate.smtp.pass) {
     errors.push('SMTP_HOST, SMTP_USER and SMTP_PASS must be configured.');
   }
-  if (candidate.paymentAdmin.usernames.length === 0 && candidate.paymentAdmin.emails.length === 0) {
+  if (candidate.payments.enabled && candidate.paymentAdmin.usernames.length === 0 && candidate.paymentAdmin.emails.length === 0) {
     errors.push('Configure PAYMENT_ADMIN_USERS or PAYMENT_ADMIN_EMAILS.');
   }
   const secrets = [
@@ -193,6 +203,7 @@ export function publicConfig(pricing: PublicPricing & Record<string, any>) {
     pricing,
     business: config.business,
     bank: config.bank,
+    paymentsEnabled: config.payments.enabled,
     halykPaymentJsUrl: config.halyk.paymentJsUrl,
   };
 }

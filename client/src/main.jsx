@@ -50,6 +50,7 @@ const apiErrorI18n = {
     "This article publication has already been paid.": "Публикация этой статьи уже оплачена.",
     "This article has already been paid through another link.": "Эта статья уже оплачена по другой ссылке.",
     "Payment provider is temporarily unavailable.": "Платёжный сервис временно недоступен. Попробуйте позже.",
+    "Payments are temporarily unavailable.": "Оплата временно недоступна. Попробуйте позже.",
     "Cannot resend a cancelled invitation.": "Нельзя повторно отправить отменённую ссылку.",
   },
   kk: {
@@ -61,9 +62,12 @@ const apiErrorI18n = {
     "This article publication has already been paid.": "Бұл мақаланы жариялау ақысы төленген.",
     "This article has already been paid through another link.": "Бұл мақала басқа сілтеме арқылы төленген.",
     "Payment provider is temporarily unavailable.": "Төлем сервисі уақытша қолжетімсіз. Кейінірек қайталаңыз.",
+    "Payments are temporarily unavailable.": "Төлем уақытша қолжетімсіз. Кейінірек қайталаңыз.",
     "Cannot resend a cancelled invitation.": "Жойылған сілтемені қайта жіберуге болмайды.",
   },
-  en: {},
+  en: {
+    "Payments are temporarily unavailable.": "Payments are temporarily unavailable. Please try again later.",
+  },
 };
 
 function localizedErrorMessage(payload, lang, fallback) {
@@ -167,6 +171,27 @@ const i18n = {
     result: { ok: "Payment received", fail: "Payment failed", pending: "Checking payment", checking: "Checking the status with Halyk ePay…", pendingHelp: "The bank has not confirmed the final status yet. Refresh the page in a few seconds.", back: "Back to payment form" },
     admin: { title: "Payment administration", login: "Management portal sign in", loginTitle: "Payment management portal", loginLead: "Sign in to create payment links and review transaction history.", username: "Username", password: "Password", signIn: "Sign in", logout: "Logout", create: "Create link", creating: "Creating link…", createLead: "Enter author details, choose the email language and send a personal payment link.", orders: "Transaction history", ordersLead: "Track payment status, author and amount separately from the link creation workflow.", refresh: "Refresh", noAccess: "This account does not have access to payment administration.", sessionExpired: "Session expired. Sign in again.", invalidCredentials: "Invalid username or password.", loginRequired: "Enter username and password.", authError: "Could not sign in. Check the details and try again.", loadError: "Could not load the management portal.", email: "Email", fullName: "Full name", phone: "Phone", article: "Article", lang: "Language", sendEmail: "Send link by email", createdLink: "Link created", status: "Status", invoice: "Invoice", author: "Author", amount: "Amount", createdAt: "Created", search: "Search author, email, article or invoice", allStatuses: "All statuses", emptyOrders: "No transactions yet.", open: "Open", transactions: "Transactions", pricing: "Price", pricingLead: "The publication fee is set in tenge — this is the amount Halyk ePay actually charges. The USD figure is derived from the rate and shown for reference to non-residents.", priceKzt: "Publication fee, ₸", rate: "Rate, ₸ per 1 USD", pricingPreview: "How the price will appear on the site", pricingSave: "Save price", pricingSaving: "Saving…", pricingSaved: "Price updated. New links will be created with this amount.", pricingInvalid: "Enter the tenge price and the rate as numbers greater than zero.", pricingFrozen: "Payment links already sent keep the amount they were created with — a price change does not affect them.", pricingFromEnv: "The server default is currently in effect.", pricingUpdatedBy: "Updated" },
     legal: { service: "Service description", terms: "Public offer", privacy: "Privacy policy", refunds: "Refund policy", contacts: "Contacts" },
+  },
+};
+
+const availabilityI18n = {
+  ru: {
+    title: "Оплата временно недоступна",
+    message: "Мы подключаем Halyk ePay. Сайт и информационные разделы работают в обычном режиме, но создать или оплатить ссылку пока нельзя.",
+    nav: "Оплата недоступна",
+    admin: "Платежи отключены. Создание и повторная отправка ссылок станут доступны после подключения Halyk ePay.",
+  },
+  kk: {
+    title: "Төлем уақытша қолжетімсіз",
+    message: "Halyk ePay қосылып жатыр. Сайт пен ақпараттық бөлімдер қалыпты жұмыс істейді, бірақ төлем сілтемесін әзірге жасауға немесе төлеуге болмайды.",
+    nav: "Төлем қолжетімсіз",
+    admin: "Төлемдер өшірілген. Сілтемелерді жасау және қайта жіберу Halyk ePay қосылғаннан кейін қолжетімді болады.",
+  },
+  en: {
+    title: "Payments are temporarily unavailable",
+    message: "We are connecting Halyk ePay. The website and information pages remain available, but payment links cannot be created or paid yet.",
+    nav: "Payments unavailable",
+    admin: "Payments are disabled. Creating and resending links will become available after Halyk ePay is connected.",
   },
 };
 
@@ -278,7 +303,14 @@ function formatDate(value, lang = "ru") {
   return new Intl.DateTimeFormat(dateLocales[lang] || dateLocales.ru, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
-function Nav({ lang, path, search, onNavigate, onChangeLang }) {
+function PaymentLink({ enabled, className, href, onClick, unavailableLabel, children }) {
+  if (!enabled) {
+    return <span className={`${className} is-disabled`} aria-disabled="true" title={unavailableLabel}>{children}</span>;
+  }
+  return <a className={className} href={href} onClick={onClick}>{children}</a>;
+}
+
+function Nav({ lang, path, search, paymentsEnabled, onNavigate, onChangeLang }) {
   const t = i18n[lang];
   const [menuOpen, setMenuOpen] = useState(false);
   const links = [["/", ""], ["/", "about"], ["/", "process"], ["/", "pricing"], ["/", "contact"]];
@@ -303,7 +335,15 @@ function Nav({ lang, path, search, onNavigate, onChangeLang }) {
         <button className="menu-toggle" type="button" aria-controls="primary-menu" aria-expanded={menuOpen} aria-label={ariaI18n[lang].menu} onClick={() => setMenuOpen((value) => !value)}><span /><span /><span /></button>
         <div className="nav-links" id="primary-menu">
           {links.map(([base, hash], index) => <a key={index} href={localizedPath(base, lang)} onClick={(event) => go(event, base, hash)}>{t.nav[index]}</a>)}
-          <a className="nav-pay-link" href={localizedPath("/payment", lang)} onClick={(event) => go(event, "/payment", "")}>{t.navPayment}</a>
+          <PaymentLink
+            enabled={paymentsEnabled}
+            className="nav-pay-link"
+            href={localizedPath("/payment", lang)}
+            onClick={(event) => go(event, "/payment", "")}
+            unavailableLabel={availabilityI18n[lang].message}
+          >
+            {paymentsEnabled ? t.navPayment : availabilityI18n[lang].nav}
+          </PaymentLink>
         </div>
         <div className="lang-switch">{supportedLanguages.map((item) => <a key={item} className={item === lang ? "active" : ""} href={localizedPath(path, item, search)} onClick={(event) => switchLang(event, item)}>{item.toUpperCase()}</a>)}</div>
       </div>
@@ -324,13 +364,13 @@ function Footer({ ctx, lang, onNavigate }) {
     <footer className="site-footer">
       <div className="footer-top">
         <div><strong>{b.name}</strong><br />{b.country}, {b.city}<br />Support: <a href={`mailto:${b.supportEmail}`}>{b.supportEmail}</a>, {b.supportPhone}</div>
-        <div className="payment-mark">
+        {ctx.config.paymentsEnabled !== false && <div className="payment-mark">
           {paymentLogos.map((logo) => (
             <span className={`payment-logo ${logo.className}`} key={logo.name}>
               <img src={`/assets/payments/${logo.name}`} alt={logo.label} />
             </span>
           ))}
-        </div>
+        </div>}
       </div>
       <nav className="footer-legal" aria-label={ariaI18n[lang].legal}>
         {legalLinks.map(([href, label]) => (
@@ -372,6 +412,8 @@ function Landing({ ctx, lang, onNavigate }) {
   const paymentHref = localizedPath("/payment", lang);
   const phoneValue = c.contact.cards.find((item) => item.type === "phone")?.value || "";
   const phoneHref = phoneValue.replace(/[^\d+]/g, "");
+  const paymentsEnabled = ctx.config.paymentsEnabled !== false;
+  const availability = availabilityI18n[lang];
   function contactHref(item) {
     if (item.type === "phone" && phoneHref) return `tel:${phoneHref}`;
     if (item.type === "mail" && item.value) return `mailto:${item.value}`;
@@ -380,6 +422,12 @@ function Landing({ ctx, lang, onNavigate }) {
   }
   return (
     <div className="landing">
+      {!paymentsEnabled && (
+        <section className="availability-banner" role="status">
+          <strong>{availability.title}</strong>
+          <span>{availability.message}</span>
+        </section>
+      )}
       <section className="landing-hero">
         <div className="landing-hero-inner">
           <div className="landing-hero-copy">
@@ -387,7 +435,7 @@ function Landing({ ctx, lang, onNavigate }) {
             <h1>{c.hero.title} <span className="accent">{c.hero.titleAccent}</span></h1>
             <p className="hero-lead">{c.hero.lead}</p>
             <div className="hero-actions">
-              <a className="primary-btn" href={paymentHref} onClick={(event) => { event.preventDefault(); onNavigate("/payment"); }}>{c.hero.primaryCta} <span aria-hidden="true">→</span></a>
+              <PaymentLink enabled={paymentsEnabled} className="primary-btn" href={paymentHref} onClick={(event) => { event.preventDefault(); onNavigate("/payment"); }} unavailableLabel={availability.message}>{c.hero.primaryCta} <span aria-hidden="true">→</span></PaymentLink>
               <a className="ghost-btn" href={"#about"} onClick={(event) => { event.preventDefault(); document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }); }}>{c.hero.secondaryCta}</a>
             </div>
             <div className="hero-stats">
@@ -408,7 +456,7 @@ function Landing({ ctx, lang, onNavigate }) {
                 <li key={f.title}><span className="feat-check">✓</span><div><strong>{f.title}</strong><p>{f.text}</p></div></li>
               ))}
             </ul>
-            <a className="primary-btn hero-card-btn" href={paymentHref} onClick={(event) => { event.preventDefault(); onNavigate("/payment"); }}>{c.hero.card.cta}</a>
+            <PaymentLink enabled={paymentsEnabled} className="primary-btn hero-card-btn" href={paymentHref} onClick={(event) => { event.preventDefault(); onNavigate("/payment"); }} unavailableLabel={availability.message}>{c.hero.card.cta}</PaymentLink>
           </aside>
         </div>
         <a className="hero-scroll" href={"#about"} onClick={(event) => { event.preventDefault(); document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }); }}>
@@ -502,7 +550,8 @@ function Landing({ ctx, lang, onNavigate }) {
 function PaymentForm({ ctx, lang }) {
   const t = i18n[lang].payment;
   const invitation = ctx.invitation || {};
-  const disabled = !invitation.id || ["cancelled", "paid"].includes(invitation.status);
+  const paymentsEnabled = ctx.config.paymentsEnabled !== false;
+  const disabled = !paymentsEnabled || !invitation.id || ["cancelled", "paid"].includes(invitation.status);
   const resident = money(ctx.config.pricing.residentKztAmount, "KZT", lang);
   const nonResident = money(ctx.config.pricing.nonResidentAmount, "USD", lang);
   const [status, setStatus] = useState("");
@@ -531,7 +580,7 @@ function PaymentForm({ ctx, lang }) {
       <section className="content-grid">
         <form id="payment-form" className="panel form-panel" onSubmit={submit}>
           <h2>{t.authorDetails}</h2>
-          {disabled && <p className="status-text danger-text">{t.invitationRequired}</p>}
+          {disabled && <p className="status-text danger-text">{paymentsEnabled ? t.invitationRequired : availabilityI18n[lang].message}</p>}
           <input type="hidden" name="invitationId" value={invitation.id || ""} />
           <input type="hidden" name="lang" value={lang} />
           <label>{t.fullName}<input name="fullName" defaultValue={invitation.fullName || ""} required minLength="3" disabled={disabled} /></label>
@@ -556,6 +605,7 @@ function PaymentForm({ ctx, lang }) {
 function PayPage({ ctx, lang }) {
   const t = i18n[lang].pay;
   const [status, setStatus] = useState("");
+  const paymentsEnabled = ctx.config.paymentsEnabled !== false;
   async function openPayment() {
     setStatus(t.token);
     const response = await apiFetch(`/payments/${encodeURIComponent(ctx.order.id)}/payment-object`);
@@ -574,7 +624,14 @@ function PayPage({ ctx, lang }) {
     }
     window.halyk.pay(payload.paymentObject);
   }
-  useEffect(() => { const id = setTimeout(openPayment, 350); return () => clearTimeout(id); }, []);
+  useEffect(() => {
+    if (!paymentsEnabled) return undefined;
+    const id = setTimeout(openPayment, 350);
+    return () => clearTimeout(id);
+  }, [paymentsEnabled]);
+  if (!paymentsEnabled) {
+    return <section className="center-panel"><div className="panel danger"><h1>{availabilityI18n[lang].title}</h1><p>{availabilityI18n[lang].message}</p></div></section>;
+  }
   return <section className="center-panel"><div className="panel"><p className="eyebrow">{ctx.order?.invoiceId}</p><h1>{t.title}</h1><button className="primary-btn" onClick={openPayment}>{t.button}</button><p className="status-text">{status}</p></div></section>;
 }
 
@@ -585,9 +642,10 @@ function ResultPage({ ctx, lang, onRefresh }) {
   const paid = status === "paid";
   const failed = !ctx.order || ["failed", "postlink_rejected", "cancelled", "refunded"].includes(status);
   const pending = !paid && !failed;
+  const paymentsEnabled = ctx.config.paymentsEnabled !== false;
   const href = ctx.order?.invitationId ? `/?invite=${encodeURIComponent(ctx.order.invitationId)}&lang=${lang}` : `/?lang=${lang}`;
   useEffect(() => {
-    if (!ctx.order?.id || !pending) return;
+    if (!paymentsEnabled || !ctx.order?.id || !pending) return;
     let active = true;
     setChecking(true);
     apiFetch(`/payments/${encodeURIComponent(ctx.order.id)}/reconcile`, { method: "POST" })
@@ -595,9 +653,9 @@ function ResultPage({ ctx, lang, onRefresh }) {
       .catch(() => {})
       .finally(() => active && setChecking(false));
     return () => { active = false; };
-  }, [ctx.order?.id]);
+  }, [ctx.order?.id, paymentsEnabled]);
   const title = paid ? t.ok : failed ? t.fail : t.pending;
-  return <section className="center-panel"><div className={`panel ${paid ? "success" : failed ? "danger" : "quiet"}`}><h1>{title}</h1>{ctx.order && <p className="muted">{ctx.order.invoiceId}<br />{ctx.order.articleTitle}</p>}{pending && <p className="status-text" role="status">{checking ? t.checking : t.pendingHelp}</p>}<a className="secondary-btn" href={href}>{t.back}</a></div></section>;
+  return <section className="center-panel"><div className={`panel ${paid ? "success" : failed ? "danger" : "quiet"}`}><h1>{title}</h1>{ctx.order && <p className="muted">{ctx.order.invoiceId}<br />{ctx.order.articleTitle}</p>}{pending && <p className="status-text" role="status">{!paymentsEnabled ? availabilityI18n[lang].message : checking ? t.checking : t.pendingHelp}</p>}<a className="secondary-btn" href={href}>{t.back}</a></div></section>;
 }
 
 function AdminLogin({ lang, onNavigate }) {
@@ -661,7 +719,7 @@ function AdminLogin({ lang, onNavigate }) {
   );
 }
 
-function AdminCreatePage({ lang, onCreated }) {
+function AdminCreatePage({ lang, onCreated, paymentsEnabled }) {
   const t = i18n[lang].admin;
   const ui = adminUiI18n[lang] || adminUiI18n.ru;
   const [status, setStatus] = useState("");
@@ -695,8 +753,9 @@ function AdminCreatePage({ lang, onCreated }) {
   return (
     <form className="panel admin-form" onSubmit={create} aria-busy={submitting}>
       <div className="section-heading"><h2>{t.create}</h2><p>{t.createLead}</p></div>
+      {!paymentsEnabled && <p className="availability-inline" role="status">{availabilityI18n[lang].admin}</p>}
       <p className="form-field-legend"><span className="field-required" aria-hidden="true">*</span> {ui.required}</p>
-      <fieldset className="admin-form-grid" disabled={submitting}>
+      <fieldset className="admin-form-grid" disabled={submitting || !paymentsEnabled}>
         <label><AdminFieldLabel lang={lang}>{t.email}</AdminFieldLabel><input name="email" type="email" autoComplete="email" required /></label>
         <label><AdminFieldLabel lang={lang} optional>{t.fullName}</AdminFieldLabel><input name="fullName" autoComplete="name" /></label>
         <label>
@@ -715,9 +774,9 @@ function AdminCreatePage({ lang, onCreated }) {
         <label><AdminFieldLabel lang={lang}>{t.lang}</AdminFieldLabel><select name="lang" defaultValue={lang} required><option value="ru">Русский</option><option value="kk">Қазақша</option><option value="en">English</option></select></label>
         <label className="admin-form-wide"><AdminFieldLabel lang={lang}>{t.article}</AdminFieldLabel><textarea name="articleTitle" required /></label>
       </fieldset>
-      <label className="checkline"><input name="sendEmail" type="checkbox" defaultChecked disabled={submitting} /><span>{t.sendEmail}</span></label>
+      <label className="checkline"><input name="sendEmail" type="checkbox" defaultChecked disabled={submitting || !paymentsEnabled} /><span>{t.sendEmail}</span></label>
       <div className="form-actions">
-        <button className="primary-btn" disabled={submitting} aria-busy={submitting}>
+        <button className="primary-btn" disabled={submitting || !paymentsEnabled} aria-busy={submitting}>
           {submitting && <span className="btn-spinner" aria-hidden="true" />}
           {submitting ? t.creating : t.create}
         </button>
@@ -874,14 +933,14 @@ function AdminTransactionsPage({ data, status, lang, onRefresh, syncing, filters
   );
 }
 
-function AdminPage({ lang, path, onNavigate }) {
+function AdminPage({ lang, path, paymentsEnabled, onNavigate }) {
   const t = i18n[lang].admin;
   const [data, setData] = useState({ orders: [], pagination: { page: 1, pageCount: 1, total: 0 }, pricing: null });
   const [filters, setFilters] = useState({ query: "", status: "all", page: 1 });
   const [status, setStatus] = useState("");
   const [syncing, setSyncing] = useState(false);
   const view = path === "/admin/transactions" ? "transactions" : path === "/admin/pricing" ? "pricing" : "create";
-  async function load({ reconcile = true, nextFilters = filters } = {}) {
+  async function load({ reconcile = paymentsEnabled, nextFilters = filters } = {}) {
     try {
       let syncWarning = false;
       if (reconcile) {
@@ -911,7 +970,7 @@ function AdminPage({ lang, path, onNavigate }) {
     if (view !== "transactions") return undefined;
     const timer = window.setInterval(() => load(), 60_000);
     return () => window.clearInterval(timer);
-  }, [view, lang, filters.query, filters.status, filters.page]);
+  }, [view, lang, paymentsEnabled, filters.query, filters.status, filters.page]);
 
   return (
     <section className="admin-shell">
@@ -924,7 +983,7 @@ function AdminPage({ lang, path, onNavigate }) {
         <a className={view === "transactions" ? "active" : ""} href={localizedPath("/admin/transactions", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/transactions"); }}>{t.transactions}</a>
         <a className={view === "pricing" ? "active" : ""} href={localizedPath("/admin/pricing", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/pricing"); }}>{t.pricing}</a>
       </nav>
-      {view === "create" && <AdminCreatePage lang={lang} onCreated={(reason) => reason === "auth" ? onNavigate("/admin/login") : load({ reconcile: false })} />}
+      {view === "create" && <AdminCreatePage lang={lang} paymentsEnabled={paymentsEnabled} onCreated={(reason) => reason === "auth" ? onNavigate("/admin/login") : load({ reconcile: false })} />}
       {view === "transactions" && <AdminTransactionsPage data={data} status={status} lang={lang} onRefresh={() => load()} syncing={syncing} filters={filters} onFiltersChange={setFilters} />}
       {view === "pricing" && (
         <AdminPricingPage
@@ -1029,9 +1088,9 @@ function App() {
   else if (path.startsWith("/payment/success/")) page = <ResultPage ctx={ctx} lang={lang} onRefresh={loadContext} />;
   else if (path.startsWith("/payment/failure/")) page = <ResultPage ctx={ctx} lang={lang} onRefresh={loadContext} />;
   else if (path === "/admin/login") page = <AdminLogin lang={lang} onNavigate={navigate} />;
-  else if (["/admin", "/admin/create", "/admin/transactions", "/admin/pricing"].includes(path)) page = adminJwt() ? <AdminPage lang={lang} path={path} onNavigate={navigate} /> : <AdminLogin lang={lang} onNavigate={navigate} />;
+  else if (["/admin", "/admin/create", "/admin/transactions", "/admin/pricing"].includes(path)) page = adminJwt() ? <AdminPage lang={lang} path={path} paymentsEnabled={ctx.config.paymentsEnabled !== false} onNavigate={navigate} /> : <AdminLogin lang={lang} onNavigate={navigate} />;
   else page = <LegalPage ctx={ctx} lang={lang} kind={path.slice(1)} />;
-  return <><Nav lang={lang} path={path} search={location.search} onNavigate={navigate} onChangeLang={changeLang} /><main>{page}</main><Footer ctx={ctx} lang={lang} onNavigate={navigate} /></>;
+  return <><Nav lang={lang} path={path} search={location.search} paymentsEnabled={ctx.config.paymentsEnabled !== false} onNavigate={navigate} onChangeLang={changeLang} /><main>{page}</main><Footer ctx={ctx} lang={lang} onNavigate={navigate} /></>;
 }
 
 createRoot(document.getElementById("app")).render(<App />);

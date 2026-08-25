@@ -154,6 +154,33 @@ test('production guard rejects test provider, HTTP and SQLite', () => {
   assert.ok(errors.some((message) => message.includes('PostgreSQL')));
 });
 
+test('production guard permits intentionally disabled payments without Halyk credentials', () => {
+  const degraded = structuredClone(config);
+  degraded.payments.enabled = false;
+  degraded.halyk.env = 'test';
+  degraded.halyk.clientId = '';
+  degraded.halyk.clientSecret = '';
+  degraded.halyk.terminalId = '';
+  degraded.halyk.statusSyncEnabled = false;
+  degraded.halyk.reconciliationCronEnabled = false;
+  degraded.paymentAdmin.usernames = [];
+  degraded.paymentAdmin.emails = [];
+  degraded.baseUrl = 'https://clinmedkaz.example.test';
+  degraded.backendUrl = 'https://api.clinmedkaz.example.test';
+  degraded.smtp = { host: 'smtp.example.test', port: 465, secure: true, user: 'mailer', pass: 'strong-mail-password', from: 'ClinMedKaz <mailer@example.test>' };
+  degraded.runtime.databaseClient = 'postgres';
+  degraded.runtime.databaseConfigured = true;
+  degraded.runtime.corsOrigins = ['https://clinmedkaz.example.test'];
+  degraded.runtime.appKeys = ['strong-app-key-one', 'strong-app-key-two'];
+  degraded.runtime.adminJwtSecret = 'strong-admin-jwt-secret';
+  degraded.runtime.apiTokenSalt = 'strong-api-token-salt';
+  degraded.runtime.transferTokenSalt = 'strong-transfer-token-salt';
+  degraded.runtime.encryptionKey = 'strong-encryption-key';
+  degraded.runtime.usersPermissionsJwtSecret = 'strong-users-jwt-secret';
+  const errors = productionConfigurationErrors(degraded);
+  assert.deepEqual(errors, []);
+});
+
 test('logger redacts nested credentials', () => {
   assert.deepEqual(redactMeta({ token: 'abc', nested: { password: 'xyz', safe: 7 } }), {
     token: '[REDACTED]',

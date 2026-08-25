@@ -5,6 +5,7 @@ import { findArticleDuplicates, invitationPricingSnapshot, validateInvitationInp
 import { buildInvitationEmail } from '../../../lib/email-templates';
 import { logger } from '../../../lib/logger';
 import { sendMail } from '../../../lib/mailer';
+import { requirePaymentsEnabled } from '../../../lib/payment-availability';
 import { readPricing } from '../../../lib/pricing';
 import { readStore, updateStore } from '../../../lib/store';
 
@@ -34,6 +35,7 @@ async function sendInvitationEmail(invitation: Record<string, any>) {
 
 export default {
   async createPaymentInvitation(ctx: any) {
+    if (!requirePaymentsEnabled(ctx)) return;
     const actor = requireAdmin(ctx);
     const fields = validateInvitationInput(ctx.request.body || {});
     const sendEmail = ctx.request.body?.sendEmail !== false && ctx.request.body?.sendEmail !== 'false';
@@ -65,6 +67,7 @@ export default {
   },
 
   async resend(ctx: any) {
+    if (!requirePaymentsEnabled(ctx)) return;
     const actor = requireAdmin(ctx);
     const store = await readStore();
     const invitation = store.invitations.find((item) => item.id === ctx.params.id);

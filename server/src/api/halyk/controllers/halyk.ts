@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { config, halykCredentialsConfigured } from '../../../lib/config';
 import { evaluatePostlink, sanitizePostlinkPayload } from '../../../lib/domain';
 import { logger } from '../../../lib/logger';
+import { requirePaymentsEnabled } from '../../../lib/payment-availability';
 import { sendPaymentEmails } from '../../../lib/payment-emails';
 import { updateStore } from '../../../lib/store';
 
@@ -15,6 +16,7 @@ function nowIso() {
 
 export default {
   async postlink(ctx: any) {
+    if (!requirePaymentsEnabled(ctx)) return;
     const payload = ctx.request.body || {};
     const auditPayload = sanitizePostlinkPayload(payload);
     const transition = await updateStore((store) => {

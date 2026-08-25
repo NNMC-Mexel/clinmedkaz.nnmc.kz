@@ -25,6 +25,9 @@ export async function reconcileOrder(orderId: string) {
   if (!ORDER_ACTIVE_STATUSES.includes(snapshot.status)) {
     return { checked: false, found: true, status: snapshot.status, reason: 'final_status' };
   }
+  if (!config.payments.enabled) {
+    return { checked: false, found: true, status: snapshot.status, reason: 'payments_disabled' };
+  }
   if (!config.halyk.statusSyncEnabled || !halykCredentialsConfigured()) {
     return { checked: false, found: true, status: snapshot.status, reason: 'status_sync_disabled' };
   }
@@ -98,6 +101,7 @@ export async function reconcileOrder(orderId: string) {
 }
 
 export async function reconcileActiveOrders(limit = 100) {
+  if (!config.payments.enabled) return { checked: 0, updated: 0, skipped: 0, reason: 'payments_disabled' };
   const activeIds = await readActiveOrderIds(ORDER_ACTIVE_STATUSES, limit);
   const results = [];
   for (const orderId of activeIds) results.push(await reconcileOrder(orderId));

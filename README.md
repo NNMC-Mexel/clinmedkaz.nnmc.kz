@@ -42,6 +42,19 @@ npm run dev                   # Strapi на http://localhost:1337, React client 
 - Liveness/readiness: `GET /api/health`, `GET /api/ready`.
 - Полная проверка backend (build + unit + API E2E): `npm test --prefix server`.
 
+До получения production-ключей Halyk приложение можно безопасно запустить в degraded mode:
+
+```env
+PAYMENTS_ENABLED=false
+HALYK_STATUS_SYNC_ENABLED=false
+PAYMENT_RECONCILIATION_CRON_ENABLED=false
+CRON_ENABLED=false
+```
+
+В этом режиме сайт, CMS и информационные API работают, а создание ссылок, получение
+платёжного токена, callback и сверка возвращают контролируемый `503`. Тестовые или
+вымышленные Halyk credentials для production использовать нельзя.
+
 > Все суммы и реквизиты — боевые юридические данные НИИ. Halyk-ключи нужно держать
 > только в локальном `.env`; перед продакшеном замените их на боевые и **не коммитьте секреты**
 > (см. [05-code-review.md](05-code-review.md), пункт P0).

@@ -9,6 +9,7 @@ import {
 } from '../../../lib/domain';
 import { getPaymentToken, makeInvoiceId, makePaymentObject, makeSecretHash, postLinkUrl } from '../../../lib/halyk';
 import { logger } from '../../../lib/logger';
+import { requirePaymentsEnabled } from '../../../lib/payment-availability';
 import { readPricing } from '../../../lib/pricing';
 import { reconcileOrder } from '../../../lib/reconciliation';
 import { readStore, updateStore } from '../../../lib/store';
@@ -23,6 +24,7 @@ function nowIso() {
 
 export default {
   async create(ctx: any) {
+    if (!requirePaymentsEnabled(ctx)) return;
     const input = validateOrderInput(ctx.request.body || {});
     const pricing = await readPricing();
     const outcome = await updateStore((state) => {
@@ -91,6 +93,7 @@ export default {
   },
 
   async paymentObject(ctx: any) {
+    if (!requirePaymentsEnabled(ctx)) return;
     const store = await readStore();
     const order = store.orders.find((item) => item.id === ctx.params.id);
     if (!order) ctx.throw(404, 'Order not found');
@@ -124,6 +127,7 @@ export default {
   },
 
   async reconcile(ctx: any) {
+    if (!requirePaymentsEnabled(ctx)) return;
     const result = await reconcileOrder(String(ctx.params.id || ''));
     if (!result.found) ctx.throw(404, 'Order not found');
     ctx.body = result;

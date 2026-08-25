@@ -5,7 +5,7 @@ import { reconcileActiveOrders } from '../src/lib/reconciliation';
 export default {
   paymentReconciliation: {
     task: async () => {
-      if (!config.halyk.reconciliationCronEnabled || !config.halyk.statusSyncEnabled) return;
+      if (!config.payments.enabled || !config.halyk.reconciliationCronEnabled || !config.halyk.statusSyncEnabled) return;
       try {
         const result = await reconcileActiveOrders(100);
         logger.info('Scheduled payment reconciliation completed', result);
