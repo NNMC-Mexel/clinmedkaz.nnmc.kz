@@ -18,6 +18,8 @@ jobs:
           cache-dependency-path: |
             server/package-lock.json
             client/package-lock.json
+      - name: Use the deployment npm version
+        run: npm install --global npm@10.9.3
       - name: Install server dependencies
         run: npm ci --prefix server
       - name: Install client dependencies

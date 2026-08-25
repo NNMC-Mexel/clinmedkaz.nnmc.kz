@@ -593,7 +593,7 @@ export interface ApiPaymentCallbackPaymentCallback
   extends Struct.CollectionTypeSchema {
   collectionName: 'payment_callbacks';
   info: {
-    description: 'Raw Halyk ePay callback audit record';
+    description: 'Sanitized Halyk ePay callback audit record';
     displayName: 'Payment callback';
     pluralName: 'payment-callbacks';
     singularName: 'payment-callback';

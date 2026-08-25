@@ -1,5 +1,8 @@
 [phases.install]
-cmds = ["npm ci --include=dev"]
+cmds = [
+  "npm install --global npm@10.9.3",
+  "npm ci --include=dev --no-audit --no-fund"
+]
 
 [phases.build]
 cmds = ["npm run build"]
