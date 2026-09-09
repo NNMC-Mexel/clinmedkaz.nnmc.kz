@@ -16,6 +16,8 @@ const invitationCopy = {
     feeLabel: 'Стоимость публикации',
     residentLabel: 'Для резидентов Казахстана',
     nonResidentLabel: 'Для нерезидентов',
+    customLabel: 'Индивидуальная стоимость',
+    customFeeHint: 'Для этой персональной ссылки редакция установила специальную стоимость.',
     feeHint: 'Итоговая сумма определяется после выбора резидентства.',
     button: 'Перейти к оплате',
     securePayment: 'Оплата откроется на защищённой странице Halyk ePay.',
@@ -41,6 +43,8 @@ const invitationCopy = {
     feeLabel: 'Жарияланым құны',
     residentLabel: 'Қазақстан резиденттері үшін',
     nonResidentLabel: 'Бейрезиденттер үшін',
+    customLabel: 'Жеке баға',
+    customFeeHint: 'Редакция осы жеке сілтеме үшін арнайы баға белгіледі.',
     feeHint: 'Қорытынды сома резиденттік таңдалғаннан кейін анықталады.',
     button: 'Төлемге өту',
     securePayment: 'Төлем Halyk ePay қорғалған бетінде ашылады.',
@@ -66,6 +70,8 @@ const invitationCopy = {
     feeLabel: 'Publication fee',
     residentLabel: 'For Kazakhstan residents',
     nonResidentLabel: 'For non-residents',
+    customLabel: 'Individual fee',
+    customFeeHint: 'The editorial team set a special fee for this personal link.',
     feeHint: 'The final amount is determined after you select your residency.',
     button: 'Proceed to payment',
     securePayment: 'Payment opens on the secure Halyk ePay page.',
@@ -112,6 +118,22 @@ export function buildInvitationEmail(invitation: Invitation, link: string) {
   const articleTitle = oneLine(invitation.articleTitle);
   const residentFee = formatMoney(invitation.residentAmount, invitation.residentCurrency || 'KZT');
   const nonResidentFee = formatMoney(invitation.nonResidentAmount, invitation.nonResidentCurrency || 'USD');
+  const hasCustomFee = Number.isFinite(Number(invitation.customAmount)) && Number(invitation.customAmount) > 0;
+  const customFee = hasCustomFee ? formatMoney(invitation.customAmount, invitation.customCurrency || 'KZT') : '';
+  const feeRows = hasCustomFee
+    ? `<tr>
+                  <td class="fee-label" style="padding:13px 0; color:#4f5d73; font-size:14px; line-height:21px;">${escapeHtml(copy.customLabel)}</td>
+                  <td class="fee-value" align="right" style="padding:13px 0; color:#131a2b; font-size:15px; line-height:21px; font-weight:700; white-space:nowrap;">${escapeHtml(customFee)}</td>
+                </tr>`
+    : `<tr>
+                  <td class="fee-label" style="padding:13px 0; color:#4f5d73; font-size:14px; line-height:21px;">${escapeHtml(copy.residentLabel)}</td>
+                  <td class="fee-value" align="right" style="padding:13px 0; color:#131a2b; font-size:15px; line-height:21px; font-weight:700; white-space:nowrap;">${escapeHtml(residentFee)}</td>
+                </tr>
+                <tr>
+                  <td class="fee-label" style="padding:13px 0; border-top:1px solid #e1e7ef; color:#4f5d73; font-size:14px; line-height:21px;">${escapeHtml(copy.nonResidentLabel)}</td>
+                  <td class="fee-value" align="right" style="padding:13px 0; border-top:1px solid #e1e7ef; color:#131a2b; font-size:15px; line-height:21px; font-weight:700; white-space:nowrap;">${escapeHtml(nonResidentFee)}</td>
+                </tr>`;
+  const feeHint = hasCustomFee ? copy.customFeeHint : copy.feeHint;
   const supportEmail = oneLine(config.business.supportEmail);
   const supportPhone = oneLine(config.business.supportPhone);
   const businessName = oneLine(config.business.name);
@@ -191,16 +213,9 @@ export function buildInvitationEmail(invitation: Invitation, link: string) {
             <td class="mobile-pad" style="padding:20px 40px 0;">
               <div style="margin-bottom:8px; color:#728097; font-size:12px; line-height:17px; font-weight:700; text-transform:uppercase; letter-spacing:.65px;">${escapeHtml(copy.feeLabel)}</div>
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; border-top:1px solid #e1e7ef;">
-                <tr>
-                  <td class="fee-label" style="padding:13px 0; color:#4f5d73; font-size:14px; line-height:21px;">${escapeHtml(copy.residentLabel)}</td>
-                  <td class="fee-value" align="right" style="padding:13px 0; color:#131a2b; font-size:15px; line-height:21px; font-weight:700; white-space:nowrap;">${escapeHtml(residentFee)}</td>
-                </tr>
-                <tr>
-                  <td class="fee-label" style="padding:13px 0; border-top:1px solid #e1e7ef; color:#4f5d73; font-size:14px; line-height:21px;">${escapeHtml(copy.nonResidentLabel)}</td>
-                  <td class="fee-value" align="right" style="padding:13px 0; border-top:1px solid #e1e7ef; color:#131a2b; font-size:15px; line-height:21px; font-weight:700; white-space:nowrap;">${escapeHtml(nonResidentFee)}</td>
-                </tr>
+                ${feeRows}
               </table>
-              <p style="margin:7px 0 0; color:#728097; font-size:12px; line-height:18px;">${escapeHtml(copy.feeHint)}</p>
+              <p style="margin:7px 0 0; color:#728097; font-size:12px; line-height:18px;">${escapeHtml(feeHint)}</p>
             </td>
           </tr>
           <tr>
@@ -263,9 +278,8 @@ ${copy.lead}
 ${copy.articleLabel}: ${articleTitle}
 
 ${copy.feeLabel}:
-${copy.residentLabel}: ${residentFee}
-${copy.nonResidentLabel}: ${nonResidentFee}
-${copy.feeHint}
+${hasCustomFee ? `${copy.customLabel}: ${customFee}` : `${copy.residentLabel}: ${residentFee}\n${copy.nonResidentLabel}: ${nonResidentFee}`}
+${feeHint}
 
 ${copy.button}: ${link}
 ${copy.securePayment}

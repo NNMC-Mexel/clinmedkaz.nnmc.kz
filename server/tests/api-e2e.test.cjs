@@ -155,13 +155,35 @@ test('critical payment API journey, authorization and concurrency', { timeout: 1
       fullName: 'Test Author',
       phone: '+7 (777) 123-45-67',
       articleTitle: 'E2E atomic payment article',
+      country: 'India',
+      customAmount: 125,
+      customCurrency: 'USD',
       lang: 'ru',
       sendEmail: false,
     }),
   });
   assert.equal(invitationResponse.response.status, 200, JSON.stringify(invitationResponse.body));
   assert.equal(invitationResponse.body.invitation.phone, '77771234567');
+  assert.equal(invitationResponse.body.invitation.country, 'India');
+  assert.equal(invitationResponse.body.invitation.customAmount, 125);
   const invitationId = invitationResponse.body.invitation.id;
+
+  const invitationPage = await request('/admin/orders?page=1&pageSize=10&status=invitation_created', {
+    headers: { authorization: `Bearer ${adminJwt}` },
+  });
+  assert.equal(invitationPage.response.status, 200, JSON.stringify(invitationPage.body));
+  assert.equal(invitationPage.body.pagination.total, 1);
+  assert.equal(invitationPage.body.orders[0].recordType, 'invitation');
+  assert.equal(invitationPage.body.orders[0].id, invitationId);
+  assert.equal(invitationPage.body.orders[0].country, 'India');
+  assert.equal(invitationPage.body.orders[0].amount, 125);
+  assert.equal(invitationPage.body.orders[0].currency, 'USD');
+
+  const futurePage = await request('/admin/orders?dateFrom=2099-01-01&dateTo=2099-01-02', {
+    headers: { authorization: `Bearer ${adminJwt}` },
+  });
+  assert.equal(futurePage.response.status, 200, JSON.stringify(futurePage.body));
+  assert.equal(futurePage.body.pagination.total, 0);
 
   const paymentBody = JSON.stringify({
     invitationId,
@@ -183,6 +205,10 @@ test('critical payment API journey, authorization and concurrency', { timeout: 1
   assert.equal(ordersPage.body.pagination.total, 1);
   assert.equal(ordersPage.body.orders.length, 1);
   assert.equal(ordersPage.body.orders[0].secretHash, undefined);
+  assert.equal(ordersPage.body.orders[0].recordType, 'order');
+  assert.equal(ordersPage.body.orders[0].amount, 125);
+  assert.equal(ordersPage.body.orders[0].currency, 'USD');
+  assert.equal(ordersPage.body.orders[0].country, 'India');
   const order = ordersPage.body.orders[0];
 
   const db = new Database(databasePath);

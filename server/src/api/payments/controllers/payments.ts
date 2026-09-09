@@ -55,6 +55,7 @@ export default {
         fullName: input.fullName,
         email: input.email,
         phone: input.phone,
+        country: invitation.country || '',
         articleTitle: invitation.articleTitle,
         lang: input.lang,
         invitationId: invitation.id,

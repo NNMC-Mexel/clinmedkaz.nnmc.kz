@@ -1,12 +1,14 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
+  calculateOrderPrice,
   evaluateHalykTransaction,
   evaluatePostlink,
   sanitizePostlinkPayload,
   validateInvitationInput,
 } = require('../dist/src/lib/domain.js');
 const { buildPaymentEmails } = require('../dist/src/lib/payment-emails.js');
+const { buildInvitationEmail } = require('../dist/src/lib/email-templates.js');
 const { productionConfigurationErrors, config } = require('../dist/src/lib/config.js');
 const { postLinkUrl } = require('../dist/src/lib/halyk.js');
 const { redactMeta } = require('../dist/src/lib/logger.js');
@@ -122,6 +124,56 @@ test('expected validation failures use a Strapi application error', () => {
     () => validateInvitationInput({ email: 'author@example.test', articleTitle: 'x' }),
     (error) => error?.name === 'ValidationError' && error?.message === 'Article title is required.'
   );
+});
+
+test('invitation accepts a country and validates an individual price', () => {
+  const invitation = validateInvitationInput({
+    email: 'author@example.test',
+    articleTitle: 'Discounted international article',
+    country: 'India',
+    customAmount: '149.955',
+    customCurrency: 'usd',
+  });
+  assert.equal(invitation.country, 'India');
+  assert.equal(invitation.customAmount, 149.96);
+  assert.equal(invitation.customCurrency, 'USD');
+  assert.throws(
+    () => validateInvitationInput({ email: 'author@example.test', articleTitle: 'Valid title', customAmount: '-1', customCurrency: 'KZT' }),
+    (error) => error?.name === 'ValidationError' && error?.message === 'Custom amount must be greater than zero.'
+  );
+  assert.throws(
+    () => validateInvitationInput({ email: 'author@example.test', articleTitle: 'Valid title', customAmount: '100', customCurrency: 'USD' }),
+    (error) => error?.name === 'ValidationError' && error?.message === 'Country is required for an individual price.'
+  );
+});
+
+test('individual invitation price overrides residency pricing', () => {
+  const pricing = {
+    residentKztAmount: 145620,
+    residentCurrency: 'KZT',
+    nonResidentAmount: 300,
+    nonResidentCurrency: 'USD',
+    publicationFeeUsd: 300,
+    usdToKztRate: 485.4,
+  };
+  const invitation = { customAmount: 125, customCurrency: 'USD' };
+  assert.deepEqual(calculateOrderPrice('resident_kz', invitation, pricing), { amount: 125, currency: 'USD', exchangeRate: null });
+  assert.deepEqual(calculateOrderPrice('non_resident', invitation, pricing), { amount: 125, currency: 'USD', exchangeRate: null });
+});
+
+test('invitation email shows only the individual price when configured', () => {
+  const email = buildInvitationEmail({
+    lang: 'ru',
+    articleTitle: 'Discounted article',
+    residentAmount: 145620,
+    residentCurrency: 'KZT',
+    nonResidentAmount: 300,
+    nonResidentCurrency: 'USD',
+    customAmount: 125,
+    customCurrency: 'USD',
+  }, 'https://example.test/payment?invite=1');
+  assert.match(email.text, /Индивидуальная стоимость: 125 USD/);
+  assert.doesNotMatch(email.text, /Для резидентов Казахстана:/);
 });
 
 test('postlink audit payload never persists order secrets or unknown fields', () => {

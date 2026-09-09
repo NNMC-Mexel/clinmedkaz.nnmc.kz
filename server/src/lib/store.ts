@@ -39,6 +39,7 @@ export function orderToStore(row: Record<string, any>) {
     fullName: row.fullName,
     email: row.email,
     phone: row.phone || '',
+    country: row.country || '',
     articleTitle: row.articleTitle,
     lang: row.lang,
     invitationId: row.invitationId || null,
@@ -67,6 +68,7 @@ export function invitationToStore(row: Record<string, any>) {
     email: row.email,
     fullName: row.fullName || '',
     phone: row.phone || '',
+    country: row.country || '',
     articleTitle: row.articleTitle,
     lang: row.lang,
     publicationFeeUsd: row.publicationFeeUsd === null ? null : Number(row.publicationFeeUsd),
@@ -75,6 +77,8 @@ export function invitationToStore(row: Record<string, any>) {
     residentCurrency: row.residentCurrency || '',
     nonResidentAmount: row.nonResidentAmount === null ? null : Number(row.nonResidentAmount),
     nonResidentCurrency: row.nonResidentCurrency || '',
+    customAmount: cleanNumber(row.customAmount),
+    customCurrency: row.customCurrency || '',
     createdAt: row.invitationCreatedAt,
     updatedAt: row.invitationUpdatedAt,
   };
@@ -110,6 +114,7 @@ function orderToStrapi(order: Record<string, any>) {
     fullName: cleanString(order.fullName),
     email: cleanString(order.email).toLowerCase(),
     phone: cleanString(order.phone),
+    country: cleanString(order.country),
     articleTitle: cleanString(order.articleTitle),
     lang: cleanString(order.lang, 'ru'),
     invitationId: order.invitationId ? cleanString(order.invitationId) : null,
@@ -138,6 +143,7 @@ function invitationToStrapi(invitation: Record<string, any>) {
     email: cleanString(invitation.email).toLowerCase(),
     fullName: cleanString(invitation.fullName),
     phone: cleanString(invitation.phone),
+    country: cleanString(invitation.country),
     articleTitle: cleanString(invitation.articleTitle),
     lang: cleanString(invitation.lang, 'ru'),
     publicationFeeUsd: cleanNumber(invitation.publicationFeeUsd),
@@ -146,6 +152,8 @@ function invitationToStrapi(invitation: Record<string, any>) {
     residentCurrency: cleanString(invitation.residentCurrency),
     nonResidentAmount: cleanNumber(invitation.nonResidentAmount),
     nonResidentCurrency: cleanString(invitation.nonResidentCurrency),
+    customAmount: cleanNumber(invitation.customAmount),
+    customCurrency: cleanString(invitation.customCurrency),
     invitationCreatedAt: iso(invitation.createdAt),
     invitationUpdatedAt: iso(invitation.updatedAt),
   };
@@ -245,31 +253,62 @@ export async function readStore(): Promise<PaymentStore> {
   };
 }
 
-export async function readOrdersPage(options: { page?: number; pageSize?: number; query?: string; status?: string } = {}) {
+export async function readOrdersPage(options: {
+  page?: number;
+  pageSize?: number;
+  query?: string;
+  status?: string;
+  dateFrom?: string;
+  dateTo?: string;
+} = {}) {
   const page = Math.max(1, Math.floor(Number(options.page) || 1));
   const pageSize = Math.min(100, Math.max(1, Math.floor(Number(options.pageSize) || 20)));
-  const query = cleanString(options.query).slice(0, 120);
+  const query = cleanString(options.query).slice(0, 120).toLocaleLowerCase();
   const status = cleanString(options.status);
-  const where: Record<string, any> = {};
-  if (status && status !== 'all') where.status = status;
-  if (query) {
-    where.$or = ['invoiceId', 'fullName', 'email', 'articleTitle'].map((field) => ({
-      [field]: { $containsi: query },
-    }));
-  }
-  const orderQuery = strapi.db.query(orderUid);
-  const [rows, total] = await Promise.all([
-    orderQuery.findMany({
-      where,
-      orderBy: { paymentCreatedAt: 'desc' },
-      offset: (page - 1) * pageSize,
-      limit: pageSize,
-    }),
-    orderQuery.count({ where }),
+  const fromText = cleanString(options.dateFrom);
+  const toText = cleanString(options.dateTo);
+  const parsedFrom = Date.parse(/^\d{4}-\d{2}-\d{2}$/.test(fromText) ? `${fromText}T00:00:00.000Z` : fromText);
+  const parsedTo = Date.parse(/^\d{4}-\d{2}-\d{2}$/.test(toText) ? `${toText}T00:00:00.000Z` : toText);
+  const dateFrom = Number.isFinite(parsedFrom) ? parsedFrom : null;
+  const dateTo = Number.isFinite(parsedTo) ? parsedTo + (/^\d{4}-\d{2}-\d{2}$/.test(toText) ? 86_400_000 : 0) : null;
+  const [orderRows, invitationRows] = await Promise.all([
+    strapi.db.query(orderUid).findMany({ orderBy: { paymentCreatedAt: 'desc' } }),
+    strapi.db.query(invitationUid).findMany({ orderBy: { invitationCreatedAt: 'desc' } }),
   ]);
+  const orders = orderRows.map(orderToStore).map((order) => ({ ...order, recordType: 'order' }));
+  const invitationIdsWithOrders = new Set(orders.map((order) => order.invitationId).filter(Boolean));
+  const invitations = invitationRows
+    .map(invitationToStore)
+    .filter((invitation) => !invitationIdsWithOrders.has(invitation.id))
+    .map((invitation) => ({
+      ...invitation,
+      recordType: 'invitation',
+      invitationId: invitation.id,
+      invoiceId: '',
+      status: invitation.status === 'created' ? 'invitation_created' : invitation.status,
+      amount: invitation.customAmount || invitation.residentAmount,
+      currency: invitation.customCurrency || invitation.residentCurrency || 'KZT',
+      residency: '',
+    }));
+  const entries = [...orders, ...invitations]
+    .filter((entry) => !status || status === 'all' || entry.status === status)
+    .filter((entry) => {
+      if (!query) return true;
+      return [entry.invoiceId, entry.id, entry.fullName, entry.email, entry.articleTitle, entry.country]
+        .some((value) => cleanString(value).toLocaleLowerCase().includes(query));
+    })
+    .filter((entry) => {
+      const timestamp = Date.parse(entry.createdAt);
+      return Number.isFinite(timestamp) && (dateFrom === null || timestamp >= dateFrom) && (dateTo === null || timestamp < dateTo);
+    })
+    .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt));
+  const total = entries.length;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const resolvedPage = Math.min(page, pageCount);
+  const offset = (resolvedPage - 1) * pageSize;
   return {
-    orders: rows.map(orderToStore),
-    pagination: { page, pageSize, total, pageCount: Math.max(1, Math.ceil(total / pageSize)) },
+    orders: entries.slice(offset, offset + pageSize),
+    pagination: { page: resolvedPage, pageSize, total, pageCount },
   };
 }
 

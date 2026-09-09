@@ -79,6 +79,7 @@ const apiErrorI18n = {
     "Valid email is required.": "Укажите корректный Email.",
     "Phone number is required.": "Укажите номер телефона.",
     "Article title is required.": "Укажите название статьи.",
+    "Country is required for an individual price.": "Укажите страну для индивидуальной цены.",
     "Payment link is invalid or cancelled.": "Ссылка на оплату недействительна или отменена.",
     "This article publication has already been paid.": "Публикация этой статьи уже оплачена.",
     "This article has already been paid through another link.": "Эта статья уже оплачена по другой ссылке.",
@@ -91,6 +92,7 @@ const apiErrorI18n = {
     "Valid email is required.": "Дұрыс Email енгізіңіз.",
     "Phone number is required.": "Телефон нөмірін енгізіңіз.",
     "Article title is required.": "Мақала атауын енгізіңіз.",
+    "Country is required for an individual price.": "Жеке баға үшін елді көрсетіңіз.",
     "Payment link is invalid or cancelled.": "Төлем сілтемесі жарамсыз немесе жойылған.",
     "This article publication has already been paid.": "Бұл мақаланы жариялау ақысы төленген.",
     "This article has already been paid through another link.": "Бұл мақала басқа сілтеме арқылы төленген.",
@@ -99,6 +101,7 @@ const apiErrorI18n = {
     "Cannot resend a cancelled invitation.": "Жойылған сілтемені қайта жіберуге болмайды.",
   },
   en: {
+    "Country is required for an individual price.": "Enter a country for the individual price.",
     "Payments are temporarily unavailable.": "Payments are temporarily unavailable. Please try again later.",
   },
 };
@@ -132,6 +135,7 @@ const i18n = {
       eyebrow: "Научная публикация ClinMedKaz",
       lead: "Заполните данные автора и перейдите к безопасной оплате картой через Halyk ePay.",
       amount: "Сумма",
+      individualPrice: "Индивидуальная цена по этой ссылке",
       authorDetails: "Данные автора",
       fullName: "ФИО",
       email: "Email",
@@ -148,7 +152,7 @@ const i18n = {
     },
     pay: { title: "Переход к оплате", lead: "Проверяем заказ и открываем защищённую страницу Halyk ePay.", button: "Открыть форму оплаты", retry: "Повторить попытку", loading: "Подключаемся к Halyk ePay…", error: "Платёжный сервис временно не отвечает. Повторите попытку через минуту.", amount: "К оплате", article: "Публикация", order: "Номер заказа", security: "Оплата проходит на защищённой странице Halyk ePay", back: "Вернуться к данным" },
     result: { ok: "Оплата получена", fail: "Оплата не прошла", pending: "Проверяем оплату", checking: "Сверяем статус с Halyk ePay…", pendingHelp: "Банк ещё не подтвердил итоговый статус. Обновите страницу через несколько секунд.", back: "Вернуться к форме оплаты" },
-    admin: { title: "Администрирование оплат", login: "Вход в панель управления", loginTitle: "Панель управления оплатами", loginLead: "Авторизуйтесь, чтобы создавать платежные ссылки и просматривать транзакции.", username: "Логин", password: "Пароль", signIn: "Войти", logout: "Выйти", create: "Создать ссылку", creating: "Создаём ссылку…", createLead: "Заполните данные автора, выберите язык письма и отправьте персональную ссылку на оплату.", orders: "История транзакций", ordersLead: "Отслеживайте статусы оплат, автора и сумму без отвлечения на форму создания ссылки.", refresh: "Обновить", syncing: "Сверяем с Halyk…", syncWarning: "История загружена, но Halyk временно не ответил. Показаны последние сохранённые статусы.", noAccess: "У этой учетной записи нет доступа к управлению оплатами.", sessionExpired: "Сессия истекла. Войдите снова.", invalidCredentials: "Неверный логин или пароль.", loginRequired: "Введите логин и пароль.", authError: "Не удалось выполнить вход. Проверьте данные и повторите попытку.", loadError: "Не удалось загрузить панель управления.", email: "Email", fullName: "ФИО", phone: "Телефон", article: "Статья", lang: "Язык", sendEmail: "Отправить ссылку на Email", createdLink: "Ссылка создана", status: "Статус", invoice: "Инвойс", author: "Автор", amount: "Сумма", createdAt: "Создано", search: "Поиск по автору, email, статье или инвойсу", allStatuses: "Все статусы", emptyOrders: "Транзакций пока нет.", open: "Открыть", transactions: "Транзакции", pricing: "Цена", pricingLead: "Стоимость публикации задаётся в тенге — именно эта сумма списывается через Halyk ePay. Цена в USD рассчитывается по курсу и показывается справочно для нерезидентов.", priceKzt: "Стоимость публикации, ₸", rate: "Курс, ₸ за 1 USD", pricingPreview: "Так цена будет показана на сайте", pricingSave: "Сохранить цену", pricingSaving: "Сохраняем…", pricingSaved: "Цена обновлена. Новые ссылки будут создаваться с этой суммой.", pricingInvalid: "Укажите цену в тенге и курс числами больше нуля.", pricingFrozen: "Уже отправленные ссылки на оплату сохраняют сумму, с которой были созданы, — изменение цены их не затронет.", pricingFromEnv: "Сейчас действует значение по умолчанию из настроек сервера.", pricingUpdatedBy: "Изменено" },
+    admin: { title: "Администрирование оплат", login: "Вход в панель управления", loginTitle: "Панель управления оплатами", loginLead: "Авторизуйтесь, чтобы создавать платежные ссылки и просматривать транзакции.", username: "Логин", password: "Пароль", signIn: "Войти", logout: "Выйти", create: "Создать ссылку", creating: "Создаём ссылку…", createLead: "Заполните данные автора, выберите язык письма и отправьте персональную ссылку на оплату.", orders: "История транзакций", ordersLead: "Отслеживайте созданные ссылки и статусы оплат в одном списке.", refresh: "Обновить", syncing: "Сверяем с Halyk…", syncWarning: "История загружена, но Halyk временно не ответил. Показаны последние сохранённые статусы.", noAccess: "У этой учетной записи нет доступа к управлению оплатами.", sessionExpired: "Сессия истекла. Войдите снова.", invalidCredentials: "Неверный логин или пароль.", loginRequired: "Введите логин и пароль.", authError: "Не удалось выполнить вход. Проверьте данные и повторите попытку.", loadError: "Не удалось загрузить панель управления.", email: "Email", fullName: "ФИО", phone: "Телефон", country: "Страна", article: "Статья", lang: "Язык", customPrice: "Установить индивидуальную цену", customPriceAmount: "Индивидуальная сумма", customPriceCurrency: "Валюта", customPriceHint: "Используйте для скидки или специальной цены. Она будет зафиксирована только для этой ссылки.", sendEmail: "Отправить ссылку на Email", createdLink: "Ссылка создана", status: "Статус", invoice: "Инвойс", author: "Автор", amount: "Сумма", createdAt: "Создано", search: "Поиск по автору, email, статье, стране или инвойсу", allStatuses: "Все статусы", dateFrom: "Дата с", dateTo: "Дата по", emptyOrders: "Записей пока нет.", open: "Открыть", transactions: "Транзакции", pricing: "Цена", pricingLead: "Стоимость публикации задаётся в тенге — именно эта сумма списывается через Halyk ePay. Цена в USD рассчитывается по курсу и показывается справочно для нерезидентов.", priceKzt: "Стоимость публикации, ₸", rate: "Курс, ₸ за 1 USD", pricingPreview: "Так цена будет показана на сайте", pricingSave: "Сохранить цену", pricingSaving: "Сохраняем…", pricingSaved: "Цена обновлена. Новые ссылки будут создаваться с этой суммой.", pricingInvalid: "Укажите цену в тенге и курс числами больше нуля.", pricingFrozen: "Уже отправленные ссылки на оплату сохраняют сумму, с которой были созданы, — изменение цены их не затронет.", pricingFromEnv: "Сейчас действует значение по умолчанию из настроек сервера.", pricingUpdatedBy: "Изменено" },
     legal: { service: "Описание услуги", terms: "Публичная оферта", privacy: "Политика конфиденциальности", refunds: "Правила возврата", contacts: "Контакты" },
   },
   kk: {
@@ -159,6 +163,7 @@ const i18n = {
       eyebrow: "ClinMedKaz ғылыми жарияланымы",
       lead: "Автор деректерін толтырып, Halyk ePay арқылы қауіпсіз төлемге өтіңіз.",
       amount: "Сома",
+      individualPrice: "Осы сілтеме үшін жеке баға",
       authorDetails: "Автор деректері",
       fullName: "Т.А.Ә.",
       email: "Email",
@@ -175,7 +180,7 @@ const i18n = {
     },
     pay: { title: "Төлемге өту", lead: "Тапсырысты тексеріп, Halyk ePay қорғалған бетін ашамыз.", button: "Төлем формасын ашу", retry: "Қайталап көру", loading: "Halyk ePay жүйесіне қосылуда…", error: "Төлем сервисі уақытша жауап бермейді. Бір минуттан кейін қайталап көріңіз.", amount: "Төлем сомасы", article: "Жарияланым", order: "Тапсырыс нөмірі", security: "Төлем Halyk ePay қорғалған бетінде жүргізіледі", back: "Деректерге оралу" },
     result: { ok: "Төлем қабылданды", fail: "Төлем өтпеді", pending: "Төлем тексерілуде", checking: "Halyk ePay мәртебесі тексерілуде…", pendingHelp: "Банк соңғы мәртебені әлі растаған жоқ. Бірнеше секундтан кейін бетті жаңартыңыз.", back: "Төлем формасына оралу" },
-    admin: { title: "Төлемдерді басқару", login: "Басқару панеліне кіру", loginTitle: "Төлемдерді басқару панелі", loginLead: "Төлем сілтемелерін жасау және транзакцияларды қарау үшін авторизациядан өтіңіз.", username: "Логин", password: "Құпиясөз", signIn: "Кіру", logout: "Шығу", create: "Сілтеме жасау", creating: "Сілтеме жасалуда…", createLead: "Автор деректерін енгізіп, хат тілін таңдаңыз және жеке төлем сілтемесін жіберіңіз.", orders: "Транзакциялар тарихы", ordersLead: "Төлем мәртебесін, авторды және соманы сілтеме жасау формасынан бөлек бақылаңыз.", refresh: "Жаңарту", noAccess: "Бұл есептік жазбада төлемдерді басқаруға рұқсат жоқ.", sessionExpired: "Сессия мерзімі аяқталды. Қайта кіріңіз.", invalidCredentials: "Логин немесе құпиясөз дұрыс емес.", loginRequired: "Логин мен құпиясөзді енгізіңіз.", authError: "Кіру мүмкін болмады. Деректерді тексеріп, қайталап көріңіз.", loadError: "Басқару панелін жүктеу мүмкін болмады.", email: "Email", fullName: "Т.А.Ә.", phone: "Телефон", article: "Мақала", lang: "Тіл", sendEmail: "Сілтемені Email арқылы жіберу", createdLink: "Сілтеме жасалды", status: "Мәртебе", invoice: "Инвойс", author: "Автор", amount: "Сома", createdAt: "Жасалды", search: "Автор, email, мақала немесе инвойс бойынша іздеу", allStatuses: "Барлық мәртебелер", emptyOrders: "Транзакциялар әлі жоқ.", open: "Ашу", transactions: "Транзакциялар", pricing: "Баға", pricingLead: "Жариялау құны теңгемен белгіленеді — Halyk ePay арқылы дәл осы сома алынады. USD бағасы бағам бойынша есептеледі және резидент еместер үшін анықтама ретінде көрсетіледі.", priceKzt: "Жариялау құны, ₸", rate: "Бағам, 1 USD үшін ₸", pricingPreview: "Баға сайтта осылай көрсетіледі", pricingSave: "Бағаны сақтау", pricingSaving: "Сақталуда…", pricingSaved: "Баға жаңартылды. Жаңа сілтемелер осы сомамен жасалады.", pricingInvalid: "Теңгемен бағаны және бағамды нөлден үлкен сан ретінде көрсетіңіз.", pricingFrozen: "Жіберілген төлем сілтемелері жасалған кездегі сомасын сақтайды — баға өзгерісі оларға әсер етпейді.", pricingFromEnv: "Қазір сервер параметрлеріндегі әдепкі мән қолданылады.", pricingUpdatedBy: "Өзгертілді" },
+    admin: { title: "Төлемдерді басқару", login: "Басқару панеліне кіру", loginTitle: "Төлемдерді басқару панелі", loginLead: "Төлем сілтемелерін жасау және транзакцияларды қарау үшін авторизациядан өтіңіз.", username: "Логин", password: "Құпиясөз", signIn: "Кіру", logout: "Шығу", create: "Сілтеме жасау", creating: "Сілтеме жасалуда…", createLead: "Автор деректерін енгізіп, хат тілін таңдаңыз және жеке төлем сілтемесін жіберіңіз.", orders: "Транзакциялар тарихы", ordersLead: "Жасалған сілтемелер мен төлем мәртебелерін бір тізімде бақылаңыз.", refresh: "Жаңарту", noAccess: "Бұл есептік жазбада төлемдерді басқаруға рұқсат жоқ.", sessionExpired: "Сессия мерзімі аяқталды. Қайта кіріңіз.", invalidCredentials: "Логин немесе құпиясөз дұрыс емес.", loginRequired: "Логин мен құпиясөзді енгізіңіз.", authError: "Кіру мүмкін болмады. Деректерді тексеріп, қайталап көріңіз.", loadError: "Басқару панелін жүктеу мүмкін болмады.", email: "Email", fullName: "Т.А.Ә.", phone: "Телефон", country: "Ел", article: "Мақала", lang: "Тіл", customPrice: "Жеке баға белгілеу", customPriceAmount: "Жеке сома", customPriceCurrency: "Валюта", customPriceHint: "Жеңілдік немесе арнайы баға үшін пайдаланыңыз. Ол тек осы сілтеме үшін бекітіледі.", sendEmail: "Сілтемені Email арқылы жіберу", createdLink: "Сілтеме жасалды", status: "Мәртебе", invoice: "Инвойс", author: "Автор", amount: "Сома", createdAt: "Жасалды", search: "Автор, email, мақала, ел немесе инвойс бойынша іздеу", allStatuses: "Барлық мәртебелер", dateFrom: "Бастапқы күн", dateTo: "Соңғы күн", emptyOrders: "Жазбалар әлі жоқ.", open: "Ашу", transactions: "Транзакциялар", pricing: "Баға", pricingLead: "Жариялау құны теңгемен белгіленеді — Halyk ePay арқылы дәл осы сома алынады. USD бағасы бағам бойынша есептеледі және резидент еместер үшін анықтама ретінде көрсетіледі.", priceKzt: "Жариялау құны, ₸", rate: "Бағам, 1 USD үшін ₸", pricingPreview: "Баға сайтта осылай көрсетіледі", pricingSave: "Бағаны сақтау", pricingSaving: "Сақталуда…", pricingSaved: "Баға жаңартылды. Жаңа сілтемелер осы сомамен жасалады.", pricingInvalid: "Теңгемен бағаны және бағамды нөлден үлкен сан ретінде көрсетіңіз.", pricingFrozen: "Жіберілген төлем сілтемелері жасалған кездегі сомасын сақтайды — баға өзгерісі оларға әсер етпейді.", pricingFromEnv: "Қазір сервер параметрлеріндегі әдепкі мән қолданылады.", pricingUpdatedBy: "Өзгертілді" },
     legal: { service: "Қызмет сипаттамасы", terms: "Жария оферта", privacy: "Құпиялылық саясаты", refunds: "Қайтару ережелері", contacts: "Байланыс" },
   },
   en: {
@@ -186,6 +191,7 @@ const i18n = {
       eyebrow: "ClinMedKaz scientific publication",
       lead: "Complete author details and proceed to secure Halyk ePay card payment.",
       amount: "Amount",
+      individualPrice: "Individual price for this link",
       authorDetails: "Author details",
       fullName: "Full name",
       email: "Email",
@@ -202,7 +208,7 @@ const i18n = {
     },
     pay: { title: "Proceed to payment", lead: "We are checking your order and opening the secure Halyk ePay page.", button: "Open payment form", retry: "Try again", loading: "Connecting to Halyk ePay…", error: "The payment service is temporarily unavailable. Please try again in a minute.", amount: "Amount due", article: "Publication", order: "Order number", security: "Payment is completed on the secure Halyk ePay page", back: "Back to details" },
     result: { ok: "Payment received", fail: "Payment failed", pending: "Checking payment", checking: "Checking the status with Halyk ePay…", pendingHelp: "The bank has not confirmed the final status yet. Refresh the page in a few seconds.", back: "Back to payment form" },
-    admin: { title: "Payment administration", login: "Management portal sign in", loginTitle: "Payment management portal", loginLead: "Sign in to create payment links and review transaction history.", username: "Username", password: "Password", signIn: "Sign in", logout: "Logout", create: "Create link", creating: "Creating link…", createLead: "Enter author details, choose the email language and send a personal payment link.", orders: "Transaction history", ordersLead: "Track payment status, author and amount separately from the link creation workflow.", refresh: "Refresh", noAccess: "This account does not have access to payment administration.", sessionExpired: "Session expired. Sign in again.", invalidCredentials: "Invalid username or password.", loginRequired: "Enter username and password.", authError: "Could not sign in. Check the details and try again.", loadError: "Could not load the management portal.", email: "Email", fullName: "Full name", phone: "Phone", article: "Article", lang: "Language", sendEmail: "Send link by email", createdLink: "Link created", status: "Status", invoice: "Invoice", author: "Author", amount: "Amount", createdAt: "Created", search: "Search author, email, article or invoice", allStatuses: "All statuses", emptyOrders: "No transactions yet.", open: "Open", transactions: "Transactions", pricing: "Price", pricingLead: "The publication fee is set in tenge — this is the amount Halyk ePay actually charges. The USD figure is derived from the rate and shown for reference to non-residents.", priceKzt: "Publication fee, ₸", rate: "Rate, ₸ per 1 USD", pricingPreview: "How the price will appear on the site", pricingSave: "Save price", pricingSaving: "Saving…", pricingSaved: "Price updated. New links will be created with this amount.", pricingInvalid: "Enter the tenge price and the rate as numbers greater than zero.", pricingFrozen: "Payment links already sent keep the amount they were created with — a price change does not affect them.", pricingFromEnv: "The server default is currently in effect.", pricingUpdatedBy: "Updated" },
+    admin: { title: "Payment administration", login: "Management portal sign in", loginTitle: "Payment management portal", loginLead: "Sign in to create payment links and review transaction history.", username: "Username", password: "Password", signIn: "Sign in", logout: "Logout", create: "Create link", creating: "Creating link…", createLead: "Enter author details, choose the email language and send a personal payment link.", orders: "Transaction history", ordersLead: "Track created links and payment statuses in one list.", refresh: "Refresh", noAccess: "This account does not have access to payment administration.", sessionExpired: "Session expired. Sign in again.", invalidCredentials: "Invalid username or password.", loginRequired: "Enter username and password.", authError: "Could not sign in. Check the details and try again.", loadError: "Could not load the management portal.", email: "Email", fullName: "Full name", phone: "Phone", country: "Country", article: "Article", lang: "Language", customPrice: "Set an individual price", customPriceAmount: "Individual amount", customPriceCurrency: "Currency", customPriceHint: "Use for a discount or special price. It is fixed only for this link.", sendEmail: "Send link by email", createdLink: "Link created", status: "Status", invoice: "Invoice", author: "Author", amount: "Amount", createdAt: "Created", search: "Search author, email, article, country or invoice", allStatuses: "All statuses", dateFrom: "Date from", dateTo: "Date to", emptyOrders: "No records yet.", open: "Open", transactions: "Transactions", pricing: "Price", pricingLead: "The publication fee is set in tenge — this is the amount Halyk ePay actually charges. The USD figure is derived from the rate and shown for reference to non-residents.", priceKzt: "Publication fee, ₸", rate: "Rate, ₸ per 1 USD", pricingPreview: "How the price will appear on the site", pricingSave: "Save price", pricingSaving: "Saving…", pricingSaved: "Price updated. New links will be created with this amount.", pricingInvalid: "Enter the tenge price and the rate as numbers greater than zero.", pricingFrozen: "Payment links already sent keep the amount they were created with — a price change does not affect them.", pricingFromEnv: "The server default is currently in effect.", pricingUpdatedBy: "Updated" },
     legal: { service: "Service description", terms: "Public offer", privacy: "Privacy policy", refunds: "Refund policy", contacts: "Contacts" },
   },
 };
@@ -239,6 +245,7 @@ const adminUiI18n = {
       activeLinkExists: "Для этой статьи уже существует активная ссылка на оплату.",
     },
     statuses: {
+      invitation_created: "Ссылка создана",
       created: "Создан",
       token_issued: "Ожидает оплаты",
       payment_started: "Оплата начата",
@@ -259,6 +266,7 @@ const adminUiI18n = {
       activeLinkExists: "Бұл мақала үшін белсенді төлем сілтемесі бұрыннан бар.",
     },
     statuses: {
+      invitation_created: "Сілтеме жасалды",
       created: "Жасалды",
       token_issued: "Төлем күтілуде",
       payment_started: "Төлем басталды",
@@ -279,6 +287,7 @@ const adminUiI18n = {
       activeLinkExists: "An active payment link already exists for this article.",
     },
     statuses: {
+      invitation_created: "Link created",
       created: "Created",
       token_issued: "Awaiting payment",
       payment_started: "Payment started",
@@ -298,9 +307,9 @@ const adminSyncI18n = {
 };
 
 const adminPaginationI18n = {
-  ru: { search: "Найти", previous: "Назад", next: "Далее", page: (current, count) => `Страница ${current} из ${count}` },
-  kk: { search: "Іздеу", previous: "Артқа", next: "Келесі", page: (current, count) => `${current} / ${count} бет` },
-  en: { search: "Search", previous: "Previous", next: "Next", page: (current, count) => `Page ${current} of ${count}` },
+  ru: { search: "Найти", previous: "Назад", next: "Далее", perPage: "На странице", total: (count) => `Всего: ${count}`, page: (current, count) => `Страница ${current} из ${count}` },
+  kk: { search: "Іздеу", previous: "Артқа", next: "Келесі", perPage: "Бетте", total: (count) => `Барлығы: ${count}`, page: (current, count) => `${current} / ${count} бет` },
+  en: { search: "Search", previous: "Previous", next: "Next", perPage: "Per page", total: (count) => `Total: ${count}`, page: (current, count) => `Page ${current} of ${count}` },
 };
 
 const dateLocales = { ru: "ru-RU", kk: "kk-KZ", en: "en-US" };
@@ -334,6 +343,13 @@ function localizedPath(path, lang, search = "") {
 function formatDate(value, lang = "ru") {
   if (!value) return "-";
   return new Intl.DateTimeFormat(dateLocales[lang] || dateLocales.ru, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+}
+
+function dateFilterBoundary(value, end = false) {
+  if (!value) return "";
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(year, month - 1, day + (end ? 1 : 0));
+  return Number.isNaN(date.getTime()) ? "" : date.toISOString();
 }
 
 function PaymentLink({ enabled, className, href, onClick, unavailableLabel, children }) {
@@ -585,8 +601,10 @@ function PaymentForm({ ctx, lang }) {
   const invitation = ctx.invitation || {};
   const paymentsEnabled = ctx.config.paymentsEnabled !== false;
   const disabled = !paymentsEnabled || !invitation.id || ["cancelled", "paid"].includes(invitation.status);
-  const resident = money(ctx.config.pricing.residentKztAmount, "KZT", lang);
-  const nonResident = money(ctx.config.pricing.nonResidentAmount, "USD", lang);
+  const resident = money(invitation.residentAmount ?? ctx.config.pricing.residentKztAmount, invitation.residentCurrency || "KZT", lang);
+  const nonResident = money(invitation.nonResidentAmount ?? ctx.config.pricing.nonResidentAmount, invitation.nonResidentCurrency || "USD", lang);
+  const hasCustomPrice = Number.isFinite(Number(invitation.customAmount)) && Number(invitation.customAmount) > 0;
+  const customPrice = hasCustomPrice ? money(invitation.customAmount, invitation.customCurrency || "KZT", lang) : "";
   const [status, setStatus] = useState("");
   const [residency, setResidency] = useState("resident_kz");
 
@@ -608,7 +626,7 @@ function PaymentForm({ ctx, lang }) {
       <section className="hero">
         <div><p className="eyebrow">{t.eyebrow}</p><h1>{t.title}</h1><p className="lead">{t.lead}</p></div>
         {/* The headline is the amount that will actually be charged for the chosen residency. */}
-        <div className="price-panel"><span className="price-label">{t.amount}</span><strong>{residency === "non_resident" ? nonResident : resident}</strong><small>{residency === "non_resident" ? resident : nonResident}</small></div>
+        <div className="price-panel"><span className="price-label">{t.amount}</span><strong>{hasCustomPrice ? customPrice : residency === "non_resident" ? nonResident : resident}</strong><small>{hasCustomPrice ? t.individualPrice : residency === "non_resident" ? resident : nonResident}</small></div>
       </section>
       <section className="content-grid">
         <form id="payment-form" className="panel form-panel" onSubmit={submit}>
@@ -622,8 +640,8 @@ function PaymentForm({ ctx, lang }) {
           <label>{t.articleTitle}<textarea name="articleTitle" defaultValue={invitation.articleTitle || ""} readOnly={Boolean(invitation.id)} required disabled={disabled} /></label>
           <fieldset className="field-group">
             <legend>{t.residency}</legend>
-            <label className="radio-line"><input type="radio" name="residency" value="resident_kz" defaultChecked disabled={disabled} onChange={(e) => setResidency(e.currentTarget.value)} /><span>{t.resident} - {resident}</span></label>
-            <label className="radio-line"><input type="radio" name="residency" value="non_resident" disabled={disabled} onChange={(e) => setResidency(e.currentTarget.value)} /><span>{t.nonResident} - {nonResident}</span></label>
+            <label className="radio-line"><input type="radio" name="residency" value="resident_kz" defaultChecked disabled={disabled} onChange={(e) => setResidency(e.currentTarget.value)} /><span>{t.resident}{hasCustomPrice ? "" : ` - ${resident}`}</span></label>
+            <label className="radio-line"><input type="radio" name="residency" value="non_resident" disabled={disabled} onChange={(e) => setResidency(e.currentTarget.value)} /><span>{t.nonResident}{hasCustomPrice ? "" : ` - ${nonResident}`}</span></label>
           </fieldset>
           <label className="checkline"><input type="checkbox" required disabled={disabled} /><span>{t.agreement}</span></label>
           <button className="primary-btn form-submit" type="submit" disabled={disabled}>{t.submit}</button>
@@ -787,12 +805,13 @@ function AdminLogin({ lang, onNavigate }) {
   );
 }
 
-function AdminCreatePage({ lang, onCreated, paymentsEnabled }) {
+function AdminCreatePage({ lang, onCreated, paymentsEnabled, pricing }) {
   const t = i18n[lang].admin;
   const ui = adminUiI18n[lang] || adminUiI18n.ru;
   const [status, setStatus] = useState("");
   const [createdLink, setCreatedLink] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [useCustomPrice, setUseCustomPrice] = useState(false);
   async function create(event) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -802,13 +821,20 @@ function AdminCreatePage({ lang, onCreated, paymentsEnabled }) {
     try {
       const raw = Object.fromEntries(new FormData(form).entries());
       const phone = String(raw.phone || "").replace(/\D/g, "");
-      const response = await apiFetch("/invitations", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...raw, phone, sendEmail: raw.sendEmail === "on" }) });
+      const requestBody = { ...raw, phone, sendEmail: raw.sendEmail === "on" };
+      delete requestBody.useCustomPrice;
+      if (!useCustomPrice) {
+        delete requestBody.customAmount;
+        delete requestBody.customCurrency;
+      }
+      const response = await apiFetch("/invitations", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(requestBody) });
       const payload = await response.json().catch(() => ({}));
       if (response.status === 401) { clearAdminJwt(); onCreated("auth"); return; }
       if (response.ok) {
         setCreatedLink(payload.link);
         setStatus(payload.duplicateWarning || "createdLink");
         form.reset();
+        setUseCustomPrice(false);
         onCreated();
         return;
       }
@@ -839,8 +865,19 @@ function AdminCreatePage({ lang, onCreated, paymentsEnabled }) {
           />
           <span className="field-hint" id="admin-phone-hint">{ui.digitsOnly}</span>
         </label>
+        <label><AdminFieldLabel lang={lang} optional={!useCustomPrice}>{t.country}</AdminFieldLabel><input name="country" autoComplete="country-name" required={useCustomPrice} /></label>
         <label><AdminFieldLabel lang={lang}>{t.lang}</AdminFieldLabel><select name="lang" defaultValue={lang} required><option value="ru">Русский</option><option value="kk">Қазақша</option><option value="en">English</option></select></label>
         <label className="admin-form-wide"><AdminFieldLabel lang={lang}>{t.article}</AdminFieldLabel><textarea name="articleTitle" required /></label>
+        <div className="admin-form-wide custom-price-block">
+          <label className="checkline custom-price-toggle"><input name="useCustomPrice" type="checkbox" checked={useCustomPrice} onChange={(event) => setUseCustomPrice(event.target.checked)} /><span>{t.customPrice}</span></label>
+          {useCustomPrice && (
+            <div className="custom-price-fields">
+              <label><AdminFieldLabel lang={lang}>{t.customPriceAmount}</AdminFieldLabel><input name="customAmount" type="number" min="0.01" step="0.01" inputMode="decimal" placeholder={String(pricing?.residentKztAmount || "")} required /></label>
+              <label><AdminFieldLabel lang={lang}>{t.customPriceCurrency}</AdminFieldLabel><select name="customCurrency" defaultValue="KZT" required><option value="KZT">KZT</option><option value="USD">USD</option></select></label>
+              <p className="field-hint custom-price-hint">{t.customPriceHint}</p>
+            </div>
+          )}
+        </div>
       </fieldset>
       <label className="checkline"><input name="sendEmail" type="checkbox" defaultChecked disabled={submitting || !paymentsEnabled} /><span>{t.sendEmail}</span></label>
       <div className="form-actions">
@@ -950,13 +987,15 @@ function AdminTransactionsPage({ data, status, lang, onRefresh, syncing, filters
   const paginationT = adminPaginationI18n[lang] || adminPaginationI18n.ru;
   const [query, setQuery] = useState(filters.query);
   const [statusFilter, setStatusFilter] = useState(filters.status);
+  const [dateFrom, setDateFrom] = useState(filters.dateFrom);
+  const [dateTo, setDateTo] = useState(filters.dateTo);
   const orders = data.orders || [];
   const statuses = useMemo(() => Object.keys(adminUiI18n[lang]?.statuses || adminUiI18n.ru.statuses), [lang]);
   const pagination = data.pagination || { page: 1, pageCount: 1, total: orders.length };
 
   function applyFilters(event) {
     event.preventDefault();
-    onFiltersChange({ query: query.trim(), status: statusFilter, page: 1 });
+    onFiltersChange({ ...filters, query: query.trim(), status: statusFilter, dateFrom, dateTo, page: 1 });
   }
 
   return (
@@ -966,12 +1005,18 @@ function AdminTransactionsPage({ data, status, lang, onRefresh, syncing, filters
         <button className="secondary-btn" type="button" onClick={onRefresh} disabled={syncing}>{syncing ? adminSyncI18n[lang].syncing : t.refresh}</button>
       </div>
       <form className="admin-toolbar" onSubmit={applyFilters}>
-        <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.search} />
-        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-          <option value="all">{t.allStatuses}</option>
-          {statuses.map((item) => <option key={item} value={item}>{adminStatusLabel(item, lang)}</option>)}
-        </select>
-        <button className="secondary-btn" type="submit">{paginationT.search}</button>
+        <div className="admin-toolbar-primary">
+          <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.search} />
+          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label={t.status}>
+            <option value="all">{t.allStatuses}</option>
+            {statuses.map((item) => <option key={item} value={item}>{adminStatusLabel(item, lang)}</option>)}
+          </select>
+          <button className="secondary-btn" type="submit">{paginationT.search}</button>
+        </div>
+        <div className="admin-date-filters">
+          <label><span>{t.dateFrom}</span><input type="date" value={dateFrom} max={dateTo || undefined} onChange={(event) => setDateFrom(event.target.value)} /></label>
+          <label><span>{t.dateTo}</span><input type="date" value={dateTo} min={dateFrom || undefined} onChange={(event) => setDateTo(event.target.value)} /></label>
+        </div>
       </form>
       {status && <p className="status-text danger-text">{status}</p>}
       {orders.length === 0 ? <p className="empty-state">{t.emptyOrders}</p> : (
@@ -982,21 +1027,24 @@ function AdminTransactionsPage({ data, status, lang, onRefresh, syncing, filters
                 <span className={`badge badge-${order.status}`}>{adminStatusLabel(order.status, lang)}</span>
                 <strong>{order.invoiceId || order.id}</strong>
                 <small>{formatDate(order.createdAt, lang)}</small>
+                {order.recordType === "invitation" && <a className="transaction-link" href={localizedPath("/payment", order.lang || lang, `invite=${encodeURIComponent(order.invitationId || order.id)}`)} target="_blank" rel="noreferrer">{t.open}</a>}
               </div>
-              <div className="transaction-detail"><span>{t.author}</span><strong>{order.fullName || "-"}</strong><small>{order.email}</small></div>
+              <div className="transaction-detail"><span>{t.author}</span><strong>{order.fullName || "-"}</strong><small>{order.email}</small>{order.country && <small>{order.country}</small>}</div>
               <div className="transaction-detail transaction-article"><span>{t.article}</span><strong>{order.articleTitle || "-"}</strong></div>
               <div className="transaction-detail transaction-amount"><span>{t.amount}</span><strong>{money(order.amount, order.currency, lang)}</strong></div>
             </article>
           ))}
         </div>
       )}
-      {pagination.pageCount > 1 && (
+      <div className="admin-pagination-wrap">
+        <label className="admin-page-size"><span>{paginationT.perPage}</span><select value={filters.pageSize} onChange={(event) => onFiltersChange({ ...filters, pageSize: Number(event.target.value), page: 1 })}><option value="10">10</option><option value="20">20</option><option value="50">50</option></select></label>
+        <span className="admin-total">{paginationT.total(pagination.total)}</span>
         <nav className="admin-pagination" aria-label={paginationT.page(pagination.page, pagination.pageCount)}>
           <button className="secondary-btn" type="button" disabled={pagination.page <= 1 || syncing} onClick={() => onFiltersChange({ ...filters, page: pagination.page - 1 })}>{paginationT.previous}</button>
           <span>{paginationT.page(pagination.page, pagination.pageCount)}</span>
           <button className="secondary-btn" type="button" disabled={pagination.page >= pagination.pageCount || syncing} onClick={() => onFiltersChange({ ...filters, page: pagination.page + 1 })}>{paginationT.next}</button>
         </nav>
-      )}
+      </div>
     </section>
   );
 }
@@ -1004,7 +1052,7 @@ function AdminTransactionsPage({ data, status, lang, onRefresh, syncing, filters
 function AdminPage({ lang, path, paymentsEnabled, onNavigate }) {
   const t = i18n[lang].admin;
   const [data, setData] = useState({ orders: [], pagination: { page: 1, pageCount: 1, total: 0 }, pricing: null });
-  const [filters, setFilters] = useState({ query: "", status: "all", page: 1 });
+  const [filters, setFilters] = useState({ query: "", status: "all", dateFrom: "", dateTo: "", page: 1, pageSize: 20 });
   const [status, setStatus] = useState("");
   const [syncing, setSyncing] = useState(false);
   const view = path === "/admin/transactions" ? "transactions" : path === "/admin/pricing" ? "pricing" : "create";
@@ -1018,9 +1066,11 @@ function AdminPage({ lang, path, paymentsEnabled, onNavigate }) {
         if (syncResponse.status === 403) { setStatus(t.noAccess); return; }
         syncWarning = !syncResponse.ok;
       }
-      const params = new URLSearchParams({ page: String(nextFilters.page), pageSize: "20" });
+      const params = new URLSearchParams({ page: String(nextFilters.page), pageSize: String(nextFilters.pageSize) });
       if (nextFilters.query) params.set("query", nextFilters.query);
       if (nextFilters.status !== "all") params.set("status", nextFilters.status);
+      if (nextFilters.dateFrom) params.set("dateFrom", dateFilterBoundary(nextFilters.dateFrom));
+      if (nextFilters.dateTo) params.set("dateTo", dateFilterBoundary(nextFilters.dateTo, true));
       const response = await apiFetch(`/admin/orders?${params.toString()}`);
       if (response.status === 401) { clearAdminJwt(); onNavigate("/admin/login"); return; }
       if (response.status === 403) { setStatus(t.noAccess); return; }
@@ -1038,7 +1088,7 @@ function AdminPage({ lang, path, paymentsEnabled, onNavigate }) {
     if (view !== "transactions") return undefined;
     const timer = window.setInterval(() => load(), 60_000);
     return () => window.clearInterval(timer);
-  }, [view, lang, paymentsEnabled, filters.query, filters.status, filters.page]);
+  }, [view, lang, paymentsEnabled, filters.query, filters.status, filters.dateFrom, filters.dateTo, filters.page, filters.pageSize]);
 
   return (
     <section className="admin-shell">
@@ -1051,7 +1101,7 @@ function AdminPage({ lang, path, paymentsEnabled, onNavigate }) {
         <a className={view === "transactions" ? "active" : ""} href={localizedPath("/admin/transactions", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/transactions"); }}>{t.transactions}</a>
         <a className={view === "pricing" ? "active" : ""} href={localizedPath("/admin/pricing", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/pricing"); }}>{t.pricing}</a>
       </nav>
-      {view === "create" && <AdminCreatePage lang={lang} paymentsEnabled={paymentsEnabled} onCreated={(reason) => reason === "auth" ? onNavigate("/admin/login") : load({ reconcile: false })} />}
+      {view === "create" && <AdminCreatePage lang={lang} paymentsEnabled={paymentsEnabled} pricing={data.pricing} onCreated={(reason) => reason === "auth" ? onNavigate("/admin/login") : load({ reconcile: false })} />}
       {view === "transactions" && <AdminTransactionsPage data={data} status={status} lang={lang} onRefresh={() => load()} syncing={syncing} filters={filters} onFiltersChange={setFilters} />}
       {view === "pricing" && (
         <AdminPricingPage

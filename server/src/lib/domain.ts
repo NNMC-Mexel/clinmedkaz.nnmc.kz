@@ -56,6 +56,15 @@ export function invitationPricingSnapshot(pricing: PricingLike) {
 }
 
 export function calculateOrderPrice(residency: string, invitation: Record<string, any>, pricing: PricingLike) {
+  const customAmount = Number(invitation.customAmount);
+  const customCurrency = cleanText(invitation.customCurrency, 8).toUpperCase();
+  if (Number.isFinite(customAmount) && customAmount > 0 && ['KZT', 'USD'].includes(customCurrency)) {
+    return {
+      amount: customCurrency === 'KZT' ? Math.round(customAmount) : Math.round(customAmount * 100) / 100,
+      currency: customCurrency,
+      exchangeRate: customCurrency === 'KZT' ? Number(invitation.usdToKztRate || pricing.usdToKztRate) : null,
+    };
+  }
   if (residency === 'non_resident') {
     return {
       amount: Number(invitation.nonResidentAmount || pricing.nonResidentAmount),
@@ -92,12 +101,23 @@ export function validateInvitationInput(input: Record<string, any>) {
   // Phone is optional for an invitation, but when supplied it is stored as digits only.
   const phone = cleanText(input.phone, 80).replace(/\D/g, '');
   const articleTitle = cleanText(input.articleTitle, 500);
+  const country = cleanText(input.country, 120);
   const lang = normalizeLanguage(cleanText(input.lang, 8));
+  const customAmountText = cleanText(input.customAmount, 32);
+  const customCurrency = cleanText(input.customCurrency, 8).toUpperCase();
 
   if (!EMAIL_RE.test(email)) throw fail('Valid email is required.');
   if (articleTitle.length < 3) throw fail('Article title is required.');
+  let customAmount: number | null = null;
+  if (customAmountText) {
+    const parsed = Number(customAmountText);
+    if (!Number.isFinite(parsed) || parsed <= 0 || parsed > 100_000_000) throw fail('Custom amount must be greater than zero.');
+    if (!['KZT', 'USD'].includes(customCurrency)) throw fail('Custom currency must be KZT or USD.');
+    if (!country) throw fail('Country is required for an individual price.');
+    customAmount = customCurrency === 'KZT' ? Math.round(parsed) : Math.round(parsed * 100) / 100;
+  }
 
-  return { email, fullName, phone, articleTitle, lang };
+  return { email, fullName, phone, articleTitle, country, lang, customAmount, customCurrency: customAmount ? customCurrency : '' };
 }
 
 export function activeOrderForInvitation(store: Record<string, any>, invitationId: string) {

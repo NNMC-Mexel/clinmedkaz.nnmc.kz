@@ -76,6 +76,9 @@
     "phone": {
       "type": "string"
     },
+    "country": {
+      "type": "string"
+    },
     "articleTitle": {
       "type": "text",
       "required": true

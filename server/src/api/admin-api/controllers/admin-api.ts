@@ -12,6 +12,7 @@ function nowIso() {
 function orderSummary(order: Record<string, any>) {
   return {
     id: order.id,
+    recordType: order.recordType || 'order',
     invoiceId: order.invoiceId,
     status: order.status,
     amount: order.amount,
@@ -22,6 +23,8 @@ function orderSummary(order: Record<string, any>) {
     fullName: order.fullName,
     email: order.email,
     phone: order.phone,
+    country: order.country || '',
+    lang: order.lang || 'ru',
     articleTitle: order.articleTitle,
     invitationId: order.invitationId || null,
     paymentReceivedAt: order.paymentReceivedAt || null,
@@ -63,6 +66,8 @@ export default {
         pageSize: ctx.query?.pageSize,
         query: ctx.query?.query,
         status: ctx.query?.status,
+        dateFrom: ctx.query?.dateFrom,
+        dateTo: ctx.query?.dateTo,
       }),
       readPricing(),
     ]);

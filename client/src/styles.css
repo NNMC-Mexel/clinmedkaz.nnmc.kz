@@ -802,6 +802,32 @@ a:focus-visible {
   grid-column: 1 / -1;
 }
 
+.custom-price-block {
+  background: #f7f9fc;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin: 2px 0 18px;
+  padding: 16px;
+}
+
+.custom-price-toggle {
+  color: var(--ink);
+  font-weight: 750;
+  margin: 0;
+}
+
+.custom-price-fields {
+  display: grid;
+  gap: 0 16px;
+  grid-template-columns: minmax(180px, 1fr) minmax(120px, 180px);
+  margin-top: 16px;
+}
+
+.custom-price-hint {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
 .form-field-legend {
   align-items: center;
   color: var(--muted);
@@ -1044,6 +1070,13 @@ a:focus-visible {
 .transaction-detail small {
   color: var(--muted);
   font-size: 12px;
+}
+
+.transaction-link {
+  color: var(--accent-dark);
+  font-size: 12px;
+  font-weight: 750;
+  justify-self: start;
 }
 
 .transaction-detail span {
@@ -1589,11 +1622,42 @@ th {
 
 /* --- Admin back office --------------------------------------------------- */
 .admin-toolbar {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 8px;
+}
+
+.admin-toolbar-primary {
   align-items: center;
   display: grid;
   gap: 12px;
   grid-template-columns: minmax(240px, 1fr) minmax(180px, 240px) auto;
-  margin: 18px 0 8px;
+}
+
+.admin-date-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-date-filters label {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  margin: 0;
+}
+
+.admin-date-filters label span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.admin-date-filters input {
+  margin: 0;
+  min-height: 44px;
+  width: auto;
 }
 
 .admin-toolbar input[type="search"] {
@@ -1611,13 +1675,44 @@ th {
   display: flex;
   gap: 16px;
   justify-content: center;
-  margin-top: 24px;
+  margin: 0 0 0 auto;
 }
 
 .admin-pagination span {
   color: var(--muted);
   font-size: 14px;
   font-weight: 750;
+}
+
+.admin-pagination-wrap {
+  align-items: center;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 18px;
+}
+
+.admin-page-size {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 8px;
+  margin: 0;
+}
+
+.admin-page-size select {
+  margin: 0;
+  min-height: 44px;
+  width: 76px;
+}
+
+.admin-total {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .link-btn {
@@ -1673,6 +1768,7 @@ th {
 .badge-postlink_rejected,
 .badge-cancelled,
 .badge-refunded { background: #fbecec; border-color: #f0c9c9; color: var(--danger); }
+.badge-invitation_created,
 .badge-created,
 .badge-token_issued,
 .badge-payment_started { background: #eef2fb; border-color: #cdd9f3; color: #3552a4; }
@@ -1739,6 +1835,14 @@ th {
     grid-template-columns: 1fr;
   }
 
+  .custom-price-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .custom-price-hint {
+    grid-column: auto;
+  }
+
   .table-header {
     align-items: stretch;
     flex-direction: column;
@@ -1755,6 +1859,10 @@ th {
     grid-template-columns: 1fr;
   }
 
+  .admin-toolbar-primary {
+    grid-template-columns: 1fr;
+  }
+
   .admin-toolbar input[type="search"],
   .admin-toolbar select {
     min-width: 0;
@@ -1762,6 +1870,30 @@ th {
   }
 
   .admin-toolbar .secondary-btn {
+    width: 100%;
+  }
+
+  .admin-date-filters,
+  .admin-date-filters label,
+  .admin-date-filters input,
+  .admin-pagination-wrap {
+    width: 100%;
+  }
+
+  .admin-date-filters label {
+    align-items: stretch;
+    display: grid;
+    flex: 1 1 180px;
+  }
+
+  .admin-pagination-wrap {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .admin-pagination {
+    justify-content: space-between;
+    margin-left: 0;
     width: 100%;
   }
 

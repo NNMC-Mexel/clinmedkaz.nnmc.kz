@@ -39,6 +39,9 @@
     "phone": {
       "type": "string"
     },
+    "country": {
+      "type": "string"
+    },
     "articleTitle": {
       "type": "text",
       "required": true
@@ -69,6 +72,12 @@
       "type": "decimal"
     },
     "nonResidentCurrency": {
+      "type": "string"
+    },
+    "customAmount": {
+      "type": "decimal"
+    },
+    "customCurrency": {
       "type": "string"
     },
     "invitationCreatedAt": {

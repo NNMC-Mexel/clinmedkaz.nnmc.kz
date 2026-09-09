@@ -11,8 +11,15 @@ function invitationSummary(invitation: Record<string, any> | null) {
     fullName: invitation.fullName || '',
     email: invitation.email || '',
     phone: invitation.phone || '',
+    country: invitation.country || '',
     articleTitle: invitation.articleTitle || '',
     lang: invitation.lang || 'ru',
+    residentAmount: invitation.residentAmount,
+    residentCurrency: invitation.residentCurrency || 'KZT',
+    nonResidentAmount: invitation.nonResidentAmount,
+    nonResidentCurrency: invitation.nonResidentCurrency || 'USD',
+    customAmount: invitation.customAmount,
+    customCurrency: invitation.customCurrency || '',
   };
 }
 
@@ -26,6 +33,7 @@ function publicOrderSummary(order: Record<string, any> | null) {
     currency: order.currency,
     fullName: order.fullName,
     articleTitle: order.articleTitle,
+    country: order.country || '',
     invitationId: order.invitationId || null,
     lang: order.lang || 'ru',
   };
