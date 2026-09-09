@@ -30,6 +30,28 @@ CRON_ENABLED=false
 После получения ключей установить `PAYMENTS_ENABLED=true`, добавить production credentials,
 включить status sync и reconciliation cron, затем выполнить полный smoke-test из раздела 2.
 
+### Coolify: production ePay
+
+Готовый перечень переменных для backend и frontend находится в
+[`COOLIFY-ENV.example`](COOLIFY-ENV.example). Для backend в Coolify выбрать base directory
+`/server`, для frontend — `/client`.
+
+- `HALYK_CLIENT_SECRET` и остальные секреты задавать только как runtime variables. Для
+  `HALYK_CLIENT_SECRET` обязательно включить **Literal**, потому что production-ключ может
+  содержать `$` и другие специальные символы. Build Variable для банковских и Strapi-секретов
+  отключить.
+- `VITE_API_BASE_URL` относится только к frontend и должен быть включён как Build Variable.
+- `TildaSecret` не добавлять: он нужен модулю EPAY2 на Tilda, а это приложение использует
+  прямую интеграцию ePay по `ClientID`, `ClientSecret` и `TerminalID`.
+- Не добавлять устаревший `HALYK_POSTLINK_SECRET`: для каждого заказа генерируется отдельный
+  `secret_hash`, который ePay возвращает в postlink.
+
+Production endpoints выбираются автоматически при `HALYK_ENV=prod`:
+
+- OAuth: `https://epay-oauth.homebank.kz/oauth2/token`;
+- payment form: `https://epay.homebank.kz/payform/payment-api.js`;
+- transaction status: `https://epay-api.homebank.kz/check-status/payment/transaction/:invoiceId`.
+
 ## 2. Проверка после деплоя
 
 1. `GET /api/health` должен отвечать `200`, `status: ok` и ожидаемым `mode` (`full` или `degraded`).

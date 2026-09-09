@@ -1,0 +1,60 @@
+# ClinMedKaz production environment for Coolify
+#
+# Backend application (base directory: /server)
+# Add these as runtime variables. Keep secrets out of Git and build arguments.
+
+NODE_ENV=production
+HOST=0.0.0.0
+PORT=1337
+STRAPI_PROXY=true
+
+BASE_URL=https://clinmedkaz.nnmc.kz
+FRONTEND_URL=https://clinmedkaz.nnmc.kz
+BACKEND_URL=https://clinmedkazserver.nnmc.kz
+STRAPI_URL=https://clinmedkazserver.nnmc.kz
+CORS_ORIGINS=https://clinmedkaz.nnmc.kz
+
+# Generate unique production values. APP_KEYS must contain at least two keys.
+APP_KEYS=<key-1>,<key-2>,<key-3>,<key-4>
+API_TOKEN_SALT=<random-secret>
+ADMIN_JWT_SECRET=<random-secret>
+TRANSFER_TOKEN_SALT=<random-secret>
+ENCRYPTION_KEY=<random-secret>
+JWT_SECRET=<random-secret>
+
+# Use an existing Strapi Users & Permissions username or email.
+PAYMENT_ADMIN_USERS=<payment-admin-username>
+PAYMENT_ADMIN_EMAILS=<payment-admin-email>
+ADMIN_EMAIL=<notification-email>
+
+DATABASE_CLIENT=postgres
+DATABASE_URL=<coolify-postgresql-internal-url>
+DATABASE_SSL=false
+DATABASE_SCHEMA=public
+
+PUBLICATION_FEE_KZT=145620
+USD_TO_KZT_RATE=485.4
+
+PAYMENTS_ENABLED=true
+HALYK_ENV=prod
+HALYK_CLIENT_ID=<production-client-id>
+HALYK_CLIENT_SECRET=<production-client-secret>
+HALYK_TERMINAL_ID=<production-terminal-id>
+HALYK_STATUS_SYNC_ENABLED=true
+PAYMENT_RECONCILIATION_CRON_ENABLED=true
+CRON_ENABLED=true
+
+# SMTP is required by the production startup guard.
+SMTP_HOST=<smtp-host>
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=<smtp-user>
+SMTP_PASS=<smtp-password>
+MAIL_FROM="ClinMedKaz payments <no-reply@clinmedkaz.org>"
+
+# Frontend application (base directory: /client)
+# VITE_API_BASE_URL must be available at build time.
+VITE_API_BASE_URL=https://clinmedkazserver.nnmc.kz/api
+
+# HALYK_TILDA_SECRET is intentionally absent. It is only used by Tilda's EPAY2
+# module; this project integrates directly through ClientID/ClientSecret.
