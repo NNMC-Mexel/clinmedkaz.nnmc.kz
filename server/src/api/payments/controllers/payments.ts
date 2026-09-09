@@ -114,7 +114,19 @@ export default {
       });
     } catch (error) {
       logger.error('Payment provider token request failed', { orderId: order.id, error: String(error) });
-      ctx.throw(502, 'Payment provider is temporarily unavailable.');
+      // Strapi replaces thrown 5xx messages with the generic HTTP status text in
+      // production. Return a stable public error contract so the client never
+      // exposes "Bad Gateway" to a payer.
+      ctx.status = 502;
+      ctx.body = {
+        error: {
+          status: 502,
+          name: 'PaymentProviderUnavailableError',
+          message: 'Payment provider is temporarily unavailable.',
+          details: { code: 'PAYMENT_PROVIDER_UNAVAILABLE' },
+        },
+      };
+      return;
     }
     await updateStore((state) => {
       const current = state.orders.find((item) => item.id === order.id);

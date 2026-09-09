@@ -523,6 +523,169 @@ a:focus-visible {
   max-width: 460px;
 }
 
+.payment-launch {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 66vh;
+  padding: clamp(36px, 7vw, 88px) 24px;
+}
+
+.payment-launch-card {
+  max-width: 760px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.payment-launch-card::before {
+  background: linear-gradient(90deg, var(--accent), #29a4a0, #2b7fff);
+  content: "";
+  height: 5px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.payment-launch-heading {
+  align-items: flex-start;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 52px minmax(0, 1fr);
+}
+
+.payment-launch-heading h1 {
+  font-size: clamp(34px, 5vw, 48px);
+  line-height: 1.04;
+}
+
+.payment-shield {
+  align-items: center;
+  background: var(--soft);
+  border-radius: 14px;
+  color: var(--accent-dark);
+  display: inline-flex;
+  height: 52px;
+  justify-content: center;
+  width: 52px;
+}
+
+.payment-shield svg {
+  fill: none;
+  height: 28px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  width: 28px;
+}
+
+.payment-launch-lead {
+  color: var(--muted);
+  font-size: 17px;
+  margin: 14px 0 0;
+  max-width: 560px;
+}
+
+.payment-order-summary {
+  background: #f6f9fc;
+  border: 1px solid #e1e8f1;
+  border-radius: 14px;
+  display: grid;
+  gap: 18px 24px;
+  grid-template-columns: minmax(160px, 0.7fr) minmax(200px, 1fr);
+  margin: 28px 0 18px;
+  padding: 20px;
+}
+
+.payment-order-summary div {
+  min-width: 0;
+}
+
+.payment-order-summary dt {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: 0.03em;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.payment-order-summary dd {
+  font-size: 15px;
+  font-weight: 720;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.payment-order-summary .payment-order-amount {
+  color: var(--ink);
+  font-size: 25px;
+  line-height: 1.1;
+}
+
+.payment-order-article {
+  border-top: 1px solid #e1e8f1;
+  grid-column: 1 / -1;
+  padding-top: 16px;
+}
+
+.payment-security {
+  align-items: center;
+  color: var(--success);
+  display: flex;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 8px;
+  margin: 0 0 20px;
+}
+
+.payment-security span {
+  align-items: center;
+  background: #e7f6ec;
+  border-radius: 50%;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
+}
+
+.payment-error {
+  background: #fff3f2;
+  border: 1px solid #efc8c4;
+  border-radius: 12px;
+  color: var(--danger);
+  font-size: 14px;
+  margin: 0 0 20px;
+  padding: 14px 16px;
+}
+
+.payment-launch-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.payment-launch-actions .primary-btn {
+  min-width: 240px;
+}
+
+.button-spinner {
+  animation: payment-spin 800ms linear infinite;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  border-top-color: #fff;
+  height: 18px;
+  margin-right: 10px;
+  width: 18px;
+}
+
+@keyframes payment-spin {
+  to { transform: rotate(360deg); }
+}
+
 .login-panel h1 {
   font-size: clamp(34px, 4vw, 48px);
   line-height: 1.08;
@@ -1353,6 +1516,56 @@ th {
   .payment-mark {
     justify-content: start;
     max-width: 100%;
+  }
+
+  .payment-launch {
+    align-items: flex-start;
+    min-height: 0;
+    padding: 24px 16px 42px;
+  }
+
+  .payment-launch-heading {
+    gap: 14px;
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .payment-shield {
+    border-radius: 12px;
+    height: 44px;
+    width: 44px;
+  }
+
+  .payment-shield svg {
+    height: 24px;
+    width: 24px;
+  }
+
+  .payment-launch-heading h1 {
+    font-size: 32px;
+  }
+
+  .payment-launch-lead {
+    font-size: 15px;
+  }
+
+  .payment-order-summary {
+    grid-template-columns: 1fr;
+    margin-top: 24px;
+  }
+
+  .payment-order-article {
+    grid-column: auto;
+  }
+
+  .payment-launch-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .payment-launch-actions .primary-btn,
+  .payment-launch-actions .secondary-btn {
+    min-width: 0;
+    width: 100%;
   }
 }
 
