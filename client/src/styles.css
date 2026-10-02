@@ -693,7 +693,16 @@ a:focus-visible {
 
 .login-lead {
   color: var(--muted);
-  margin: -8px 0 24px;
+  margin: 12px 0 24px;
+}
+
+.login-remember {
+  align-items: center;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 14px;
+  margin: 2px 0 18px;
+  width: fit-content;
 }
 
 .login-alert {
@@ -1040,6 +1049,97 @@ a:focus-visible {
 .transaction-list {
   display: grid;
   gap: 10px;
+  transition: opacity 200ms ease;
+}
+
+.transaction-list.is-refreshing {
+  opacity: 0.55;
+}
+
+.transactions-loading {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.transactions-loading-label {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: 14px;
+  font-weight: 650;
+  gap: 10px;
+}
+
+.transactions-loading-dot {
+  animation: skeleton-pulse-dot 1.2s ease-in-out infinite;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(8, 127, 104, 0.45);
+  flex: none;
+  height: 10px;
+  width: 10px;
+}
+
+.skeleton-card {
+  animation: skeleton-rise 420ms ease-out both;
+}
+
+.skeleton-group {
+  display: grid;
+  gap: 10px;
+}
+
+.skeleton-amount {
+  justify-items: end;
+}
+
+.skeleton {
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  background: linear-gradient(90deg, #edf1f7 0%, #f7f9fc 40%, #edf1f7 80%);
+  background-size: 220% 100%;
+  border-radius: 6px;
+  display: block;
+  height: 14px;
+}
+
+.skeleton-badge {
+  border-radius: 999px;
+  height: 24px;
+  width: 110px;
+}
+
+.skeleton-line.sm { height: 11px; }
+.skeleton-line.xs { height: 9px; }
+.skeleton-line.w-30 { width: 30%; }
+.skeleton-line.w-50 { width: 50%; }
+.skeleton-line.w-60 { width: 60%; }
+.skeleton-line.w-70 { width: 70%; }
+.skeleton-line.w-80 { width: 80%; }
+.skeleton-line.w-90 { width: 90%; }
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@keyframes skeleton-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes skeleton-pulse-dot {
+  0% { box-shadow: 0 0 0 0 rgba(8, 127, 104, 0.45); }
+  70% { box-shadow: 0 0 0 8px rgba(8, 127, 104, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(8, 127, 104, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .skeleton-card,
+  .transactions-loading-dot {
+    animation: none;
+  }
 }
 
 .transaction-card {
@@ -1802,6 +1902,10 @@ th {
 
   .transaction-amount {
     text-align: left;
+  }
+
+  .skeleton-amount {
+    justify-items: start;
   }
 }
 
