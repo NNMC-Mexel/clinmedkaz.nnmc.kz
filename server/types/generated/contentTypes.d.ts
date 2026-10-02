@@ -456,9 +456,12 @@ export interface ApiInvitationInvitation extends Struct.CollectionTypeSchema {
   };
   attributes: {
     articleTitle: Schema.Attribute.Text & Schema.Attribute.Required;
+    country: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    customAmount: Schema.Attribute.Decimal;
+    customCurrency: Schema.Attribute.String;
     email: Schema.Attribute.Email & Schema.Attribute.Required;
     externalId: Schema.Attribute.String &
       Schema.Attribute.Required &
@@ -516,6 +519,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     articleTitle: Schema.Attribute.Text & Schema.Attribute.Required;
     articleUrl: Schema.Attribute.String;
     cardMask: Schema.Attribute.String;
+    country: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
