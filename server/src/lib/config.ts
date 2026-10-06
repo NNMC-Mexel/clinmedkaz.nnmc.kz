@@ -90,6 +90,10 @@ export const config = {
         ? isProduction && paymentsEnabled
         : process.env.PAYMENT_RECONCILIATION_CRON_ENABLED === 'true',
   },
+  exchangeRate: {
+    // Official rates of the National Bank of Kazakhstan, used when pricing follows the rate automatically.
+    nbkUrl: env('NBK_RATES_URL', 'https://nationalbank.kz/rss/get_rates.cfm'),
+  },
   smtp: {
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT || 587),

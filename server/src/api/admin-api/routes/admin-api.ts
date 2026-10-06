@@ -25,6 +25,12 @@ export default {
       config: { auth: { scope: ['api::admin-api.admin-api.updatePricing'] } },
     },
     {
+      method: 'GET',
+      path: '/admin/exchange-rate',
+      handler: 'admin-api.exchangeRate',
+      config: { auth: { scope: ['api::admin-api.admin-api.exchangeRate'] } },
+    },
+    {
       method: 'POST',
       path: '/admin/reconcile',
       handler: 'admin-api.reconcile',
@@ -35,6 +41,12 @@ export default {
       path: '/admin/orders/export.csv',
       handler: 'admin-api.exportCsv',
       config: { auth: { scope: ['api::admin-api.admin-api.exportCsv'] } },
+    },
+    {
+      method: 'GET',
+      path: '/admin/orders/:id/receipt.pdf',
+      handler: 'admin-api.receipt',
+      config: { auth: { scope: ['api::admin-api.admin-api.receipt'] } },
     },
   ],
 };

@@ -647,7 +647,7 @@ export interface ApiPricingSettingPricingSetting
   extends Struct.SingleTypeSchema {
   collectionName: 'payment_pricing_setting';
   info: {
-    description: 'Editable publication fee. KZT is the base currency, USD is derived from the rate.';
+    description: 'Editable publication fee. The admin sets one base currency; the other is derived from the USD/KZT rate (National Bank of Kazakhstan or manual).';
     displayName: 'Publication pricing';
     pluralName: 'pricing-settings';
     singularName: 'pricing-setting';
@@ -656,6 +656,9 @@ export interface ApiPricingSettingPricingSetting
     draftAndPublish: false;
   };
   attributes: {
+    baseAmount: Schema.Attribute.Decimal;
+    baseCurrency: Schema.Attribute.Enumeration<['KZT', 'USD']> &
+      Schema.Attribute.DefaultTo<'KZT'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -667,6 +670,9 @@ export interface ApiPricingSettingPricingSetting
       Schema.Attribute.Private;
     pricingUpdatedAt: Schema.Attribute.DateTime;
     publishedAt: Schema.Attribute.DateTime;
+    rateDate: Schema.Attribute.Date;
+    rateMode: Schema.Attribute.Enumeration<['manual', 'auto']> &
+      Schema.Attribute.DefaultTo<'manual'>;
     residentKztAmount: Schema.Attribute.Decimal & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

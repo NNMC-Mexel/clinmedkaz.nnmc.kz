@@ -1,7 +1,9 @@
 import { requireAdmin } from '../../../lib/auth';
 import { refundOutcome, sanitizeOrderPatch } from '../../../lib/domain';
 import { logger } from '../../../lib/logger';
+import { fetchOfficialUsdRate } from '../../../lib/exchange-rate';
 import { readPricing, savePricing } from '../../../lib/pricing';
+import { buildReceiptPdf, receiptFileName } from '../../../lib/receipt-pdf';
 import { reconcileActiveOrders } from '../../../lib/reconciliation';
 import { readOrdersPage, readStore, updateStore } from '../../../lib/store';
 
@@ -88,10 +90,31 @@ export default {
     const pricing = await savePricing(ctx.request.body || {}, actor);
     logger.info('Publication pricing updated by admin', {
       by: actor,
+      baseCurrency: pricing.baseCurrency,
+      baseAmount: pricing.baseAmount,
+      rateMode: pricing.rateMode,
       residentKztAmount: pricing.residentKztAmount,
       usdToKztRate: pricing.usdToKztRate,
     });
     ctx.body = { pricing };
+  },
+
+  // Today's National Bank rate, for the pricing form preview before the admin saves.
+  async exchangeRate(ctx: any) {
+    requireAdmin(ctx);
+    try {
+      ctx.body = { exchangeRate: await fetchOfficialUsdRate() };
+    } catch {
+      ctx.status = 502;
+      ctx.body = {
+        error: {
+          status: 502,
+          name: 'ExchangeRateUnavailableError',
+          message: 'Could not load the National Bank exchange rate.',
+          details: { code: 'EXCHANGE_RATE_UNAVAILABLE' },
+        },
+      };
+    }
   },
 
   async updateOrder(ctx: any) {
@@ -131,5 +154,17 @@ export default {
     ctx.set('Content-Type', 'text/csv; charset=utf-8');
     ctx.set('Content-Disposition', `attachment; filename="clinmedkaz-orders-${new Date().toISOString().slice(0, 10)}.csv"`);
     ctx.body = `\uFEFF${lines.join('\n')}`;
+  },
+
+  // Admins can also re-download receipts for orders refunded after payment.
+  async receipt(ctx: any) {
+    requireAdmin(ctx);
+    const store = await readStore();
+    const order = store.orders.find((item) => item.id === ctx.params.id);
+    if (!order || !order.paymentReceivedAt) ctx.throw(404, 'Receipt not found');
+    ctx.set('Content-Type', 'application/pdf');
+    ctx.set('Content-Disposition', `attachment; filename="${receiptFileName(order)}"`);
+    ctx.set('Cache-Control', 'private, no-store');
+    ctx.body = await buildReceiptPdf(order);
   },
 };

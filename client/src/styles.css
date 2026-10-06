@@ -957,6 +957,52 @@ a:focus-visible {
   font-size: 14px;
 }
 
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.official-rate {
+  align-content: start;
+  display: grid;
+  gap: 6px;
+  margin: 0 0 18px;
+}
+
+.official-rate span {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.official-rate strong {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+}
+
+.official-rate small {
+  font-size: 13px;
+}
+
+.admin-form-grid > .field-group {
+  min-width: 0;
+}
+
+button.transaction-link {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: auto;
+  padding: 0;
+  text-align: left;
+}
+
 .pricing-meta {
   font-size: 13px;
   margin: 4px 0 0;

@@ -5,13 +5,35 @@
     "singularName": "pricing-setting",
     "pluralName": "pricing-settings",
     "displayName": "Publication pricing",
-    "description": "Editable publication fee. KZT is the base currency, USD is derived from the rate."
+    "description": "Editable publication fee. The admin sets one base currency; the other is derived from the USD/KZT rate (National Bank of Kazakhstan or manual)."
   },
   "options": {
     "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
+    "baseCurrency": {
+      "type": "enumeration",
+      "enum": [
+        "KZT",
+        "USD"
+      ],
+      "default": "KZT"
+    },
+    "baseAmount": {
+      "type": "decimal"
+    },
+    "rateMode": {
+      "type": "enumeration",
+      "enum": [
+        "manual",
+        "auto"
+      ],
+      "default": "manual"
+    },
+    "rateDate": {
+      "type": "date"
+    },
     "residentKztAmount": {
       "type": "decimal",
       "required": true
