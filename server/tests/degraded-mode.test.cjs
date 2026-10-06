@@ -66,6 +66,8 @@ test('degraded mode keeps the site ready and blocks payment operations', { timeo
       PAYMENT_RECONCILIATION_CRON_ENABLED: 'false',
       CRON_ENABLED: 'false',
       STRAPI_TELEMETRY_DISABLED: 'true',
+      // Keep a developer's local .env SMTP out of the tests: no real mail, no network timeouts.
+      SMTP_HOST: '',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });

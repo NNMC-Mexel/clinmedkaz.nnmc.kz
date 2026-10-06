@@ -81,6 +81,9 @@ export function invitationToStore(row: Record<string, any>) {
     customCurrency: row.customCurrency || '',
     createdAt: row.invitationCreatedAt,
     updatedAt: row.invitationUpdatedAt,
+    firstOpenedAt: row.firstOpenedAt || null,
+    lastOpenedAt: row.lastOpenedAt || null,
+    openCount: Number(row.openCount) || 0,
   };
 }
 
@@ -156,6 +159,8 @@ function invitationToStrapi(invitation: Record<string, any>) {
     customCurrency: cleanString(invitation.customCurrency),
     invitationCreatedAt: iso(invitation.createdAt),
     invitationUpdatedAt: iso(invitation.updatedAt),
+    // firstOpenedAt / lastOpenedAt / openCount are owned by recordInvitationOpen and never
+    // written here, so a store transaction cannot overwrite a newer open with a stale copy.
   };
 }
 
@@ -205,8 +210,12 @@ async function persistVersioned(
     return;
   }
   const version = before.updatedAt;
-  const updated = await query.update({ where: { externalId, [versionField]: version }, data });
-  if (!updated) throw new ConcurrentStoreUpdateError();
+  // One conditional UPDATE, not query.update(): Strapi's update() selects the row first and then
+  // updates it by id, so under Postgres READ COMMITTED two transactions could both pass the version
+  // check (seen as duplicate orders for one link). A single UPDATE ... WHERE version = ? is
+  // re-evaluated by Postgres after the row lock is released, so the loser updates 0 rows and retries.
+  const { count } = await query.updateMany({ where: { externalId, [versionField]: version }, data });
+  if (!count) throw new ConcurrentStoreUpdateError();
 }
 
 async function persistStoreDiff(before: PaymentStore, after: PaymentStore) {
@@ -239,11 +248,14 @@ async function persistStoreDiff(before: PaymentStore, after: PaymentStore) {
 }
 
 export async function readStore(): Promise<PaymentStore> {
-  const [orders, invitations, callbacks] = await Promise.all([
-    strapi.db.query(orderUid).findMany({ orderBy: { paymentCreatedAt: 'desc' } }),
-    strapi.db.query(invitationUid).findMany({ orderBy: { invitationCreatedAt: 'desc' } }),
-    strapi.db.query(callbackUid).findMany({ orderBy: { receivedAt: 'desc' } }),
-  ]);
+  // Sequential on purpose, invitations first. Under Postgres READ COMMITTED each statement sees
+  // the latest commit, so reading orders first could miss an order whose invitation change is
+  // already visible - and then nothing would trip the invitation version check. Reading the
+  // invitation first means a stale invitation fails the version check and a fresh one comes
+  // with its orders.
+  const invitations = await strapi.db.query(invitationUid).findMany({ orderBy: { invitationCreatedAt: 'desc' } });
+  const orders = await strapi.db.query(orderUid).findMany({ orderBy: { paymentCreatedAt: 'desc' } });
+  const callbacks = await strapi.db.query(callbackUid).findMany({ orderBy: { receivedAt: 'desc' } });
 
   return {
     invitations: invitations.map(invitationToStore),
@@ -275,7 +287,21 @@ export async function readOrdersPage(options: {
     strapi.db.query(orderUid).findMany({ orderBy: { paymentCreatedAt: 'desc' } }),
     strapi.db.query(invitationUid).findMany({ orderBy: { invitationCreatedAt: 'desc' } }),
   ]);
-  const orders = orderRows.map(orderToStore).map((order) => ({ ...order, recordType: 'order' }));
+  const opensByInvitation = new Map(
+    invitationRows.map((row: Record<string, any>) => [row.externalId, invitationToStore(row)])
+  );
+  // Orders inherit the link's open history, so a failed or abandoned payment still shows
+  // whether the author came back to the link.
+  const orders = orderRows.map(orderToStore).map((order) => {
+    const invitation = order.invitationId ? opensByInvitation.get(order.invitationId) : null;
+    return {
+      ...order,
+      recordType: 'order',
+      firstOpenedAt: invitation?.firstOpenedAt || null,
+      lastOpenedAt: invitation?.lastOpenedAt || null,
+      openCount: invitation?.openCount || 0,
+    };
+  });
   const invitationIdsWithOrders = new Set(orders.map((order) => order.invitationId).filter(Boolean));
   const invitations = invitationRows
     .map(invitationToStore)
@@ -285,7 +311,8 @@ export async function readOrdersPage(options: {
       recordType: 'invitation',
       invitationId: invitation.id,
       invoiceId: '',
-      status: invitation.status === 'created' ? 'invitation_created' : invitation.status,
+      // "Opened" is display-only: the stored status machine (created -> payment_started -> paid) is untouched.
+      status: invitation.status === 'created' ? (invitation.openCount > 0 ? 'invitation_opened' : 'invitation_created') : invitation.status,
       amount: invitation.customAmount || invitation.residentAmount,
       currency: invitation.customCurrency || invitation.residentCurrency || 'KZT',
       residency: '',
@@ -310,6 +337,31 @@ export async function readOrdersPage(options: {
     orders: entries.slice(offset, offset + pageSize),
     pagination: { page: resolvedPage, pageSize, total, pageCount },
   };
+}
+
+// Link-open tracking is a public, high-frequency write, so it bypasses updateStore: one
+// atomic row update, no full-store read, and no bump of the invitation version that payment
+// creation relies on for optimistic locking.
+export async function recordInvitationOpen(externalId: string): Promise<'recorded' | 'ignored' | 'missing'> {
+  const row = await strapi.db.query(invitationUid).findOne({
+    where: { externalId },
+    select: ['id', 'status', 'firstOpenedAt'],
+  });
+  if (!row) return 'missing';
+  if (['paid', 'cancelled'].includes(row.status)) return 'ignored';
+  const meta = strapi.db.metadata.get(invitationUid);
+  const column = (attribute: string) => (meta.attributes[attribute] as any)?.columnName || attribute;
+  await strapi.db
+    .connection(meta.tableName)
+    .where({ id: row.id })
+    .whereNotIn(column('status'), ['paid', 'cancelled'])
+    .update({ [column('openCount')]: strapi.db.connection.raw(`COALESCE(??, 0) + 1`, [column('openCount')]) });
+  const now = new Date();
+  await strapi.db.query(invitationUid).update({
+    where: { id: row.id },
+    data: { lastOpenedAt: now, ...(row.firstOpenedAt ? {} : { firstOpenedAt: now }) },
+  });
+  return 'recorded';
 }
 
 export async function readActiveOrderIds(statuses: string[], limit = 100) {

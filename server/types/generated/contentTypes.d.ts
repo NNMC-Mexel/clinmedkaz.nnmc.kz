@@ -466,12 +466,14 @@ export interface ApiInvitationInvitation extends Struct.CollectionTypeSchema {
     externalId: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
+    firstOpenedAt: Schema.Attribute.DateTime;
     fullName: Schema.Attribute.String;
     invitationCreatedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
     invitationUpdatedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
     lang: Schema.Attribute.Enumeration<['ru', 'kk', 'en']> &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'ru'>;
+    lastOpenedAt: Schema.Attribute.DateTime;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -480,6 +482,7 @@ export interface ApiInvitationInvitation extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     nonResidentAmount: Schema.Attribute.Decimal;
     nonResidentCurrency: Schema.Attribute.String;
+    openCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     phone: Schema.Attribute.String;
     publicationFeeUsd: Schema.Attribute.Decimal;
     publishedAt: Schema.Attribute.DateTime;

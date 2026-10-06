@@ -7,7 +7,7 @@ import { logger } from '../../../lib/logger';
 import { sendMail } from '../../../lib/mailer';
 import { requirePaymentsEnabled } from '../../../lib/payment-availability';
 import { readPricing } from '../../../lib/pricing';
-import { readStore, updateStore } from '../../../lib/store';
+import { readStore, recordInvitationOpen, updateStore } from '../../../lib/store';
 
 function makeId(prefix: string) {
   return `${prefix}_${crypto.randomBytes(10).toString('hex')}`;
@@ -99,5 +99,13 @@ export default {
     const updated = outcome.invitation;
     logger.info('Invitation cancelled', { invitationId: updated.id, by: actor });
     ctx.body = { invitation: updated };
+  },
+
+  // Called by the payment page once it has rendered in a visible tab, so link scanners that
+  // only fetch the URL do not count. Paid and cancelled links are left as they are.
+  async opened(ctx: any) {
+    const outcome = await recordInvitationOpen(String(ctx.params.id || ''));
+    if (outcome === 'missing') ctx.throw(404, 'Invitation not found');
+    ctx.status = 204;
   },
 };

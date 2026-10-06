@@ -87,6 +87,16 @@
     "invitationUpdatedAt": {
       "type": "datetime",
       "required": true
+    },
+    "firstOpenedAt": {
+      "type": "datetime"
+    },
+    "lastOpenedAt": {
+      "type": "datetime"
+    },
+    "openCount": {
+      "type": "integer",
+      "default": 0
     }
   }
 }

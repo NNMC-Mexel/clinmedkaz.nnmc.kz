@@ -95,6 +95,9 @@ function invitationToStore(row: Record<string, any>) {
     customCurrency: row.customCurrency || '',
     createdAt: row.invitationCreatedAt,
     updatedAt: row.invitationUpdatedAt,
+    firstOpenedAt: row.firstOpenedAt || null,
+    lastOpenedAt: row.lastOpenedAt || null,
+    openCount: Number(row.openCount) || 0,
   };
 }
 
@@ -170,6 +173,9 @@ function invitationToStrapi(invitation: Record<string, any>) {
     customCurrency: cleanString(invitation.customCurrency),
     invitationCreatedAt: iso(invitation.createdAt),
     invitationUpdatedAt: iso(invitation.updatedAt),
+    firstOpenedAt: invitation.firstOpenedAt ? iso(invitation.firstOpenedAt) : null,
+    lastOpenedAt: invitation.lastOpenedAt ? iso(invitation.lastOpenedAt) : null,
+    openCount: Math.max(0, Math.floor(Number(invitation.openCount) || 0)),
   };
 }
 
