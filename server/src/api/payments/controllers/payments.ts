@@ -74,10 +74,10 @@ export default {
         postbacks: [],
       };
       state.orders.unshift(order);
-      if (invitation.status === 'created') {
-        invitation.status = 'payment_started';
-        invitation.updatedAt = timestamp;
-      }
+      if (invitation.status === 'created') invitation.status = 'payment_started';
+      // Always bump the invitation version: it is the lock that keeps two concurrent requests
+      // (double click, two tabs) from each creating an order for the same link.
+      invitation.updatedAt = timestamp;
       return { kind: 'created' as const, order: { ...order } };
     });
 

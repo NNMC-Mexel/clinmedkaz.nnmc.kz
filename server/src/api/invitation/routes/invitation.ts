@@ -14,6 +14,12 @@ export default {
     },
     {
       method: 'POST',
+      path: '/invitations/:id/opened',
+      handler: 'invitation.opened',
+      config: { auth: false },
+    },
+    {
+      method: 'POST',
       path: '/invitations/:id/cancel',
       handler: 'invitation.cancel',
       config: { auth: { scope: ['api::invitation.invitation.cancel'] } },

@@ -97,6 +97,8 @@ test('critical payment API journey, authorization and concurrency', { timeout: 1
       USD_TO_KZT_RATE: '485.4',
       NBK_RATES_URL: 'http://127.0.0.1:9/unreachable-rates',
       STRAPI_TELEMETRY_DISABLED: 'true',
+      // Keep a developer's local .env SMTP out of the tests: no real mail, no network timeouts.
+      SMTP_HOST: '',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -180,6 +182,25 @@ test('critical payment API journey, authorization and concurrency', { timeout: 1
   assert.equal(invitationPage.body.orders[0].amount, 125);
   assert.equal(invitationPage.body.orders[0].currency, 'USD');
 
+  const missingOpen = await request('/invitations/inv_missing/opened', { method: 'POST' });
+  assert.equal(missingOpen.response.status, 404);
+  for (let index = 0; index < 2; index += 1) {
+    const opened = await request(`/invitations/${invitationId}/opened`, { method: 'POST' });
+    assert.equal(opened.response.status, 204);
+  }
+  const openedPage = await request('/admin/orders?page=1&pageSize=10&status=invitation_opened', {
+    headers: { authorization: `Bearer ${adminJwt}` },
+  });
+  assert.equal(openedPage.response.status, 200, JSON.stringify(openedPage.body));
+  assert.equal(openedPage.body.pagination.total, 1, 'An opened link gets the display status invitation_opened');
+  assert.equal(openedPage.body.orders[0].openCount, 2);
+  assert.ok(openedPage.body.orders[0].firstOpenedAt);
+  assert.ok(openedPage.body.orders[0].lastOpenedAt >= openedPage.body.orders[0].firstOpenedAt);
+  const openedDb = new Database(databasePath, { readonly: true });
+  const stillCreated = openedDb.prepare('select status from payment_invitations where external_id = ?').get(invitationId);
+  openedDb.close();
+  assert.equal(stillCreated.status, 'created', 'Opening a link never changes the stored invitation status');
+
   const futurePage = await request('/admin/orders?dateFrom=2099-01-01&dateTo=2099-01-02', {
     headers: { authorization: `Bearer ${adminJwt}` },
   });
@@ -239,6 +260,14 @@ test('critical payment API journey, authorization and concurrency', { timeout: 1
   });
   assert.equal(paidPage.body.orders[0].status, 'paid');
   assert.equal(paidPage.body.orders[0].publicationStatus, 'ready_to_publish');
+
+  const openedAfterPayment = await request(`/invitations/${invitationId}/opened`, { method: 'POST' });
+  assert.equal(openedAfterPayment.response.status, 204);
+  const paidInvitationDb = new Database(databasePath, { readonly: true });
+  const paidInvitation = paidInvitationDb.prepare('select status, open_count from payment_invitations where external_id = ?').get(invitationId);
+  paidInvitationDb.close();
+  assert.equal(paidInvitation.status, 'paid');
+  assert.equal(paidInvitation.open_count, 2, 'Opens of a paid link are ignored');
 
   const publicReceipt = await fetch(`${baseUrl}/payments/${encodeURIComponent(order.id)}/receipt.pdf`);
   assert.equal(publicReceipt.status, 200);

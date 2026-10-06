@@ -45,6 +45,9 @@ function orderSummary(order: Record<string, any>) {
     cardMask: order.cardMask || '',
     reason: order.reason || '',
     postbacks: Array.isArray(order.postbacks) ? order.postbacks : [],
+    firstOpenedAt: order.firstOpenedAt || null,
+    lastOpenedAt: order.lastOpenedAt || null,
+    openCount: Number(order.openCount) || 0,
   };
 }
 

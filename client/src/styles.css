@@ -993,6 +993,11 @@ a:focus-visible {
   min-width: 0;
 }
 
+.link-opens.is-opened {
+  color: var(--ink);
+  font-weight: 650;
+}
+
 button.transaction-link {
   background: none;
   border: 0;
@@ -1914,6 +1919,7 @@ th {
 .badge-postlink_rejected,
 .badge-cancelled,
 .badge-refunded { background: #fbecec; border-color: #f0c9c9; color: var(--danger); }
+.badge-invitation_opened { background: #fff6e0; border-color: #f1dca4; color: #8a5a00; }
 .badge-invitation_created,
 .badge-created,
 .badge-token_issued,

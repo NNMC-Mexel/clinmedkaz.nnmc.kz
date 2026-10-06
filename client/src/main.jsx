@@ -11,18 +11,57 @@ const adminJwtStorageKey = "clinmed_admin_jwt";
 
 // "Remember me" keeps the JWT in localStorage (survives browser restarts until the token expires);
 // otherwise it lives in sessionStorage and is dropped when the tab closes.
+// Storage access can throw (Safari "Block all cookies", some private modes); the site must still
+// work for authors, so every access is guarded and the token falls back to memory for this page.
+let memoryAdminJwt = "";
+
+// Takes the storage name, not the object: in some browsers even reading window.localStorage throws.
+function readStorage(name, key) {
+  try {
+    return window[name].getItem(key) || "";
+  } catch {
+    return "";
+  }
+}
+
+function writeStorage(name, key, value) {
+  try {
+    if (value === null) window[name].removeItem(key);
+    else window[name].setItem(key, value);
+  } catch {}
+}
+
 function adminJwt() {
-  return sessionStorage.getItem(adminJwtStorageKey) || localStorage.getItem(adminJwtStorageKey) || "";
+  return readStorage("sessionStorage", adminJwtStorageKey) || readStorage("localStorage", adminJwtStorageKey) || memoryAdminJwt;
 }
 
 function setAdminJwt(jwt, remember = false) {
   clearAdminJwt();
-  (remember ? localStorage : sessionStorage).setItem(adminJwtStorageKey, jwt);
+  memoryAdminJwt = jwt;
+  writeStorage(remember ? "localStorage" : "sessionStorage", adminJwtStorageKey, jwt);
+  markAdminDevice(true);
+}
+
+// Marks this browser as an admin's, in localStorage so that every tab sees it - including the
+// noopener tabs the admin "Open" buttons create, which do not inherit a sessionStorage token.
+// Payment pages opened here are not counted as the author opening the link. Cleared on logout.
+const adminDeviceStorageKey = "clinmed_admin_device";
+
+function markAdminDevice(value) {
+  writeStorage("localStorage", adminDeviceStorageKey, value ? "1" : null);
+}
+
+// Admins signed in before this marker existed get it on their next page load.
+if (adminJwt()) markAdminDevice(true);
+
+function isAdminDevice() {
+  return readStorage("localStorage", adminDeviceStorageKey) === "1";
 }
 
 function clearAdminJwt() {
-  sessionStorage.removeItem(adminJwtStorageKey);
-  localStorage.removeItem(adminJwtStorageKey);
+  memoryAdminJwt = "";
+  writeStorage("sessionStorage", adminJwtStorageKey, null);
+  writeStorage("localStorage", adminJwtStorageKey, null);
 }
 
 function shouldAttachAdminJwt(path) {
@@ -253,6 +292,7 @@ const adminUiI18n = {
     },
     statuses: {
       invitation_created: "Ссылка создана",
+      invitation_opened: "Ссылка открыта",
       created: "Создан",
       token_issued: "Ожидает оплаты",
       payment_started: "Оплата начата",
@@ -274,6 +314,7 @@ const adminUiI18n = {
     },
     statuses: {
       invitation_created: "Сілтеме жасалды",
+      invitation_opened: "Сілтеме ашылды",
       created: "Жасалды",
       token_issued: "Төлем күтілуде",
       payment_started: "Төлем басталды",
@@ -295,6 +336,7 @@ const adminUiI18n = {
     },
     statuses: {
       invitation_created: "Link created",
+      invitation_opened: "Link opened",
       created: "Created",
       token_issued: "Awaiting payment",
       payment_started: "Payment started",
@@ -366,6 +408,52 @@ const adminPricingI18n = {
     invalid: "Enter the fee and the rate as numbers greater than zero.",
   },
 };
+
+const linkOpensI18n = {
+  ru: {
+    never: "Ещё не открывалась",
+    opened: (count) => `Открыта ${count} ${new Intl.PluralRules("ru").select(count) === "few" ? "раза" : "раз"}`,
+    first: "впервые",
+    last: "последний раз",
+  },
+  kk: { never: "Әлі ашылған жоқ", opened: (count) => `${count} рет ашылды`, first: "алғаш", last: "соңғы рет" },
+  en: { never: "Not opened yet", opened: (count) => (count === 1 ? "Opened once" : `Opened ${count} times`), first: "first", last: "last" },
+};
+
+function LinkOpens({ entry, lang }) {
+  const t = linkOpensI18n[lang] || linkOpensI18n.ru;
+  if (!entry.openCount) return entry.status === "cancelled" ? null : <small className="link-opens">{t.never}</small>;
+  const repeat = entry.openCount > 1 && entry.lastOpenedAt && entry.lastOpenedAt !== entry.firstOpenedAt;
+  return (
+    <small className="link-opens is-opened">
+      {t.opened(entry.openCount)} · {t.first} {formatDate(entry.firstOpenedAt, lang)}
+      {repeat ? ` · ${t.last} ${formatDate(entry.lastOpenedAt, lang)}` : ""}
+    </small>
+  );
+}
+
+// Tells the server the author has seen the payment page. Only a rendered, visible tab counts
+// (link scanners usually just fetch the URL), admins checking a link are skipped, and a
+// reload in the same tab is not a new open.
+function useInvitationOpened(invitation) {
+  useEffect(() => {
+    if (!invitation?.id || ["paid", "cancelled"].includes(invitation.status) || adminJwt() || isAdminDevice()) return;
+    // Automated browsers (link "detonation" sandboxes included) expose navigator.webdriver.
+    if (navigator.webdriver) return;
+    const key = `clinmed_invite_opened_${invitation.id}`;
+    if (readStorage("sessionStorage", key)) return;
+    let sent = false;
+    function report() {
+      if (sent || document.visibilityState !== "visible") return;
+      sent = true;
+      writeStorage("sessionStorage", key, "1");
+      apiFetch(`/invitations/${encodeURIComponent(invitation.id)}/opened`, { method: "POST", keepalive: true }).catch(() => {});
+    }
+    report();
+    document.addEventListener("visibilitychange", report);
+    return () => document.removeEventListener("visibilitychange", report);
+  }, [invitation?.id, invitation?.status]);
+}
 
 const receiptI18n = {
   ru: { download: "Скачать квитанцию (PDF)", sent: "Квитанция об оплате также отправлена на ваш email.", admin: "Квитанция", error: "Не удалось скачать квитанцию." },
@@ -697,6 +785,7 @@ function PaymentForm({ ctx, lang }) {
   const customPrice = hasCustomPrice ? money(invitation.customAmount, invitation.customCurrency || "KZT", lang) : "";
   const [status, setStatus] = useState("");
   const [residency, setResidency] = useState("resident_kz");
+  useInvitationOpened(ctx.invitation);
 
   async function submit(event) {
     event.preventDefault();
@@ -1224,6 +1313,7 @@ function AdminTransactionsPage({ data, status, lang, onRefresh, syncing, loading
                 <span className={`badge badge-${order.status}`}>{adminStatusLabel(order.status, lang)}</span>
                 <strong>{order.invoiceId || order.id}</strong>
                 <small>{formatDate(order.createdAt, lang)}</small>
+                {(order.recordType === "invitation" || (order.openCount > 0 && !["paid", "refunded"].includes(order.status))) && <LinkOpens entry={order} lang={lang} />}
                 {order.recordType === "invitation" && <a className="transaction-link" href={localizedPath("/payment", order.lang || lang, `invite=${encodeURIComponent(order.invitationId || order.id)}`)} target="_blank" rel="noreferrer">{t.open}</a>}
                 {order.recordType !== "invitation" && order.paymentReceivedAt && <button className="transaction-link" type="button" onClick={() => downloadAdminReceipt(order, lang)}>{(receiptI18n[lang] || receiptI18n.ru).admin} PDF</button>}
               </div>
@@ -1313,7 +1403,7 @@ function AdminPage({ lang, path, paymentsEnabled, onNavigate }) {
     <section className="admin-shell">
       <header className="admin-header panel">
         <div><p className="eyebrow">ClinMedKaz Pay</p><h1>{t.title}</h1></div>
-        <button className="secondary-btn" type="button" onClick={() => { clearAdminJwt(); onNavigate("/admin/login"); }}>{t.logout}</button>
+        <button className="secondary-btn" type="button" onClick={() => { clearAdminJwt(); markAdminDevice(false); onNavigate("/admin/login"); }}>{t.logout}</button>
       </header>
       <nav className="admin-tabs" aria-label={ariaI18n[lang].adminSections}>
         <a className={view === "create" ? "active" : ""} href={localizedPath("/admin/create", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/create"); }}>{t.create}</a>
