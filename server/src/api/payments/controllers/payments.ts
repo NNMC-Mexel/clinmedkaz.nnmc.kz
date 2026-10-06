@@ -11,6 +11,7 @@ import { getPaymentToken, makeInvoiceId, makePaymentObject, makeSecretHash, post
 import { logger } from '../../../lib/logger';
 import { requirePaymentsEnabled } from '../../../lib/payment-availability';
 import { readPricing } from '../../../lib/pricing';
+import { buildReceiptPdf, receiptFileName } from '../../../lib/receipt-pdf';
 import { reconcileOrder } from '../../../lib/reconciliation';
 import { readStore, updateStore } from '../../../lib/store';
 
@@ -144,5 +145,17 @@ export default {
     const result = await reconcileOrder(String(ctx.params.id || ''));
     if (!result.found) ctx.throw(404, 'Order not found');
     ctx.body = result;
+  },
+
+  // The order id is an unguessable token already used by the success page, so it also
+  // unlocks the receipt - but only once the payment is confirmed.
+  async receipt(ctx: any) {
+    const store = await readStore();
+    const order = store.orders.find((item) => item.id === ctx.params.id);
+    if (!order || order.status !== 'paid') ctx.throw(404, 'Receipt not found');
+    ctx.set('Content-Type', 'application/pdf');
+    ctx.set('Content-Disposition', `attachment; filename="${receiptFileName(order)}"`);
+    ctx.set('Cache-Control', 'private, no-store');
+    ctx.body = await buildReceiptPdf(order);
   },
 };

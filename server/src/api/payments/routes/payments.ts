@@ -18,5 +18,11 @@ export default {
       handler: 'payments.reconcile',
       config: { auth: false },
     },
+    {
+      method: 'GET',
+      path: '/payments/:id/receipt.pdf',
+      handler: 'payments.receipt',
+      config: { auth: false },
+    },
   ],
 };

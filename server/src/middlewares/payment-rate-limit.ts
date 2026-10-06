@@ -6,6 +6,7 @@ const rules = [
   { id: 'login', method: 'POST', path: /^\/api\/auth\/local$/, limit: 10, windowMs: 60_000 },
   { id: 'create-payment', method: 'POST', path: /^\/api\/payments$/, limit: 20, windowMs: 60_000 },
   { id: 'payment-object', method: 'GET', path: /^\/api\/payments\/[^/]+\/payment-object$/, limit: 20, windowMs: 60_000 },
+  { id: 'receipt', method: 'GET', path: /^\/api\/payments\/[^/]+\/receipt\.pdf$/, limit: 20, windowMs: 60_000 },
   { id: 'reconcile', method: 'POST', path: /^\/api\/payments\/[^/]+\/reconcile$/, limit: 12, windowMs: 60_000 },
 ];
 

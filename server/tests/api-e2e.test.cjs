@@ -95,6 +95,7 @@ test('critical payment API journey, authorization and concurrency', { timeout: 1
       PAYMENT_ADMIN_USERS: 'e2e-admin',
       PUBLICATION_FEE_KZT: '145620',
       USD_TO_KZT_RATE: '485.4',
+      NBK_RATES_URL: 'http://127.0.0.1:9/unreachable-rates',
       STRAPI_TELEMETRY_DISABLED: 'true',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -227,6 +228,9 @@ test('critical payment API journey, authorization and concurrency', { timeout: 1
     cardMask: '411111******1111',
     ignoredSecret: 'must-not-be-stored',
   };
+  const unpaidReceipt = await fetch(`${baseUrl}/payments/${encodeURIComponent(order.id)}/receipt.pdf`);
+  assert.equal(unpaidReceipt.status, 404, 'No receipt before the payment is confirmed');
+
   const callback = await request('/halyk/postlink', { method: 'POST', body: JSON.stringify(callbackPayload) });
   assert.equal(callback.response.status, 200, JSON.stringify(callback.body));
 
@@ -235,6 +239,34 @@ test('critical payment API journey, authorization and concurrency', { timeout: 1
   });
   assert.equal(paidPage.body.orders[0].status, 'paid');
   assert.equal(paidPage.body.orders[0].publicationStatus, 'ready_to_publish');
+
+  const publicReceipt = await fetch(`${baseUrl}/payments/${encodeURIComponent(order.id)}/receipt.pdf`);
+  assert.equal(publicReceipt.status, 200);
+  assert.match(publicReceipt.headers.get('content-type') || '', /application\/pdf/);
+  assert.equal(Buffer.from(await publicReceipt.arrayBuffer()).subarray(0, 5).toString(), '%PDF-');
+  const anonymousAdminReceipt = await fetch(`${baseUrl}/admin/orders/${encodeURIComponent(order.id)}/receipt.pdf`);
+  assert.notEqual(anonymousAdminReceipt.status, 200, 'Admin receipt requires authentication');
+  const adminReceipt = await fetch(`${baseUrl}/admin/orders/${encodeURIComponent(order.id)}/receipt.pdf`, {
+    headers: { authorization: `Bearer ${adminJwt}` },
+  });
+  assert.equal(adminReceipt.status, 200);
+
+  const usdPricing = await request('/admin/pricing', {
+    method: 'PUT',
+    headers: { authorization: `Bearer ${adminJwt}` },
+    body: JSON.stringify({ baseCurrency: 'USD', baseAmount: 300, rateMode: 'manual', usdToKztRate: 500 }),
+  });
+  assert.equal(usdPricing.response.status, 200, JSON.stringify(usdPricing.body));
+  assert.equal(usdPricing.body.pricing.residentKztAmount, 150000);
+  assert.equal(usdPricing.body.pricing.nonResidentAmount, 300);
+  const autoPricing = await request('/admin/pricing', {
+    method: 'PUT',
+    headers: { authorization: `Bearer ${adminJwt}` },
+    body: JSON.stringify({ baseCurrency: 'USD', baseAmount: 300, rateMode: 'auto' }),
+  });
+  assert.equal(autoPricing.response.status, 400, 'Auto mode must not save without a National Bank rate');
+  const publicContext = await request('/public/context');
+  assert.equal(publicContext.body.config.pricing.residentKztAmount, 150000, 'A failed auto save keeps the previous price');
 
   const verificationDb = new Database(databasePath, { readonly: true });
   const orderCount = verificationDb.prepare('select count(*) as count from payment_orders where invitation_id = ?').get(invitationId).count;

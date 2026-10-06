@@ -19,8 +19,13 @@ function getTransporter() {
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function sendMail({ to, subject, html, text }, { retries = 2 } = {}) {
-  const mail = { from: config.smtp.from, to, subject, html, text };
+type MailAttachment = { filename: string; content: Buffer; contentType?: string };
+
+export async function sendMail(
+  { to, subject, html, text, attachments }: { to: string; subject: string; html: string; text: string; attachments?: MailAttachment[] },
+  { retries = 2 } = {}
+) {
+  const mail = { from: config.smtp.from, to, subject, html, text, attachments };
   const activeTransporter = getTransporter();
   if (!activeTransporter) {
     logger.info('Email disabled (no SMTP host) - logging instead', { to, subject });

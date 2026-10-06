@@ -12,6 +12,9 @@ const { buildInvitationEmail } = require('../dist/src/lib/email-templates.js');
 const { productionConfigurationErrors, config } = require('../dist/src/lib/config.js');
 const { postLinkUrl } = require('../dist/src/lib/halyk.js');
 const { redactMeta } = require('../dist/src/lib/logger.js');
+const { parseNbkUsdRate } = require('../dist/src/lib/exchange-rate.js');
+const { validatePricingInput } = require('../dist/src/lib/pricing.js');
+const { buildReceiptPdf } = require('../dist/src/lib/receipt-pdf.js');
 const { createRateLimiter } = require('../dist/src/lib/rate-limit.js');
 
 const order = {
@@ -248,4 +251,46 @@ test('rate limiter blocks requests over the configured window and resets', () =>
   assert.equal(limiter.check('login:ip', 2, 60_000).allowed, false);
   timestamp += 60_001;
   assert.equal(limiter.check('login:ip', 2, 60_000).allowed, true);
+});
+
+test('National Bank feed parser reads the USD rate per one unit', () => {
+  const xml = `<rates><item><title>AMD</title><description>12.64</description><quant>10</quant></item>
+    <item><fullname>ДОЛЛАР США</fullname><title>USD</title><description>454.98</description><quant>1</quant></item></rates>`;
+  assert.equal(parseNbkUsdRate(xml), 454.98);
+  assert.equal(parseNbkUsdRate('<rates></rates>'), null);
+  assert.equal(parseNbkUsdRate('<html>maintenance</html>'), null);
+});
+
+test('pricing can be set in USD or KZT and derives the other currency', () => {
+  const usd = validatePricingInput({ baseCurrency: 'USD', baseAmount: 300, rateMode: 'manual', usdToKztRate: 454.98 });
+  assert.equal(usd.residentKztAmount, 136494);
+  assert.equal(usd.nonResidentAmount, 300);
+  const kzt = validatePricingInput({ baseCurrency: 'KZT', baseAmount: 145620, rateMode: 'manual', usdToKztRate: 485.4 });
+  assert.equal(kzt.residentKztAmount, 145620);
+  assert.equal(kzt.nonResidentAmount, 300);
+  const auto = validatePricingInput({ baseCurrency: 'USD', baseAmount: 100, rateMode: 'auto' }, { rate: 450, date: '2026-10-06' });
+  assert.equal(auto.residentKztAmount, 45000);
+  assert.equal(auto.rateDate, '2026-10-06');
+  assert.throws(() => validatePricingInput({ baseCurrency: 'USD', baseAmount: 100, rateMode: 'auto' }), /National Bank/);
+});
+
+test('legacy pricing payload is still accepted as a KZT price with a manual rate', () => {
+  const pricing = validatePricingInput({ residentKztAmount: 145620, usdToKztRate: 485.4 });
+  assert.equal(pricing.baseCurrency, 'KZT');
+  assert.equal(pricing.rateMode, 'manual');
+  assert.equal(pricing.residentKztAmount, 145620);
+});
+
+test('payment receipt PDF renders for every language', async () => {
+  for (const lang of ['ru', 'kk', 'en']) {
+    const pdf = await buildReceiptPdf({ ...order, lang, fullName: 'Автор Тест', paymentReceivedAt: '2026-10-06T07:15:00Z', exchangeRate: 485.4 });
+    assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
+    assert.ok(pdf.length > 10_000);
+  }
+});
+
+test('payer email mentions the attached receipt', () => {
+  const emails = buildPaymentEmails({ ...order, lang: 'ru', paymentReceivedAt: '2026-10-06T07:15:00Z', cardMask: '440043******1234' });
+  assert.match(emails.payer.text, /PDF/);
+  assert.match(emails.payer.html, /440043\*{6}1234/);
 });
