@@ -144,6 +144,9 @@
     "refundReason": {
       "type": "text"
     },
+    "refundedAt": {
+      "type": "datetime"
+    },
     "accountingStatus": {
       "type": "enumeration",
       "enum": [

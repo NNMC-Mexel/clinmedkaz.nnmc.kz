@@ -220,6 +220,20 @@ export function sanitizeOrderPatch(input: Record<string, any>) {
   return patch;
 }
 
+const REFUND_STATUSES_NEEDING_REASON = ['requested', 'approved', 'processed'];
+
+// A refund only makes sense for money that was received, and a processed refund is final:
+// the order is already "refunded" and its refund date is on the books. Accounting documents
+// need a reason, so a refund cannot move forward without one.
+export function refundPatchError(order: Record<string, any>, patch: Record<string, any>) {
+  if (patch.refundStatus === undefined || patch.refundStatus === (order.refundStatus || 'none')) return null;
+  if (order.status === 'refunded') return 'The refund is already processed and cannot be changed.';
+  if (patch.refundStatus !== 'none' && order.status !== 'paid') return 'Only a paid order can be refunded.';
+  const reason = patch.refundReason !== undefined ? patch.refundReason : order.refundReason;
+  if (REFUND_STATUSES_NEEDING_REASON.includes(patch.refundStatus) && !String(reason || '').trim()) return 'A refund reason is required.';
+  return null;
+}
+
 export function refundOutcome(order: Record<string, any>, patch: Record<string, any>) {
   if (patch.refundStatus === 'processed' && order.status === 'paid') return 'refunded';
   return null;

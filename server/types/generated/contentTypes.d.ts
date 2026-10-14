@@ -564,6 +564,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       Schema.Attribute.DefaultTo<'pending_payment'>;
     publishedAt: Schema.Attribute.DateTime;
     reason: Schema.Attribute.Text;
+    refundedAt: Schema.Attribute.DateTime;
     refundReason: Schema.Attribute.Text;
     refundStatus: Schema.Attribute.Enumeration<
       ['none', 'requested', 'approved', 'rejected', 'processed']

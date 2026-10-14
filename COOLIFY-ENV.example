@@ -25,6 +25,11 @@ JWT_SECRET=<random-secret>
 # Use an existing Strapi Users & Permissions username or email.
 PAYMENT_ADMIN_USERS=<payment-admin-username>
 PAYMENT_ADMIN_EMAILS=<payment-admin-email>
+# Optional: accountants (finance registers) and economists (aggregated analytics).
+PAYMENT_ACCOUNTANT_USERS=
+PAYMENT_ACCOUNTANT_EMAILS=
+PAYMENT_ECONOMIST_USERS=
+PAYMENT_ECONOMIST_EMAILS=
 ADMIN_EMAIL=<notification-email>
 
 DATABASE_CLIENT=postgres

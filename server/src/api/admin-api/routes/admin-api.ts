@@ -48,5 +48,23 @@ export default {
       handler: 'admin-api.receipt',
       config: { auth: { scope: ['api::admin-api.admin-api.receipt'] } },
     },
+    {
+      method: 'GET',
+      path: '/admin/reports/finance',
+      handler: 'admin-api.financeReport',
+      config: { auth: { scope: ['api::admin-api.admin-api.financeReport'] } },
+    },
+    {
+      method: 'GET',
+      path: '/admin/reports/analytics',
+      handler: 'admin-api.analyticsReport',
+      config: { auth: { scope: ['api::admin-api.admin-api.analyticsReport'] } },
+    },
+    {
+      method: 'GET',
+      path: '/admin/reports/export.csv',
+      handler: 'admin-api.reportCsv',
+      config: { auth: { scope: ['api::admin-api.admin-api.reportCsv'] } },
+    },
   ],
 };

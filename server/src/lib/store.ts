@@ -56,6 +56,7 @@ export function orderToStore(row: Record<string, any>) {
     doi: row.doi || '',
     refundStatus: row.refundStatus || 'none',
     refundReason: row.refundReason || '',
+    refundedAt: row.refundedAt || null,
     accountingStatus: row.accountingStatus || 'new',
     adminComment: row.adminComment || '',
   };
@@ -131,6 +132,7 @@ function orderToStrapi(order: Record<string, any>) {
     doi: cleanString(order.doi),
     refundStatus: cleanString(order.refundStatus, 'none'),
     refundReason: cleanString(order.refundReason),
+    refundedAt: order.refundedAt ? iso(order.refundedAt) : null,
     accountingStatus: cleanString(order.accountingStatus, 'new'),
     adminComment: cleanString(order.adminComment),
     postbacks: Array.isArray(order.postbacks) ? order.postbacks : [],
@@ -263,6 +265,13 @@ export async function readStore(): Promise<PaymentStore> {
     callbacks: callbacks.map(callbackToStore),
     auditLog: [],
   };
+}
+
+// Reports need orders and invitations only; the callback audit (with raw bank payloads) is skipped.
+export async function readReportData() {
+  const invitations = await strapi.db.query(invitationUid).findMany({ orderBy: { invitationCreatedAt: 'desc' } });
+  const orders = await strapi.db.query(orderUid).findMany({ orderBy: { paymentCreatedAt: 'desc' } });
+  return { invitations: invitations.map(invitationToStore), orders: orders.map(orderToStore) };
 }
 
 export async function readOrdersPage(options: {
