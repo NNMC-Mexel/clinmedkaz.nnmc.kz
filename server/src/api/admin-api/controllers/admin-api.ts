@@ -1,11 +1,21 @@
-import { requireAdmin } from '../../../lib/auth';
-import { refundOutcome, sanitizeOrderPatch } from '../../../lib/domain';
+import { requireAdmin, requireRole } from '../../../lib/auth';
+import { refundOutcome, refundPatchError, sanitizeOrderPatch } from '../../../lib/domain';
 import { logger } from '../../../lib/logger';
 import { fetchOfficialUsdRate } from '../../../lib/exchange-rate';
 import { readPricing, savePricing } from '../../../lib/pricing';
 import { buildReceiptPdf, receiptFileName } from '../../../lib/receipt-pdf';
 import { reconcileActiveOrders } from '../../../lib/reconciliation';
-import { readOrdersPage, readStore, updateStore } from '../../../lib/store';
+import {
+  REPORT_EXPORTS,
+  buildAnalyticsReport,
+  buildFinanceReport,
+  exportRows,
+  isReportExport,
+  reportCsv,
+  resolvePeriod,
+} from '../../../lib/reports';
+import { ROLE_CAPABILITIES, forbiddenOrderFields } from '../../../lib/roles';
+import { readOrdersPage, readReportData, readStore, updateStore } from '../../../lib/store';
 
 function nowIso() {
   return new Date().toISOString();
@@ -58,13 +68,19 @@ function csvCell(value: unknown) {
 
 export default {
   async session(ctx: any) {
-    requireAdmin(ctx);
+    const { role } = requireRole(ctx, ['admin', 'accountant', 'economist']);
     const user = ctx.state?.user;
-    ctx.body = { authenticated: true, username: user?.username || user?.email || null, id: user?.id || null };
+    ctx.body = {
+      authenticated: true,
+      username: user?.username || user?.email || null,
+      id: user?.id || null,
+      role,
+      capabilities: ROLE_CAPABILITIES[role],
+    };
   },
 
   async orders(ctx: any) {
-    requireAdmin(ctx);
+    requireRole(ctx, ['admin', 'accountant']);
     const [page, pricing] = await Promise.all([
       readOrdersPage({
         page: ctx.query?.page,
@@ -84,7 +100,7 @@ export default {
   },
 
   async reconcile(ctx: any) {
-    requireAdmin(ctx);
+    requireRole(ctx, ['admin', 'accountant']);
     ctx.body = { reconciliation: await reconcileActiveOrders() };
   },
 
@@ -121,11 +137,15 @@ export default {
   },
 
   async updateOrder(ctx: any) {
-    const actor = requireAdmin(ctx);
+    const { actor, role } = requireRole(ctx, ['admin', 'accountant']);
     const patch = sanitizeOrderPatch(ctx.request.body || {});
+    const forbidden = forbiddenOrderFields(role, patch);
+    if (forbidden.length) ctx.throw(403, `This role cannot change: ${forbidden.join(', ')}`);
     const transition = await updateStore((store) => {
       const order = store.orders.find((item) => item.id === ctx.params.id);
       if (!order) return { updated: null, refundApplied: false };
+      const refundError = refundPatchError(order, patch);
+      if (refundError) return { updated: null, refundApplied: false, refundError };
       if (patch.publishedAt === true) patch.publishedAt = order.publishedAt || nowIso();
       const newStatus = refundOutcome(order, patch);
       Object.assign(order, patch);
@@ -137,13 +157,14 @@ export default {
       return { updated: { ...order }, refundApplied: Boolean(newStatus) };
     });
     const { updated, refundApplied } = transition;
+    if ('refundError' in transition && transition.refundError) ctx.throw(400, transition.refundError);
     if (!updated) ctx.throw(404, 'Order not found');
-    logger.info('Order updated by admin', { orderId: updated.id, by: actor, fields: Object.keys(patch), refundApplied });
+    logger.info('Order updated by admin', { orderId: updated.id, by: actor, role, fields: Object.keys(patch), refundApplied });
     ctx.body = { order: updated };
   },
 
   async exportCsv(ctx: any) {
-    requireAdmin(ctx);
+    requireRole(ctx, ['admin', 'accountant']);
     const store = await readStore();
     const columns = [
       'invoiceId', 'status', 'amount', 'currency', 'residency', 'fullName', 'email', 'phone',
@@ -161,7 +182,7 @@ export default {
 
   // Admins can also re-download receipts for orders refunded after payment.
   async receipt(ctx: any) {
-    requireAdmin(ctx);
+    requireRole(ctx, ['admin', 'accountant']);
     const store = await readStore();
     const order = store.orders.find((item) => item.id === ctx.params.id);
     if (!order || !order.paymentReceivedAt) ctx.throw(404, 'Receipt not found');
@@ -169,5 +190,40 @@ export default {
     ctx.set('Content-Disposition', `attachment; filename="${receiptFileName(order)}"`);
     ctx.set('Cache-Control', 'private, no-store');
     ctx.body = await buildReceiptPdf(order);
+  },
+
+  // Accountant view: registers of payments and refunds for the period, daily totals for matching
+  // bank settlements, and what still needs reconciling.
+  async financeReport(ctx: any) {
+    requireRole(ctx, ['admin', 'accountant']);
+    const period = resolvePeriod(ctx.query || {});
+    const [data, pricing] = await Promise.all([readReportData(), readPricing()]);
+    ctx.body = { report: buildFinanceReport(data, pricing, period) };
+  },
+
+  // Economist view: aggregates only, by default over the last 12 months.
+  async analyticsReport(ctx: any) {
+    requireRole(ctx, ['admin', 'economist']);
+    const period = resolvePeriod(ctx.query || {}, Date.now(), 12);
+    const [data, pricing] = await Promise.all([readReportData(), readPricing()]);
+    ctx.body = { report: buildAnalyticsReport(data, pricing, period) };
+  },
+
+  async reportCsv(ctx: any) {
+    const name = String(ctx.query?.report || '');
+    if (!isReportExport(name)) return ctx.throw(400, 'Unknown report.');
+    const kind = REPORT_EXPORTS[name];
+    requireRole(ctx, kind === 'finance' ? ['admin', 'accountant'] : ['admin', 'economist']);
+    const period = resolvePeriod(ctx.query || {}, Date.now(), kind === 'finance' ? 1 : 12);
+    const [data, pricing] = await Promise.all([readReportData(), readPricing()]);
+    const rows = exportRows(
+      name,
+      kind === 'finance' ? buildFinanceReport(data, pricing, period) : null,
+      kind === 'analytics' ? buildAnalyticsReport(data, pricing, period) : null
+    );
+    ctx.set('Content-Type', 'text/csv; charset=utf-8');
+    ctx.set('Content-Disposition', `attachment; filename="clinmedkaz-${name}-${period.from}_${period.to}.csv"`);
+    ctx.set('Cache-Control', 'private, no-store');
+    ctx.body = reportCsv(name, rows, ctx.query?.lang);
   },
 };

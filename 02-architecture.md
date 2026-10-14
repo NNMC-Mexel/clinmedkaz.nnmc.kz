@@ -45,6 +45,9 @@ REST API, который использует клиент:
 - `GET /api/admin/orders`
 - `PATCH /api/admin/orders/:id`
 - `GET /api/admin/orders/export.csv`
+- `GET /api/admin/reports/finance`
+- `GET /api/admin/reports/analytics`
+- `GET /api/admin/reports/export.csv`
 
 ## Client — `client/`
 

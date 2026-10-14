@@ -1,19 +1,12 @@
 import type { Core } from '@strapi/strapi';
 import { assertProductionSecurityConfig, config } from './lib/config';
+import { PAYMENT_ROLES, ROLE_PRECEDENCE, sensitiveActions, type PaymentRole } from './lib/roles';
 
-const PAYMENT_ADMIN_ACTIONS = [
-  'api::admin-api.admin-api.session',
-  'api::admin-api.admin-api.orders',
-  'api::admin-api.admin-api.updateOrder',
-  'api::admin-api.admin-api.updatePricing',
-  'api::admin-api.admin-api.exchangeRate',
-  'api::admin-api.admin-api.reconcile',
-  'api::admin-api.admin-api.exportCsv',
-  'api::admin-api.admin-api.receipt',
-  'api::invitation.invitation.createPaymentInvitation',
-  'api::invitation.invitation.resend',
-  'api::invitation.invitation.cancel',
-];
+const ROLE_ASSIGNMENTS: Record<PaymentRole, { usernames: string[]; emails: string[] }> = {
+  admin: config.paymentAdmin,
+  accountant: config.paymentAccountant,
+  economist: config.paymentEconomist,
+};
 
 async function securePaymentAdministration(strapi: Core.Strapi) {
   assertProductionSecurityConfig();
@@ -29,61 +22,69 @@ async function securePaymentAdministration(strapi: Core.Strapi) {
   }
 
   const roleQuery = strapi.db.query('plugin::users-permissions.role');
-  let paymentAdminRole = await roleQuery.findOne({ where: { type: config.paymentAdmin.roleType } });
-  if (!paymentAdminRole) {
-    paymentAdminRole = await roleQuery.create({
-      data: {
-        name: 'Payment Admin',
-        description: 'Restricted role for ClinMedKaz payment administration.',
-        type: config.paymentAdmin.roleType,
-      },
-    });
+  const roleIds = {} as Record<PaymentRole, number>;
+  for (const key of ROLE_PRECEDENCE) {
+    const definition = PAYMENT_ROLES[key];
+    let role = await roleQuery.findOne({ where: { type: definition.type } });
+    if (!role) {
+      role = await roleQuery.create({
+        data: { name: definition.name, description: definition.description, type: definition.type },
+      });
+    }
+    roleIds[key] = role.id;
   }
 
+  // Every payment action belongs only to the roles listed for it in lib/roles.ts.
   const permissionQuery = strapi.db.query('plugin::users-permissions.permission');
+  const actions = sensitiveActions();
   const sensitivePermissions = await permissionQuery.findMany({
-    where: { action: { $in: [...PAYMENT_ADMIN_ACTIONS, 'plugin::users-permissions.auth.register'] } },
+    where: { action: { $in: [...actions, 'plugin::users-permissions.auth.register'] } },
     populate: ['role'],
   });
 
-  const adminActions = new Set(
-    sensitivePermissions
-      .filter((permission: any) => permission.role?.id === paymentAdminRole.id)
-      .map((permission: any) => permission.action)
-  );
-
+  const granted = new Set<string>();
   for (const permission of sensitivePermissions as any[]) {
-    const isAdminPermission = PAYMENT_ADMIN_ACTIONS.includes(permission.action);
-    const belongsToPaymentAdmin = permission.role?.id === paymentAdminRole.id;
-    const isPublicRegistration = permission.action === 'plugin::users-permissions.auth.register';
-    if ((isAdminPermission && !belongsToPaymentAdmin) || isPublicRegistration) {
+    const owner = ROLE_PRECEDENCE.find((key) => roleIds[key] === permission.role?.id);
+    const entitled = owner && PAYMENT_ROLES[owner].actions.includes(permission.action);
+    if (!entitled) {
       await permissionQuery.delete({ where: { id: permission.id } });
+    } else {
+      granted.add(`${owner}:${permission.action}`);
     }
   }
 
-  for (const action of PAYMENT_ADMIN_ACTIONS) {
-    if (!adminActions.has(action)) {
-      await permissionQuery.create({ data: { action, role: paymentAdminRole.id } });
+  let created = 0;
+  for (const key of ROLE_PRECEDENCE) {
+    for (const action of PAYMENT_ROLES[key].actions) {
+      if (granted.has(`${key}:${action}`)) continue;
+      await permissionQuery.create({ data: { action, role: roleIds[key] } });
+      created += 1;
     }
   }
 
-  const configuredUsernames = new Set(config.paymentAdmin.usernames);
-  const configuredEmails = new Set(config.paymentAdmin.emails);
   const userQuery = strapi.db.query('plugin::users-permissions.user');
   const users = await userQuery.findMany({ populate: ['role'] });
   let assigned = 0;
   for (const user of users as any[]) {
-    const selected =
-      configuredUsernames.has(String(user.username || '').toLowerCase()) ||
-      configuredEmails.has(String(user.email || '').toLowerCase());
-    if (selected && user.role?.id !== paymentAdminRole.id) {
-      await userQuery.update({ where: { id: user.id }, data: { role: paymentAdminRole.id } });
+    const username = String(user.username || '').toLowerCase();
+    const email = String(user.email || '').toLowerCase();
+    const target = ROLE_PRECEDENCE.find(
+      (key) => ROLE_ASSIGNMENTS[key].usernames.includes(username) || ROLE_ASSIGNMENTS[key].emails.includes(email)
+    );
+    if (target && user.role?.id !== roleIds[target]) {
+      // Moving someone between payment roles (not the first assignment) is worth a look:
+      // a typo in the env lists could take an administrator's access away.
+      const previous = ROLE_PRECEDENCE.find((key) => roleIds[key] === user.role?.id);
+      if (previous) {
+        strapi.log.warn(`[payment-roles] ${user.username || user.email} moved from ${previous} to ${target} by the env role lists`);
+      }
+      await userQuery.update({ where: { id: user.id }, data: { role: roleIds[target] } });
       assigned += 1;
     }
   }
 
   strapi.log.info(
-    `[payment-admin] public registration disabled; ${PAYMENT_ADMIN_ACTIONS.length} permissions secured; ${assigned} user(s) assigned`
+    `[payment-roles] public registration disabled; ${ROLE_PRECEDENCE.length} roles, ${actions.length} actions secured (${created} granted); ${assigned} user(s) assigned`
   );
 }
 

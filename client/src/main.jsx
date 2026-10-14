@@ -3,78 +3,25 @@ import { createRoot } from "react-dom/client";
 import "./styles.css";
 import { getLegalContent } from "./legal";
 import { getLandingContent } from "./landing";
+import { AnalyticsReportPage, FinanceReportPage, OrderAccounting, reportsText } from "./admin-reports";
+import {
+  adminJwt,
+  apiBaseUrl,
+  apiFetch,
+  clearAdminJwt,
+  dateFilterBoundary,
+  formatDate,
+  formatDay,
+  formatNumber,
+  isAdminDevice,
+  markAdminDevice,
+  money,
+  readStorage,
+  setAdminJwt,
+  writeStorage,
+} from "./shared";
 
 const supportedLanguages = ["ru", "kk", "en"];
-const defaultApiBaseUrl = import.meta.env.PROD ? "https://clinmedkazserver.nnmc.kz/api" : "/api";
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || defaultApiBaseUrl).replace(/\/$/, "");
-const adminJwtStorageKey = "clinmed_admin_jwt";
-
-// "Remember me" keeps the JWT in localStorage (survives browser restarts until the token expires);
-// otherwise it lives in sessionStorage and is dropped when the tab closes.
-// Storage access can throw (Safari "Block all cookies", some private modes); the site must still
-// work for authors, so every access is guarded and the token falls back to memory for this page.
-let memoryAdminJwt = "";
-
-// Takes the storage name, not the object: in some browsers even reading window.localStorage throws.
-function readStorage(name, key) {
-  try {
-    return window[name].getItem(key) || "";
-  } catch {
-    return "";
-  }
-}
-
-function writeStorage(name, key, value) {
-  try {
-    if (value === null) window[name].removeItem(key);
-    else window[name].setItem(key, value);
-  } catch {}
-}
-
-function adminJwt() {
-  return readStorage("sessionStorage", adminJwtStorageKey) || readStorage("localStorage", adminJwtStorageKey) || memoryAdminJwt;
-}
-
-function setAdminJwt(jwt, remember = false) {
-  clearAdminJwt();
-  memoryAdminJwt = jwt;
-  writeStorage(remember ? "localStorage" : "sessionStorage", adminJwtStorageKey, jwt);
-  markAdminDevice(true);
-}
-
-// Marks this browser as an admin's, in localStorage so that every tab sees it - including the
-// noopener tabs the admin "Open" buttons create, which do not inherit a sessionStorage token.
-// Payment pages opened here are not counted as the author opening the link. Cleared on logout.
-const adminDeviceStorageKey = "clinmed_admin_device";
-
-function markAdminDevice(value) {
-  writeStorage("localStorage", adminDeviceStorageKey, value ? "1" : null);
-}
-
-// Admins signed in before this marker existed get it on their next page load.
-if (adminJwt()) markAdminDevice(true);
-
-function isAdminDevice() {
-  return readStorage("localStorage", adminDeviceStorageKey) === "1";
-}
-
-function clearAdminJwt() {
-  memoryAdminJwt = "";
-  writeStorage("sessionStorage", adminJwtStorageKey, null);
-  writeStorage("localStorage", adminJwtStorageKey, null);
-}
-
-function shouldAttachAdminJwt(path) {
-  return path.startsWith("/admin") || path.startsWith("/invitations");
-}
-
-function apiFetch(path, options = {}) {
-  const headers = new Headers(options.headers || {});
-  const token = adminJwt();
-  if (token && shouldAttachAdminJwt(path) && !headers.has("authorization")) headers.set("authorization", `Bearer ${token}`);
-  return fetch(`${apiBaseUrl}${path}`, { credentials: "include", ...options, headers });
-}
-
 let halykPaymentScriptPromise = null;
 
 function loadHalykPaymentApi(src) {
@@ -467,29 +414,6 @@ const adminPaginationI18n = {
   en: { search: "Search", previous: "Previous", next: "Next", perPage: "Per page", total: (count) => `Total: ${count}`, page: (current, count) => `Page ${current} of ${count}` },
 };
 
-const dateLocales = { ru: "ru-RU", kk: "kk-KZ", en: "en-US" };
-// Browsers report "kk" as supported but often ship without its data and silently fall back
-// to the root locale ("2026 M10 6", "136,494.5"). Kazakh shares Russian number conventions,
-// and dates are assembled by hand in the CLDR kk pattern ("2026 ж. 06 қаз., 11:30").
-const numberLocales = { ru: "ru-RU", kk: "ru-RU", en: "en-US" };
-const kkShortMonths = ["қаң.", "ақп.", "нау.", "сәу.", "мам.", "мау.", "шіл.", "там.", "қыр.", "қаз.", "қар.", "жел."];
-
-function formatNumber(value, lang = "ru", options = {}) {
-  return new Intl.NumberFormat(numberLocales[lang] || numberLocales.ru, options).format(Number(value || 0));
-}
-
-function formatKkDate(date, withTime) {
-  const day = `${date.getFullYear()} ж. ${String(date.getDate()).padStart(2, "0")} ${kkShortMonths[date.getMonth()]}`;
-  return withTime ? `${day}, ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}` : day;
-}
-
-function formatDay(isoDate, lang = "ru") {
-  const date = new Date(`${isoDate}T00:00:00`);
-  if (Number.isNaN(date.getTime())) return "";
-  if (lang === "kk") return formatKkDate(date, false);
-  return new Intl.DateTimeFormat(dateLocales[lang] || dateLocales.ru, { dateStyle: "medium" }).format(date);
-}
-
 function adminStatusLabel(status, lang) {
   const ui = adminUiI18n[lang] || adminUiI18n.ru;
   return ui.statuses[status] || ui.unknownStatus;
@@ -505,29 +429,11 @@ function AdminFieldLabel({ children, lang, optional = false }) {
   );
 }
 
-function money(amount, currency, lang = "ru") {
-  return `${formatNumber(amount, lang, { maximumFractionDigits: currency === "KZT" ? 0 : 2 })} ${currency}`;
-}
-
 function localizedPath(path, lang, search = "") {
   const params = new URLSearchParams(search);
   params.set("lang", lang);
   const query = params.toString();
   return `${path}${query ? `?${query}` : ""}`;
-}
-
-function formatDate(value, lang = "ru") {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (lang === "kk") return formatKkDate(date, true);
-  return new Intl.DateTimeFormat(dateLocales[lang] || dateLocales.ru, { dateStyle: "medium", timeStyle: "short" }).format(date);
-}
-
-function dateFilterBoundary(value, end = false) {
-  if (!value) return "";
-  const [year, month, day] = value.split("-").map(Number);
-  const date = new Date(year, month - 1, day + (end ? 1 : 0));
-  return Number.isNaN(date.getTime()) ? "" : date.toISOString();
 }
 
 function PaymentLink({ enabled, className, href, onClick, unavailableLabel, children }) {
@@ -940,6 +846,12 @@ function PageLoader({ lang }) {
   );
 }
 
+const loginLimitI18n = {
+  ru: "Слишком много попыток входа. Подождите минуту и попробуйте снова.",
+  kk: "Кіру әрекеттері тым көп. Бір минут күтіп, қайталап көріңіз.",
+  en: "Too many sign-in attempts. Wait a minute and try again.",
+};
+
 function AdminLogin({ lang, onNavigate }) {
   const t = i18n[lang].admin;
   const [status, setStatus] = useState("");
@@ -968,7 +880,7 @@ function AdminLogin({ lang, onNavigate }) {
         setAdminJwt(payload.jwt, body.remember === "on");
         const session = await apiFetch("/admin/session");
         if (session.ok) {
-          onNavigate("/admin/create");
+          onNavigate("/admin");
         } else if (session.status === 403) {
           clearAdminJwt();
           setStatus(t.noAccess);
@@ -978,6 +890,8 @@ function AdminLogin({ lang, onNavigate }) {
         }
       } else if (response.status === 400 || response.status === 401) {
         setStatus(t.invalidCredentials);
+      } else if (response.status === 429) {
+        setStatus(loginLimitI18n[lang] || loginLimitI18n.ru);
       } else {
         setStatus(t.authError);
       }
@@ -1268,7 +1182,7 @@ async function downloadAdminReceipt(order, lang) {
   }
 }
 
-function AdminTransactionsPage({ data, status, lang, onRefresh, syncing, loading, filters, onFiltersChange }) {
+function AdminTransactionsPage({ data, status, lang, onRefresh, syncing, loading, filters, onFiltersChange, canEditAccounting, onOrderSaved, onAuthLost }) {
   const t = i18n[lang].admin;
   const paginationT = adminPaginationI18n[lang] || adminPaginationI18n.ru;
   const [query, setQuery] = useState(filters.query);
@@ -1320,6 +1234,7 @@ function AdminTransactionsPage({ data, status, lang, onRefresh, syncing, loading
               <div className="transaction-detail"><span>{t.author}</span><strong>{order.fullName || "-"}</strong><small>{order.email}</small>{order.country && <small>{order.country}</small>}</div>
               <div className="transaction-detail transaction-article"><span>{t.article}</span><strong>{order.articleTitle || "-"}</strong></div>
               <div className="transaction-detail transaction-amount"><span>{t.amount}</span><strong>{money(order.amount, order.currency, lang)}</strong></div>
+              {canEditAccounting && order.recordType !== "invitation" && order.paymentReceivedAt && <OrderAccounting order={order} lang={lang} onSaved={onOrderSaved} onAuthLost={onAuthLost} />}
             </article>
           ))}
         </div>
@@ -1337,15 +1252,59 @@ function AdminTransactionsPage({ data, status, lang, onRefresh, syncing, loading
   );
 }
 
+const adminViews = [
+  { view: "create", path: "/admin/create", capability: "createLinks" },
+  { view: "transactions", path: "/admin/transactions", capability: "viewTransactions" },
+  { view: "pricing", path: "/admin/pricing", capability: "managePricing" },
+  { view: "finance", path: "/admin/finance", capability: "financeReports" },
+  { view: "analytics", path: "/admin/analytics", capability: "analyticsReports" },
+];
+
+const adminPaths = ["/admin", ...adminViews.map((item) => item.path)];
+
+// Where each role lands after sign-in or on /admin.
+const roleHome = { admin: "create", accountant: "finance", economist: "analytics" };
+
 function AdminPage({ lang, path, paymentsEnabled, onNavigate }) {
   const t = i18n[lang].admin;
+  const rt = reportsText(lang);
+  const [session, setSession] = useState(null);
   const [data, setData] = useState({ orders: [], pagination: { page: 1, pageCount: 1, total: 0 }, pricing: null });
   const [filters, setFilters] = useState({ query: "", status: "all", dateFrom: "", dateTo: "", page: 1, pageSize: 20 });
   const [status, setStatus] = useState("");
   const [syncing, setSyncing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const view = path === "/admin/transactions" ? "transactions" : path === "/admin/pricing" ? "pricing" : "create";
+  const capabilities = session?.capabilities || {};
+  const allowedViews = adminViews.filter((item) => capabilities[item.capability]);
+  const requested = adminViews.find((item) => item.path === path);
+  const home = allowedViews.find((item) => item.view === roleHome[session?.role]) || allowedViews[0];
+  const view = requested && capabilities[requested.capability] ? requested.view : home?.view;
+  // Order data feeds the link form (current price), the transactions list and the pricing form.
+  const needsOrders = capabilities.viewTransactions && ["create", "transactions", "pricing"].includes(view);
   const loadSeq = useRef(0);
+  const authLost = () => onNavigate("/admin/login");
+
+  // The role decides which sections exist, so nothing else loads before the session does.
+  useEffect(() => {
+    let active = true;
+    apiFetch("/admin/session")
+      .then(async (response) => {
+        if (!active) return;
+        if (response.status === 401) { clearAdminJwt(); authLost(); return; }
+        if (!response.ok) { setStatus(response.status === 403 ? t.noAccess : t.loadError); setLoading(false); return; }
+        setSession(await response.json());
+      })
+      .catch(() => { if (active) { setStatus(t.loadError); setLoading(false); } });
+    return () => { active = false; };
+  }, []);
+
+  // /admin and sections the role cannot open land on the role's first section.
+  useEffect(() => {
+    if (!session || !view) return;
+    const target = adminViews.find((item) => item.view === view);
+    if (target && target.path !== path) onNavigate(target.path, { replace: true });
+  }, [session, view, path]);
+
   async function fetchOrders(nextFilters, isCurrent) {
     try {
       const params = new URLSearchParams({ page: String(nextFilters.page), pageSize: String(nextFilters.pageSize) });
@@ -1393,33 +1352,61 @@ function AdminPage({ lang, path, paymentsEnabled, onNavigate }) {
     }
   }
   useEffect(() => {
+    if (!needsOrders) return undefined;
     load();
     if (view !== "transactions") return undefined;
     const timer = window.setInterval(() => load({ silent: true }), 60_000);
     return () => window.clearInterval(timer);
-  }, [view, lang, paymentsEnabled, filters.query, filters.status, filters.dateFrom, filters.dateTo, filters.page, filters.pageSize]);
+  }, [needsOrders, view, lang, paymentsEnabled, filters.query, filters.status, filters.dateFrom, filters.dateTo, filters.page, filters.pageSize]);
+
+  const tabLabels = { create: t.create, transactions: t.transactions, pricing: t.pricing, finance: rt.tabs.finance, analytics: rt.tabs.analytics };
 
   return (
     <section className="admin-shell">
       <header className="admin-header panel">
-        <div><p className="eyebrow">ClinMedKaz Pay</p><h1>{t.title}</h1></div>
+        <div>
+          <p className="eyebrow">ClinMedKaz Pay</p>
+          <h1>{t.title}</h1>
+          {session?.role && <p className="admin-role"><span className="badge">{rt.roles[session.role]}</span>{session.username && <span>{session.username}</span>}</p>}
+        </div>
         <button className="secondary-btn" type="button" onClick={() => { clearAdminJwt(); markAdminDevice(false); onNavigate("/admin/login"); }}>{t.logout}</button>
       </header>
-      <nav className="admin-tabs" aria-label={ariaI18n[lang].adminSections}>
-        <a className={view === "create" ? "active" : ""} href={localizedPath("/admin/create", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/create"); }}>{t.create}</a>
-        <a className={view === "transactions" ? "active" : ""} href={localizedPath("/admin/transactions", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/transactions"); }}>{t.transactions}</a>
-        <a className={view === "pricing" ? "active" : ""} href={localizedPath("/admin/pricing", lang)} onClick={(event) => { event.preventDefault(); onNavigate("/admin/pricing"); }}>{t.pricing}</a>
-      </nav>
-      {view === "create" && <AdminCreatePage lang={lang} paymentsEnabled={paymentsEnabled} pricing={data.pricing} onCreated={(reason) => reason === "auth" ? onNavigate("/admin/login") : load({ reconcile: false })} />}
-      {view === "transactions" && <AdminTransactionsPage data={data} status={status} lang={lang} onRefresh={() => load()} syncing={syncing} loading={loading} filters={filters} onFiltersChange={setFilters} />}
-      {view === "pricing" && (
+      {!session && (status
+        ? <p className="panel status-text danger-text">{status}</p>
+        : <p className="report-loading" role="status"><span className="transactions-loading-dot" aria-hidden="true" />{pageLoaderText[lang] || pageLoaderText.ru}</p>)}
+      {session && allowedViews.length > 1 && (
+        <nav className="admin-tabs" aria-label={ariaI18n[lang].adminSections}>
+          {allowedViews.map((item) => (
+            <a key={item.view} className={view === item.view ? "active" : ""} href={localizedPath(item.path, lang)} onClick={(event) => { event.preventDefault(); onNavigate(item.path); }}>{tabLabels[item.view]}</a>
+          ))}
+        </nav>
+      )}
+      {session && view === "create" && <AdminCreatePage lang={lang} paymentsEnabled={paymentsEnabled} pricing={data.pricing} onCreated={(reason) => reason === "auth" ? onNavigate("/admin/login") : load({ reconcile: false })} />}
+      {session && view === "transactions" && (
+        <AdminTransactionsPage
+          data={data}
+          status={status}
+          lang={lang}
+          onRefresh={() => load()}
+          syncing={syncing}
+          loading={loading}
+          filters={filters}
+          onFiltersChange={setFilters}
+          canEditAccounting={Boolean(capabilities.editAccounting)}
+          onOrderSaved={() => load({ reconcile: false, silent: true })}
+          onAuthLost={authLost}
+        />
+      )}
+      {session && view === "pricing" && (
         <AdminPricingPage
           lang={lang}
           pricing={data.pricing}
           onSaved={(pricing) => setData((current) => ({ ...current, pricing }))}
-          onAuthLost={() => onNavigate("/admin/login")}
+          onAuthLost={authLost}
         />
       )}
+      {session && view === "finance" && <FinanceReportPage lang={lang} canEdit={Boolean(capabilities.editAccounting)} onAuthLost={authLost} />}
+      {session && view === "analytics" && <AnalyticsReportPage lang={lang} onAuthLost={authLost} />}
     </section>
   );
 }
@@ -1466,7 +1453,8 @@ function App() {
     params.set("lang", nextLang);
     const search = `?${params.toString()}`;
     const url = `${path}${search}`;
-    window.history.pushState({}, "", url);
+    if (options.replace) window.history.replaceState({}, "", url);
+    else window.history.pushState({}, "", url);
     setLocation({ path, search });
   }
 
@@ -1515,7 +1503,7 @@ function App() {
   else if (path.startsWith("/payment/success/")) page = <ResultPage ctx={ctx} lang={lang} onRefresh={loadContext} />;
   else if (path.startsWith("/payment/failure/")) page = <ResultPage ctx={ctx} lang={lang} onRefresh={loadContext} />;
   else if (path === "/admin/login") page = <AdminLogin lang={lang} onNavigate={navigate} />;
-  else if (["/admin", "/admin/create", "/admin/transactions", "/admin/pricing"].includes(path)) page = adminJwt() ? <AdminPage lang={lang} path={path} paymentsEnabled={ctx.config.paymentsEnabled !== false} onNavigate={navigate} /> : <AdminLogin lang={lang} onNavigate={navigate} />;
+  else if (adminPaths.includes(path)) page = adminJwt() ? <AdminPage lang={lang} path={path} paymentsEnabled={ctx.config.paymentsEnabled !== false} onNavigate={navigate} /> : <AdminLogin lang={lang} onNavigate={navigate} />;
   else page = <LegalPage ctx={ctx} lang={lang} kind={path.slice(1)} />;
   return <><Nav lang={lang} path={path} search={location.search} paymentsEnabled={ctx.config.paymentsEnabled !== false} onNavigate={navigate} onChangeLang={changeLang} /><main>{page}</main><Footer ctx={ctx} lang={lang} onNavigate={navigate} /></>;
 }

@@ -305,6 +305,67 @@ test('critical payment API journey, authorization and concurrency', { timeout: 1
   assert.doesNotMatch(String(storedCallback.payload), /secret|must-not-be-stored/i);
   assert.doesNotMatch(logs.join(''), new RegExp(storedOrder.secret_hash.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 
+  // Finance roles: accountants see money and registers, economists only aggregates.
+  seedUser('payment-accountant', 'e2e-accountant', 'Accountant-Password-123');
+  seedUser('payment-economist', 'e2e-economist', 'Economist-Password-123');
+  const accountant = { authorization: `Bearer ${await login('e2e-accountant', 'Accountant-Password-123')}` };
+  const economist = { authorization: `Bearer ${await login('e2e-economist', 'Economist-Password-123')}` };
+  const admin = { authorization: `Bearer ${adminJwt}` };
+
+  const adminRole = await request('/admin/session', { headers: admin });
+  assert.equal(adminRole.body.role, 'admin');
+  assert.equal(adminRole.body.capabilities.analyticsReports, true);
+  const accountantSession = await request('/admin/session', { headers: accountant });
+  assert.equal(accountantSession.response.status, 200, JSON.stringify(accountantSession.body));
+  assert.equal(accountantSession.body.role, 'accountant');
+  assert.equal(accountantSession.body.capabilities.createLinks, false);
+  const economistSession = await request('/admin/session', { headers: economist });
+  assert.equal(economistSession.body.role, 'economist');
+
+  assert.equal((await request('/admin/orders', { headers: accountant })).response.status, 200);
+  assert.equal((await request('/admin/reports/analytics', { headers: accountant })).response.status, 403);
+  assert.equal((await request('/invitations', { method: 'POST', headers: accountant, body: JSON.stringify({ email: 'x@example.test', articleTitle: 'Nope' }) })).response.status, 403);
+  assert.equal((await request('/admin/pricing', { method: 'PUT', headers: accountant, body: JSON.stringify({ baseCurrency: 'KZT', baseAmount: 1, rateMode: 'manual', usdToKztRate: 500 }) })).response.status, 403);
+  const publicationPatch = await request(`/admin/orders/${encodeURIComponent(order.id)}`, { method: 'PATCH', headers: accountant, body: JSON.stringify({ publicationStatus: 'published' }) });
+  assert.equal(publicationPatch.response.status, 403, 'Accountants cannot change publication data');
+  const reconciledPatch = await request(`/admin/orders/${encodeURIComponent(order.id)}`, { method: 'PATCH', headers: accountant, body: JSON.stringify({ accountingStatus: 'reconciled' }) });
+  assert.equal(reconciledPatch.response.status, 200, JSON.stringify(reconciledPatch.body));
+  assert.equal(reconciledPatch.body.order.accountingStatus, 'reconciled');
+
+  const finance = await request('/admin/reports/finance', { headers: accountant });
+  assert.equal(finance.response.status, 200, JSON.stringify(finance.body));
+  assert.deepEqual(finance.body.report.payments.map((row) => row.id), [order.id]);
+  assert.equal(finance.body.report.totals[0].paymentsAmount, 125);
+  const paymentsCsv = await fetch(`${baseUrl}/admin/reports/export.csv?report=payments`, { headers: accountant });
+  assert.equal(paymentsCsv.status, 200);
+  assert.match(await paymentsCsv.text(), new RegExp(`;${order.invoiceId};`));
+  assert.equal((await request('/admin/reports/finance?from=2026-13-01', { headers: accountant })).response.status, 400);
+
+  const noReason = await request(`/admin/orders/${encodeURIComponent(order.id)}`, { method: 'PATCH', headers: accountant, body: JSON.stringify({ refundStatus: 'processed' }) });
+  assert.equal(noReason.response.status, 400, 'A refund needs a reason');
+
+  // Processing a refund dates it, so it shows up in the refunds register.
+  const refundPatch = await request(`/admin/orders/${encodeURIComponent(order.id)}`, { method: 'PATCH', headers: accountant, body: JSON.stringify({ refundStatus: 'processed', refundReason: 'E2E refund' }) });
+  assert.equal(refundPatch.response.status, 200, JSON.stringify(refundPatch.body));
+  assert.equal(refundPatch.body.order.status, 'refunded');
+  const afterRefund = await request('/admin/reports/finance', { headers: accountant });
+  assert.deepEqual(afterRefund.body.report.refunds.map((row) => row.refundReason), ['E2E refund']);
+  assert.ok(afterRefund.body.report.refunds[0].refundedAt);
+  assert.equal(afterRefund.body.report.totals[0].netAmount, 0);
+
+  const analytics = await request('/admin/reports/analytics', { headers: economist });
+  assert.equal(analytics.response.status, 200, JSON.stringify(analytics.body));
+  assert.equal(analytics.body.report.kpi.paidCount, 1);
+  assert.doesNotMatch(JSON.stringify(analytics.body), /author@example\.test|Test Author/, 'Economists see no personal data');
+  for (const pathname of ['/admin/reports/finance', '/admin/orders', `/admin/orders/${encodeURIComponent(order.id)}/receipt.pdf`, '/admin/reports/export.csv?report=payments']) {
+    assert.equal((await request(pathname, { headers: economist })).response.status, 403, `Economist must not reach ${pathname}`);
+  }
+  const monthlyCsv = await fetch(`${baseUrl}/admin/reports/export.csv?report=monthly`, { headers: economist });
+  assert.equal(monthlyCsv.status, 200);
+  assert.match(monthlyCsv.headers.get('content-type') || '', /text\/csv/);
+  assert.equal((await request('/admin/reports/analytics', { headers: admin })).response.status, 200);
+  assert.equal((await request('/admin/reports/finance', { headers: { authorization: `Bearer ${userJwt}` } })).response.status, 403);
+
   let limited = null;
   for (let index = 0; index < 10; index += 1) {
     limited = await request('/auth/local', { method: 'POST', body: JSON.stringify({ identifier: 'unknown', password: 'wrong' }) });

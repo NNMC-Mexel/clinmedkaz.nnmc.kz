@@ -56,6 +56,15 @@ export const config = {
     usernames: csvEnv('PAYMENT_ADMIN_USERS', env('ADMIN_USERS', env('ADMIN_USERNAME'))),
     emails: csvEnv('PAYMENT_ADMIN_EMAILS'),
   },
+  // Finance roles (see lib/roles.ts). Users can also be given these roles by hand in the Strapi admin.
+  paymentAccountant: {
+    usernames: csvEnv('PAYMENT_ACCOUNTANT_USERS'),
+    emails: csvEnv('PAYMENT_ACCOUNTANT_EMAILS'),
+  },
+  paymentEconomist: {
+    usernames: csvEnv('PAYMENT_ECONOMIST_USERS'),
+    emails: csvEnv('PAYMENT_ECONOMIST_EMAILS'),
+  },
   payments: {
     enabled: paymentsEnabled,
   },
