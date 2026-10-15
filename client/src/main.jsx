@@ -1262,6 +1262,8 @@ const adminViews = [
 
 const adminPaths = ["/admin", ...adminViews.map((item) => item.path)];
 
+const legacyAdminCapabilities = { createLinks: true, viewTransactions: true, editPublication: true, editAccounting: true, managePricing: true, financeReports: true, analyticsReports: true };
+
 // Where each role lands after sign-in or on /admin.
 const roleHome = { admin: "create", accountant: "finance", economist: "analytics" };
 
@@ -1274,7 +1276,9 @@ function AdminPage({ lang, path, paymentsEnabled, onNavigate }) {
   const [status, setStatus] = useState("");
   const [syncing, setSyncing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const capabilities = session?.capabilities || {};
+  // A backend from before the roles release answers /admin/session without capabilities, and
+  // there only payment admins could sign in, so the frontend can go live first during a deploy.
+  const capabilities = session ? session.capabilities || legacyAdminCapabilities : {};
   const allowedViews = adminViews.filter((item) => capabilities[item.capability]);
   const requested = adminViews.find((item) => item.path === path);
   const home = allowedViews.find((item) => item.view === roleHome[session?.role]) || allowedViews[0];
